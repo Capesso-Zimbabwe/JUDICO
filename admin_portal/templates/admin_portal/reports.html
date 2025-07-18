@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}JUDICO - System Reports{% endblock %}
+
+{% block header_title %}System Reports{% endblock %}
+
+{% block content %}
+<!-- Navigation Tabs - positioned directly under the main header -->
+<div class="bg-white border-b border-gray-200">
+    <div class="px-4">
+        <div class="flex space-x-8">
+            <a href="{% url 'admin_portal:admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">
+                Dashboard
+            </a>
+            <a href="{% url 'admin_portal:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">
+                Reports
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="bg-gray-50 min-h-screen">
+    <div class="p-6">
+    
+    <!-- Reports Header -->
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-gray-800">System Reports</h2>
+        <div>
+            <button id="generateReportBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Generate New Report
+            </button>
+        </div>
+    </div>
+    
+    <!-- Report Filters -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">Report Filters</h3>
+        <form method="get" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    <input type="text" id="first_name" name="first_name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input type="tel" id="phone" name="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="date_of_birth" class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="department" class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                    <select id="department" name="department" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">-- Select Department --</option>
+                        <option value="legal">Legal</option>
+                        <option value="finance">Finance</option>
+                        <option value="hr">Human Resources</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Clear Filters
+                </button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Reports Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Report Title</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% if reports %}
+                    {% for report in reports %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ report.title }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if report.report_type == 'policy_compliance' %}
+                                Policy Compliance
+                            {% elif report.report_type == 'meeting_summary' %}
+                                Meeting Summary
+                            {% elif report.report_type == 'governance_metrics' %}
+                                Governance Metrics
+                            {% elif report.report_type == 'quarterly_review' %}
+                                Quarterly Review
+                            {% elif report.report_type == 'annual_summary' %}
+                                Annual Summary
+                            {% else %}
+                                Custom
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ report.period_display }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if report.status == 'completed' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                            {% elif report.status == 'generating' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Generating</span>
+                            {% elif report.status == 'failed' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Failed</span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Archived</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ report.created_at|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                {% if report.file_path %}
+                                <a href="{% url 'admin_portal:download_report' report.id %}" class="text-blue-600 hover:text-blue-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'admin_portal:view_report' report.id %}" class="text-indigo-600 hover:text-indigo-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No reports found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if reports.has_other_pages %}
+    <div class="flex justify-center mt-4">
+        <nav class="inline-flex rounded-md shadow">
+            {% if reports.has_previous %}
+                <a href="?page={{ reports.previous_page_number }}{% if request.GET.report_type %}&report_type={{ request.GET.report_type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Previous</span>
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            {% endif %}
+            
+            {% for i in reports.paginator.page_range %}
+                {% if reports.number == i %}
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">{{ i }}</span>
+                {% else %}
+                    <a href="?page={{ i }}{% if request.GET.report_type %}&report_type={{ request.GET.report_type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if reports.has_next %}
+                <a href="?page={{ reports.next_page_number }}{% if request.GET.report_type %}&report_type={{ request.GET.report_type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Next</span>
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+    
+    <!-- Generate Report Modal -->
+    <div id="generateReportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" style="z-index: 100;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Generate New Report</h3>
+                <form method="post" action="{% url 'admin_portal:generate_report' %}">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="modal_report_title" class="block text-sm font-medium text-gray-700 mb-1">Report Title</label>
+                        <input type="text" id="modal_report_title" name="title" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="mb-4">
+                        <label for="modal_report_type" class="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
+                        <select id="modal_report_type" name="report_type" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <option value="policy_compliance">Policy Compliance</option>
+                            <option value="meeting_summary">Meeting Summary</option>
+                            <option value="governance_metrics">Governance Metrics</option>
+                            <option value="quarterly_review">Quarterly Review</option>
+                            <option value="annual_summary">Annual Summary</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="modal_period_start" class="block text-sm font-medium text-gray-700 mb-1">Period Start</label>
+                        <input type="date" id="modal_period_start" name="period_start" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="mb-4">
+                        <label for="modal_period_end" class="block text-sm font-medium text-gray-700 mb-1">Period End</label>
+                        <input type="date" id="modal_period_end" name="period_end" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="mb-4">
+                        <label for="modal_description" class="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                        <textarea id="modal_description" name="description" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="closeModalBtn" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">Cancel</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600">Generate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Modal functionality
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    const generateReportModal = document.getElementById('generateReportModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    
+    generateReportBtn.addEventListener('click', function() {
+        generateReportModal.classList.remove('hidden');
+    });
+    
+    closeModalBtn.addEventListener('click', function() {
+        generateReportModal.classList.add('hidden');
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === generateReportModal) {
+            generateReportModal.classList.add('hidden');
+        }
+    });
+    
+    // Set default dates
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(today.getMonth() - 6);
+        
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        document.getElementById('modal_period_start').value = formatDate(sixMonthsAgo);
+        document.getElementById('modal_period_end').value = formatDate(today);
+    });
+</script>
+{% endblock %}

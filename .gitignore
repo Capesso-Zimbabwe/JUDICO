@@ -1,0 +1,6 @@
+.venv/
+theme/
+.idea
+.env
+node_modules
+media

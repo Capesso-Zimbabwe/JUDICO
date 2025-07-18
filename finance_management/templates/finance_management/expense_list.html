@@ -1,0 +1,46 @@
+{% extends 'finance_management/base.html' %}
+
+{% block finance_content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-semibold text-gray-800">Expenses</h2>
+    <a href="{% url 'finance_management:expense_create' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+        <i class="fas fa-plus mr-2"></i>Record Expense
+    </a>
+</div>
+
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for expense in expenses %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ expense.expense_date }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ expense.title }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ expense.get_category_display }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ expense.created_by.get_full_name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                        {% if expense.approved_by %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {% if expense.approved_by %}Approved{% else %}Pending{% endif %}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${{ expense.amount }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a href="{% url 'finance_management:expense_detail' expense.pk %}" class="text-blue-600 hover:text-blue-900">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

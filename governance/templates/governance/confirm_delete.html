@@ -1,0 +1,40 @@
+{% extends 'governance/base.html' %}
+
+{% block title %}Delete Policy - Governance{% endblock %}
+
+{% block governance_content %}
+<div class="p-8">
+    <div class="max-w-md mx-auto">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0">
+                    <svg class="h-8 w-8 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-lg font-medium text-gray-900">Delete Policy</h3>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <p class="text-sm text-gray-600">
+                    Are you sure you want to delete the policy <strong>"{{ policy.title }}"</strong>? This action cannot be undone.
+                </p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <a href="{% url 'governance:policies' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg">
+                    Cancel
+                </a>
+                <form method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg">
+                        Delete Policy
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

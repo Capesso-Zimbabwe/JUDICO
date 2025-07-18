@@ -1,0 +1,117 @@
+{% extends 'governance/base.html' %}
+
+{% block title %}Governance - Reports{% endblock %}
+
+{% block governance_content %}
+    <div class="mb-6 flex justify-between items-center">
+        <h1 class="text-2xl font-semibold text-gray-900">Reports</h1>
+        <a href="{% url 'governance:create_report' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Generate New Report
+        </a>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-64">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search Reports</label>
+                <input type="text" id="search" name="search" value="{{ search_query }}" 
+                       placeholder="Search by title or description..." 
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
+                <select id="type" name="type" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">All Types</option>
+                    {% for value, label in report_types %}
+                        <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select id="status" name="status" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md font-medium">
+                    Filter
+                </button>
+                <a href="{% url 'governance:reports' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md font-medium">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reports Grid -->
+    {% if reports %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for report in reports %}
+                <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">{{ report.title }}</h3>
+                            <p class="text-sm text-gray-500 mt-1">{{ report.period_display }}</p>
+                            <p class="text-xs text-gray-400 mt-1">{{ report.get_report_type_display }}</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                            {% if report.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif report.status == 'generating' %}bg-yellow-100 text-yellow-800
+                            {% elif report.status == 'failed' %}bg-red-100 text-red-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ report.get_status_display }}
+                        </span>
+                    </div>
+                    {% if report.description %}
+                        <p class="text-sm text-gray-600 mb-4">{{ report.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Generated on {{ report.created_at|date:"M d, Y" }}
+                        </div>
+                        <div class="flex space-x-2">
+                            <a href="{% url 'governance:report_detail' report.pk %}" class="text-blue-600 hover:text-blue-800 font-medium text-sm">View</a>
+                            {% if report.status == 'completed' %}
+                                <button class="text-blue-600 hover:text-blue-800 font-medium text-sm">Download</button>
+                            {% endif %}
+                            <a href="{% url 'governance:delete_report' report.pk %}" class="text-red-600 hover:text-red-800 font-medium text-sm">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No reports found</h3>
+            <p class="mt-1 text-sm text-gray-500">
+                {% if search_query or status_filter or type_filter %}
+                    No reports match your current filters. Try adjusting your search criteria.
+                {% else %}
+                    Get started by generating your first governance report.
+                {% endif %}
+            </p>
+            <div class="mt-6">
+                <a href="{% url 'governance:create_report' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Generate New Report
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

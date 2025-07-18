@@ -1,0 +1,261 @@
+{% extends 'aml_system/base.html' %}
+
+{% block title %}Screening Details - {{ screening.entity.name }} - AML System{% endblock %}
+
+{% block aml_content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Screening Details</h1>
+                <p class="mt-2 text-gray-600">Detailed view of screening #{{ screening.id }}</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'aml_system:screening_update' screening.id %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                    </svg>
+                    Edit Screening
+                </a>
+                <a href="{% url 'aml_system:screening' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Screenings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Screening Overview -->
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Screening Overview</h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Screening ID</label>
+                            <p class="text-lg font-semibold text-gray-900">#{{ screening.id }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Screening Type</label>
+                            <p class="text-lg text-gray-900">{{ screening.screening_type|title }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Status</label>
+                            <div class="mt-1">
+                                {% if screening.status == 'pending' %}
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Pending
+                                    </span>
+                                {% elif screening.status == 'in_progress' %}
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
+                                        <svg class="w-4 h-4 mr-2 animate-spin" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        In Progress
+                                    </span>
+                                {% elif screening.status == 'completed' %}
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
+                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Completed
+                                    </span>
+                                {% elif screening.status == 'flagged' %}
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">
+                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Flagged
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Risk Score</label>
+                            <div class="mt-1">
+                                {% if screening.risk_score <= 30 %}
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
+                                        <div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                                        {{ screening.risk_score }}% Low Risk
+                                    </span>
+                                {% elif screening.risk_score <= 70 %}
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                        <div class="w-3 h-3 bg-yellow-400 rounded-full mr-2"></div>
+                                        {{ screening.risk_score }}% Medium Risk
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">
+                                        <div class="w-3 h-3 bg-red-400 rounded-full mr-2"></div>
+                                        {{ screening.risk_score }}% High Risk
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Priority</label>
+                            <p class="text-lg text-gray-900">{{ screening.priority|title }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Created Date</label>
+                            <p class="text-lg text-gray-900">{{ screening.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Last Updated</label>
+                            <p class="text-lg text-gray-900">{{ screening.updated_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if screening.notes %}
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-500 mb-2">Notes</label>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-900">{{ screening.notes|linebreaks }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Screening Results -->
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Screening Results</h2>
+                </div>
+                <div class="p-6">
+                    {% if screening.screeningresult_set.exists %}
+                        <div class="space-y-4">
+                            {% for result in screening.screeningresult_set.all %}
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="text-sm font-medium text-gray-900">{{ result.watchlist_entry.watchlist.name }}</h3>
+                                        {% if result.is_match %}
+                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Match Found
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                No Match
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-sm text-gray-600">Match Score: {{ result.match_score }}%</p>
+                                    {% if result.notes %}
+                                        <p class="text-sm text-gray-600 mt-2">{{ result.notes }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-8">
+                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No screening results yet</h3>
+                            <p class="text-gray-500">Screening results will appear here once the screening process is completed.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Entity Information -->
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Entity Information</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Name</label>
+                            <p class="text-sm font-semibold text-gray-900">{{ screening.entity.name }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Type</label>
+                            <p class="text-sm text-gray-900">{{ screening.entity.entity_type|title }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Nationality</label>
+                            <p class="text-sm text-gray-900">{{ screening.entity.nationality }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Country of Residence</label>
+                            <p class="text-sm text-gray-900">{{ screening.entity.country_of_residence }}</p>
+                        </div>
+                        {% if screening.entity.date_of_birth %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Date of Birth/Incorporation</label>
+                            <p class="text-sm text-gray-900">{{ screening.entity.date_of_birth|date:"M d, Y" }}</p>
+                        </div>
+                        {% endif %}
+                        {% if screening.entity.identification_number %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Identification Number</label>
+                            <p class="text-sm text-gray-900">{{ screening.entity.identification_number }}</p>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Risk Level</label>
+                            <div class="mt-1">
+                                {% if screening.entity.risk_level == 'low' %}
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                        Low Risk
+                                    </span>
+                                {% elif screening.entity.risk_level == 'medium' %}
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                        Medium Risk
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                        High Risk
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Quick Actions</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-3">
+                        <a href="{% url 'aml_system:screening_update' screening.id %}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                            </svg>
+                            Edit Screening
+                        </a>
+                        <a href="{% url 'aml_system:screening_create' %}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            New Screening
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

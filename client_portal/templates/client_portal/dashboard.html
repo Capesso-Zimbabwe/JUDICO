@@ -1,0 +1,526 @@
+{% extends 'client_portal/base.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block header %}Client Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-custom-orange {
+        background-color: #f58020;
+    }
+    .text-custom-orange {
+        color: #f58020;
+    }
+    .border-custom-orange {
+        border-color: #f58020;
+    }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<!-- Welcome Note with Time-based Greeting -->
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-4 mb-4">
+    <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0">
+            <svg class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        </div>
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">
+                {% now "H" as current_hour %}
+                {% if current_hour|add:"0" < 12 %}
+                    Good morning
+                {% elif current_hour|add:"0" < 17 %}
+                    Good afternoon
+                {% else %}
+                    Good evening
+                {% endif %}
+                {{ user.first_name|default:user.username | title }}!
+            </h2>
+            <p class="text-sm text-gray-600">Welcome to your Client Dashboard</p>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<div class="bg-white border-b border-gray-200">
+    <div class="px-4">
+        <div class="flex space-x-8">
+            <a href="{% url 'client_portal:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">
+                Dashboard
+            </a>
+            <a href="{% url 'client_portal:tasks' %}" class="{% if request.resolver_match.url_name == 'tasks' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">
+                Tasks
+            </a>
+            <a href="{% url 'client_portal:documents' %}" class="{% if request.resolver_match.url_name == 'documents' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">
+                Documents
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="bg-white h-screen">
+    <div class="p-6">
+    
+    <!-- Client Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white rounded-lg shadow p-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700">My Tasks</h3>
+                    <p class="text-xl font-bold">{{ task_counts.total|default:0 }}</p>
+                </div>
+                <div class="bg-blue-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700">Active Projects</h3>
+                    <p class="text-xl font-bold">{{ project_counts.active|default:3 }}</p>
+                </div>
+                <div class="bg-green-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700">Pending Actions</h3>
+                    <p class="text-xl font-bold">{{ task_counts.pending|default:2 }}</p>
+                </div>
+                <div class="bg-yellow-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700">My Documents</h3>
+                    <p class="text-xl font-bold">{{ document_count|default:8 }}</p>
+                </div>
+                <div class="bg-purple-100 p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <!-- Task Status Chart -->
+        <div class="bg-white rounded-lg shadow p-3">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">My Task Status</h3>
+            <div class="h-64">
+                <canvas id="taskStatusChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Case Progress Chart -->
+        <div class="bg-white rounded-lg shadow p-3">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">My Case Progress (Last 6 Months)</h3>
+            <div class="h-64">
+                <canvas id="caseProgressChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Second Row of Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <!-- Project Timeline Chart -->
+        <div class="bg-white rounded-lg shadow p-3">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">Project Timeline</h3>
+            <div class="h-64">
+                <canvas id="projectTimelineChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Document Types Chart -->
+        <div class="bg-white rounded-lg shadow p-3">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">My Document Types</h3>
+            <div class="h-64">
+                <canvas id="myDocumentTypesChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Third Row of Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <!-- Billing Status Chart -->
+        <div class="bg-white rounded-lg shadow p-3">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">Billing Status</h3>
+            <div class="h-64">
+                <canvas id="billingStatusChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Communication Timeline Chart -->
+        <div class="bg-white rounded-lg shadow p-3">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">Communication Timeline (Last 6 Months)</h3>
+            <div class="h-64">
+                <canvas id="communicationTimelineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Recent Tasks -->
+        <div class="bg-white rounded-lg shadow p-3">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-semibold text-gray-700">Recent Tasks</h3>
+                <a href="{% url 'client_portal:tasks' %}" class="text-blue-600 hover:text-blue-800 text-xs font-medium">View All</a>
+            </div>
+            {% if recent_tasks %}
+                <ul class="divide-y divide-gray-200">
+                    {% for task in recent_tasks %}
+                    <li class="py-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <p class="text-xs font-medium text-gray-900">{{ task.title }}</p>
+                                <p class="text-xs text-gray-500">{{ task.description|truncatechars:30 }}</p>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="inline-flex px-1 py-0.5 text-xs font-semibold rounded 
+                                        {% if task.status == 'completed' %}bg-green-100 text-green-800
+                                        {% elif task.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                        {% elif task.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ task.get_status_display }}
+                                    </span>
+                                    {% if task.due_date %}
+                                        <span class="text-xs text-gray-400">{{ task.due_date|date:"M d" }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <a href="{% url 'client_portal:task_detail' task.id %}" class="text-blue-600 hover:text-blue-900 text-xs">View</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center text-gray-500 py-4">
+                    <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <p class="mt-1 text-xs text-gray-500">No tasks assigned</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Recent Documents -->
+        <div class="bg-white rounded-lg shadow p-3">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-semibold text-gray-700">Recent Documents</h3>
+                <a href="{% url 'client_portal:documents' %}" class="text-blue-600 hover:text-blue-800 text-xs font-medium">View All</a>
+            </div>
+
+            {% if recent_documents %}
+                <ul class="divide-y divide-gray-200">
+                    {% for document in recent_documents %}
+                    <li class="py-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center flex-1">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <div class="ml-2">
+                                    <p class="text-xs font-medium text-gray-900">{{ document.title }}</p>
+                                    <p class="text-xs text-gray-500">{{ document.uploaded_at|date:"M d, Y" }}</p>
+                                </div>
+                            </div>
+                            <a href="{{ document.document.url }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs">Download</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center text-gray-500 py-4">
+                    <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p class="mt-1 text-xs text-gray-500">No documents uploaded</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Case Progress Chart
+const caseProgressCtx = document.getElementById('caseProgressChart').getContext('2d');
+const caseProgressChart = new Chart(caseProgressCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Case Milestones Completed',
+            data: [2, 4, 3, 6, 5, 8],
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Milestones Completed'
+                },
+                ticks: {
+                    font: {
+                        size: 10
+                    }
+                }
+            },
+            x: {
+                ticks: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Task Status Distribution Chart
+const taskStatusCtx = document.getElementById('taskStatusChart').getContext('2d');
+const taskStatusChart = new Chart(taskStatusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Completed', 'In Progress', 'Pending', 'Overdue'],
+        datasets: [{
+            data: [45, 30, 20, 5],
+            backgroundColor: [
+                '#34D399', // Green for Completed
+                '#60A5FA', // Blue for In Progress
+                '#FCD34D', // Yellow for Pending
+                '#F87171'  // Red for Overdue
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Project Timeline Chart
+const projectTimelineCtx = document.getElementById('projectTimelineChart').getContext('2d');
+const projectTimelineChart = new Chart(projectTimelineCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Contract Review', 'Legal Research', 'Court Filing', 'Negotiation'],
+        datasets: [{
+            label: 'Days Remaining',
+            data: [15, 8, 22, 5],
+            backgroundColor: [
+                '#34D399', // Green
+                '#60A5FA', // Blue
+                '#FCD34D', // Yellow
+                '#A78BFA'  // Purple
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Days'
+                },
+                ticks: {
+                    font: {
+                        size: 10
+                    }
+                }
+            },
+            x: {
+                ticks: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// My Document Types Chart
+const myDocumentTypesCtx = document.getElementById('myDocumentTypesChart').getContext('2d');
+const myDocumentTypesChart = new Chart(myDocumentTypesCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Contracts', 'Correspondence', 'Legal Forms', 'Evidence'],
+        datasets: [{
+            data: [35, 25, 25, 15],
+            backgroundColor: [
+                '#60A5FA', // Blue
+                '#34D399', // Green
+                '#FCD34D', // Yellow
+                '#A78BFA'  // Purple
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Billing Status Chart
+const billingStatusCtx = document.getElementById('billingStatusChart').getContext('2d');
+const billingStatusChart = new Chart(billingStatusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Paid', 'Pending', 'Overdue', 'Draft'],
+        datasets: [{
+            data: [65, 20, 10, 5],
+            backgroundColor: [
+                '#34D399', // Green for Paid
+                '#60A5FA', // Blue for Pending
+                '#F87171', // Red for Overdue
+                '#FCD34D'  // Yellow for Draft
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Communication Timeline Chart
+const communicationTimelineCtx = document.getElementById('communicationTimelineChart').getContext('2d');
+const communicationTimelineChart = new Chart(communicationTimelineCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Messages Exchanged',
+            data: [12, 18, 15, 22, 19, 25],
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Messages'
+                },
+                ticks: {
+                    font: {
+                        size: 10
+                    }
+                }
+            },
+            x: {
+                ticks: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 10
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}

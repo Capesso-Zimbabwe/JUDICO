@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Compliance - Reports{% endblock %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<div class="nav-bar -mt-3 -ml-3 mb-4 w-[calc(100%+1.5rem)] bg-white border-b border-gray-200">
+    <div class="flex space-x-4 px-6 py-2">
+        <a href="{% url 'compliance:dashboard' %}" 
+           class="nav-item{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+            Dashboard
+        </a>
+        <a href="{% url 'compliance:requirements' %}" 
+           class="nav-item{% if request.resolver_match.url_name == 'requirements' %} active{% endif %}">
+            Requirements
+        </a>
+        <a href="{% url 'compliance:audits' %}" 
+           class="nav-item{% if request.resolver_match.url_name == 'audits' %} active{% endif %}">
+            Audits
+        </a>
+        <a href="{% url 'compliance:reports' %}" 
+           class="nav-item{% if request.resolver_match.url_name == 'reports' %} active{% endif %}">
+            Reports
+        </a>
+    </div>
+</div>
+
+<!-- Reports Header -->
+<div class="p-8 bg-white shadow rounded-lg">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Compliance Reports</h1>
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+            Generate Report
+        </button>
+    </div>
+
+    <!-- Reports Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% if reports %}
+            {% for report in reports %}
+            <div class="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ report.title }}</h3>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full
+                            {% if report.status == 'Generated' %}bg-green-100 text-green-800
+                            {% elif report.status == 'Processing' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ report.status }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">{{ report.description }}</p>
+                    <div class="text-sm text-gray-500 space-y-2">
+                        <p><span class="font-medium">Type:</span> {{ report.type }}</p>
+                        <p><span class="font-medium">Generated:</span> {{ report.generated_date }}</p>
+                        <p><span class="font-medium">Period:</span> {{ report.period }}</p>
+                    </div>
+                    <div class="mt-4 flex space-x-2">
+                        <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded">
+                            View
+                        </button>
+                        <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded">
+                            Download
+                        </button>
+                        <button class="text-red-600 hover:text-red-900 py-2 px-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-span-full text-center py-8 text-gray-500">
+                <p>No reports available. Click 'Generate Report' to create one.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

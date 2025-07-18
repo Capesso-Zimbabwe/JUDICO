@@ -1,0 +1,30 @@
+/* Global font size settings */
+body {
+    font-size: 0.75rem !important; /* text-xs */
+}
+
+/* Apply to all common text elements */
+p, span, div, a, button, input, select, textarea, label, li {
+    font-size: 0.75rem !important;
+}
+
+/* Adjusted heading sizes */
+h1 { font-size: 1.5rem !important; }
+h2 { font-size: 1.25rem !important; }
+h3 { font-size: 1rem !important; }
+h4, h5, h6 { font-size: 0.875rem !important; }
+
+/* Table styles */
+table, th, td {
+    font-size: 0.75rem !important;
+}
+
+/* Form elements */
+input, select, textarea, button {
+    font-size: 0.75rem !important;
+}
+
+/* Chart components */
+.chart-container {
+    font-size: 0.75rem !important;
+}

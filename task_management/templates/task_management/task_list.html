@@ -1,0 +1,50 @@
+{% extends "task_management/base.html" %}
+
+{% block title %}JUDICO - Task Management{% endblock %}
+
+{% block header_title %}Task Management - Task List{% endblock %}
+
+{% block task_content %}
+<!-- Task Header with proper spacing -->
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-2xl font-semibold text-gray-900">{% if status %}{{ status|title }} {% endif %}Tasks</h1>
+    <a href="{% url 'task_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        Add New Task
+    </a>
+</div>
+
+<!-- Stats Section -->
+<div class="p-8 mt-5 bg-gray-50 p-5 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Tasks Card -->
+        <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="text-gray-500 text-sm font-medium mb-2">Total Tasks</h3>
+            <p class="text-3xl font-semibold text-gray-900">{{ tasks|length }}</p>
+        </div>
+
+        <!-- Pending Tasks Card -->
+        <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="text-gray-500 text-sm font-medium mb-2">Pending Tasks</h3>
+            <p class="text-3xl font-semibold text-gray-900">{{ pending_tasks }}</p>
+        </div>
+
+        <!-- In Progress Tasks Card -->
+        <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="text-gray-500 text-sm font-medium mb-2">In Progress</h3>
+            <p class="text-3xl font-semibold text-gray-900">{{ in_progress_tasks }}</p>
+        </div>
+
+        <!-- Completed Tasks Card -->
+        <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="text-gray-500 text-sm font-medium mb-2">Completed Tasks</h3>
+            <p class="text-3xl font-semibold text-gray-900">{{ completed_tasks }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Task Table with consistent styling -->
+{% include "task_management/task_table_partial.html" %}
+{% endblock %}

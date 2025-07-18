@@ -1,0 +1,77 @@
+{% extends 'governance/base.html' %}
+
+{% block title %}Governance - Policies{% endblock %}
+
+{% block governance_content %}
+
+
+<!-- Policies Content -->
+<div class="p-8">
+    <div class="mb-6 flex justify-between items-center">
+        <h1 class="text-2xl font-semibold text-gray-900">Policies</h1>
+        <a href="{% url 'governance:create_policy' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Add New Policy
+        </a>
+    </div>
+
+    <!-- Policies List -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Policy Name</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for policy in policies %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">
+                            <a href="{% url 'governance:view_policy' policy.id %}" class="hover:text-blue-600">{{ policy.title }}</a>
+                        </div>
+                        {% if policy.description %}
+                        <div class="text-sm text-gray-500">{{ policy.description|truncatechars:50 }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">{{ policy.get_category_display }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">{{ policy.updated_at|date:"M d, Y" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if policy.status == 'active' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ policy.get_status_display }}</span>
+                        {% elif policy.status == 'draft' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ policy.get_status_display }}</span>
+                        {% elif policy.status == 'inactive' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{{ policy.get_status_display }}</span>
+                        {% else %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ policy.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="{% url 'governance:view_policy' policy.id %}" class="text-green-600 hover:text-green-900 mr-3">View</a>
+                        <a href="{% url 'governance:edit_policy' policy.id %}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
+                        <a href="{% url 'governance:delete_policy' policy.id %}" class="text-red-600 hover:text-red-900">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                        No policies found. <a href="{% url 'governance:create_policy' %}" class="text-blue-600 hover:text-blue-900">Create your first policy</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

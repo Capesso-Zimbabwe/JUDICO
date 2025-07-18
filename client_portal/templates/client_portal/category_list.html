@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Categories - Document Repository{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-custom-orange { background-color: #f58020; }
+    .text-custom-orange { color: #f58020; }
+    .border-custom-orange { border-color: #f58020; }
+    .hover\:bg-custom-orange:hover { background-color: #f58020; }
+    .category-card {
+        transition: all 0.3s ease;
+        transform: translateY(0);
+    }
+    
+    .category-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Clean Header -->
+    <div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="bg-custom-orange p-3 rounded-lg">
+                    <i class="fas fa-layer-group text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Document Categories</h1>
+                    <p class="text-gray-600 mt-1 text-sm">{{ categories.count }} categories available</p>
+                </div>
+            </div>
+            <div class="flex space-x-3">
+                <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-search mr-2"></i>Search
+                </button>
+                <button class="bg-custom-orange hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>Add Category
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clean Categories Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {% for category in categories %}
+        <div class="category-card bg-white rounded-lg shadow-sm border p-4 group">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="bg-gray-100 p-2 rounded-lg">
+                    <i class="{{ category.icon }} text-lg text-gray-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-base font-semibold text-gray-900">{{ category.name }}</h3>
+                    <p class="text-sm text-gray-500 mt-1">{{ category.description|truncatechars:30 }}</p>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 transition-colors p-1">
+                    <i class="fas fa-ellipsis-v text-sm"></i>
+                </button>
+            </div>
+            
+            <!-- Stats Section -->
+            <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                <div class="flex justify-between items-center">
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-custom-orange">{{ category.doc_count }}</div>
+                        <div class="text-xs text-gray-500">Documents</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-gray-600">{{ category.created_at|date:"M d" }}</div>
+                        <div class="text-xs text-gray-500">Created</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex space-x-2">
+                <a href="{% url 'client_portal:document_list' %}?category={{ category.id }}" 
+                   class="flex-1 bg-custom-orange hover:bg-opacity-90 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition duration-200">
+                    <i class="fas fa-folder-open mr-1"></i>View Files
+                </a>
+                <button class="bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 px-3 rounded-lg transition duration-200">
+                    <i class="fas fa-edit text-sm"></i>
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-8">
+            <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-folder-plus text-gray-400 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Categories Found</h3>
+            <p class="text-gray-600 mb-4">Get started by creating your first document category.</p>
+            <button class="bg-custom-orange hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                <i class="fas fa-plus mr-2"></i>Create Category
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

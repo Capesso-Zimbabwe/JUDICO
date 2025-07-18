@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="profile-creation">
+    <h1>Create Your Lawyer Profile</h1>
+    
+    <p>Please complete your profile information to continue.</p>
+    
+    <!-- This would be a form in a real implementation -->
+    <div class="form-placeholder">
+        <p>Form will be implemented here.</p>
+        <a href="{% url 'lawyer_portal:dashboard' %}" class="button">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

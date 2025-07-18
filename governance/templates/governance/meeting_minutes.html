@@ -1,0 +1,118 @@
+{% extends 'governance/base.html' %}
+
+{% block title %}Meeting Minutes - {{ meeting.title }} - Governance{% endblock %}
+
+{% block governance_content %}
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-semibold text-gray-900">Meeting Minutes</h1>
+            <p class="mt-1 text-sm text-gray-600">{{ meeting.title }} • {{ meeting.date|date:"F j, Y g:i A" }}</p>
+        </div>
+
+        <div class="bg-white shadow-sm rounded-lg">
+            <!-- Meeting Info -->
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <span class="font-medium text-gray-500">Meeting Type:</span>
+                        <span class="ml-2 text-gray-900">{{ meeting.get_meeting_type_display }}</span>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-500">Status:</span>
+                        <span class="ml-2">
+                            {% if meeting.status == 'scheduled' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{{ meeting.get_status_display }}</span>
+                            {% elif meeting.status == 'completed' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ meeting.get_status_display }}</span>
+                            {% elif meeting.status == 'cancelled' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{{ meeting.get_status_display }}</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{{ meeting.get_status_display }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-500">Duration:</span>
+                        <span class="ml-2 text-gray-900">{{ meeting.duration }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Minutes Form -->
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    <label for="minutes" class="block text-sm font-medium text-gray-700 mb-2">
+                        Meeting Minutes
+                    </label>
+                    <textarea 
+                        name="minutes" 
+                        id="minutes" 
+                        rows="20" 
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Enter meeting minutes, notes, decisions, and action items...">{{ meeting.minutes }}</textarea>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Include key discussion points, decisions made, action items, and any other relevant information from the meeting.
+                    </p>
+                </div>
+
+                <!-- Attendees Reference -->
+                {% if meeting.attendees.exists %}
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-900 mb-2">Meeting Attendees</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for attendee in meeting.attendees.all %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ attendee.get_full_name|default:attendee.username }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Agenda Reference -->
+                {% if meeting.agenda %}
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-900 mb-2">Meeting Agenda</h3>
+                    <div class="text-sm text-gray-700 whitespace-pre-line">{{ meeting.agenda }}</div>
+                </div>
+                {% endif %}
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'governance:view_meeting' meeting.id %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancel
+                    </a>
+                    <button type="submit" class="bg-blue-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Save Minutes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tips -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Tips for effective meeting minutes</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Record key decisions and the reasoning behind them</li>
+                            <li>Note action items with assigned owners and deadlines</li>
+                            <li>Capture important discussion points and concerns raised</li>
+                            <li>Include any follow-up meetings or next steps</li>
+                            <li>Keep notes objective and factual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

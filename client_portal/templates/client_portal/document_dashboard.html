@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Repository{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-custom-orange { background-color: #f58020; }
+    .text-custom-orange { color: #f58020; }
+    .border-custom-orange { border-color: #f58020; }
+    .hover\:bg-custom-orange:hover { background-color: #f58020; }
+    .document-card {
+        transition: all 0.3s ease;
+    }
+    .document-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .nav-tab {
+        transition: all 0.2s ease;
+    }
+    .nav-tab.active {
+        background-color: #f58020;
+        color: white;
+    }
+    .nav-tab:not(.active):hover {
+        background-color: #f3f4f6;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-custom-orange bg-opacity-10 p-3 rounded-lg">
+                    <i class="fas fa-folder-open text-custom-orange text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Document Repository</h1>
+                    <p class="text-gray-600 mt-1">Manage and access your legal documents</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-bell text-gray-400"></i>
+                        <span class="text-sm text-gray-600">Notifications</span>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-full w-10 h-10 flex items-center justify-center">
+                    <span class="text-sm font-medium text-gray-600">
+                        {% if user.is_authenticated %}
+                            {% if user.first_name and user.last_name %}
+                                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                            {% elif user.first_name %}
+                                {{ user.first_name|first|upper }}
+                            {% elif user.last_name %}
+                                {{ user.last_name|first|upper }}
+                            {% else %}
+                                {{ user.username|first|upper }}
+                            {% endif %}
+                        {% else %}
+                            U
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-white rounded-lg shadow-sm border mb-6">
+        <div class="flex border-b border-gray-200">
+            <button class="nav-tab active px-6 py-3 text-sm font-medium rounded-tl-lg" onclick="showTab('dashboard')">
+                <i class="fas fa-chart-bar mr-2"></i>Dashboard
+            </button>
+            <button class="nav-tab px-6 py-3 text-sm font-medium text-gray-600" onclick="showTab('documents')">
+                <i class="fas fa-file-alt mr-2"></i>Documents
+            </button>
+            <button class="nav-tab px-6 py-3 text-sm font-medium text-gray-600" onclick="showTab('categories')">
+                <i class="fas fa-layer-group mr-2"></i>Categories
+            </button>
+            <div class="ml-auto flex items-center px-6 py-3">
+                <button class="bg-custom-orange hover:bg-opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                    <i class="fas fa-upload mr-2"></i>Upload Document
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Tab Content -->
+    <div id="dashboard-content" class="tab-content">
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow-sm border p-4 document-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700">Total Documents</h3>
+                        <p class="text-2xl font-bold text-gray-900">156</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-file-alt text-blue-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border p-4 document-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700">Categories</h3>
+                        <p class="text-2xl font-bold text-gray-900">12</p>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-layer-group text-yellow-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border p-4 document-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700">Recent Uploads</h3>
+                        <p class="text-2xl font-bold text-gray-900">23</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-upload text-green-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border p-4 document-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700">Storage Used</h3>
+                        <p class="text-2xl font-bold text-gray-900">2.4 GB</p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-hdd text-purple-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Document Upload Trends Chart -->
+            <div class="bg-white rounded-lg shadow-sm border p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Document Upload Trends (Last 6 Months)</h3>
+                <div class="h-64">
+                    <canvas id="uploadTrendsChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Document Types Distribution Chart -->
+            <div class="bg-white rounded-lg shadow-sm border p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Document Types Distribution</h3>
+                <div class="h-64">
+                    <canvas id="documentTypesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row of Charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Storage Usage Chart -->
+            <div class="bg-white rounded-lg shadow-sm border p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Storage Usage by Category</h3>
+                <div class="h-64">
+                    <canvas id="storageChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Access Frequency Chart -->
+            <div class="bg-white rounded-lg shadow-sm border p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Document Access Frequency</h3>
+                <div class="h-64">
+                    <canvas id="accessChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents Tab Content -->
+    <div id="documents-content" class="tab-content hidden">
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Document Management</h3>
+            <p class="text-gray-600">Document list and management features will be displayed here.</p>
+            <div class="mt-4">
+                <a href="{% url 'client_portal:document_list' %}" class="bg-custom-orange hover:bg-opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                    <i class="fas fa-list mr-2"></i>View All Documents
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Tab Content -->
+    <div id="categories-content" class="tab-content hidden">
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Document Categories</h3>
+            <p class="text-gray-600">Category management features will be displayed here.</p>
+            <div class="mt-4">
+                <a href="{% url 'client_portal:category_list' %}" class="bg-custom-orange hover:bg-opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                    <i class="fas fa-layer-group mr-2"></i>View All Categories
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab functionality
+function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+        tab.classList.add('text-gray-600');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-content').classList.remove('hidden');
+    
+    // Add active class to selected tab
+    event.target.classList.add('active');
+    event.target.classList.remove('text-gray-600');
+}
+
+// Chart.js initialization
+document.addEventListener('DOMContentLoaded', function() {
+    // Document Upload Trends Chart
+    const uploadTrendsCtx = document.getElementById('uploadTrendsChart').getContext('2d');
+    const uploadTrendsChart = new Chart(uploadTrendsCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Documents Uploaded',
+                data: [15, 23, 18, 32, 28, 35],
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+    
+    // Document Types Distribution Chart
+    const documentTypesCtx = document.getElementById('documentTypesChart').getContext('2d');
+    const documentTypesChart = new Chart(documentTypesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['PDF', 'Word', 'Excel', 'Images', 'Others'],
+            datasets: [{
+                data: [45, 25, 15, 10, 5],
+                backgroundColor: ['#3B82F6', '#34D399', '#FBBF24', '#F87171', '#8B5CF6'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+    
+    // Storage Usage Chart
+    const storageCtx = document.getElementById('storageChart').getContext('2d');
+    const storageChart = new Chart(storageCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Legal Docs', 'Contracts', 'Reports', 'Images', 'Archives'],
+            datasets: [{
+                label: 'Storage (MB)',
+                data: [850, 620, 340, 280, 150],
+                backgroundColor: '#f58020',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Access Frequency Chart
+    const accessCtx = document.getElementById('accessChart').getContext('2d');
+    const accessChart = new Chart(accessCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Daily', 'Weekly', 'Monthly', 'Rarely'],
+            datasets: [{
+                data: [35, 25, 25, 15],
+                backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#6B7280'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

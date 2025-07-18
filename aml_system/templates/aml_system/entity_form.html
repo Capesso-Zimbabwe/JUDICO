@@ -1,0 +1,231 @@
+{% extends 'aml_system/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Entity{% else %}Create New Entity{% endif %} - AML System{% endblock %}
+
+{% block aml_content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">
+                    {% if form.instance.pk %}
+                        Edit Entity: {{ form.instance.name }}
+                    {% else %}
+                        Create New Entity
+                    {% endif %}
+                </h1>
+                <p class="mt-2 text-gray-600">
+                    {% if form.instance.pk %}
+                        Update entity information in the AML screening system
+                    {% else %}
+                        Add a new entity to the AML screening system
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{% url 'aml_system:screening' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Screenings
+            </a>
+        </div>
+    </div>
+
+    <!-- Entity Form -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900">Entity Information</h2>
+            <p class="mt-1 text-sm text-gray-500">
+                {% if form.instance.pk %}
+                    Update the entity details below
+                {% else %}
+                    Fill in the details below to create a new entity
+                {% endif %}
+            </p>
+        </div>
+        
+        <form method="post" class="p-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Entity Name -->
+                <div class="md:col-span-2">
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.name.label }}
+                        {% if form.name.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.name.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Full legal name of the entity</p>
+                </div>
+
+                <!-- Entity Type -->
+                <div>
+                    <label for="{{ form.entity_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.entity_type.label }}
+                        {% if form.entity_type.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.entity_type }}
+                    {% if form.entity_type.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.entity_type.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Date of Birth / Incorporation -->
+                <div>
+                    <label for="{{ form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.date_of_birth.label }}
+                        {% if form.date_of_birth.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.date_of_birth }}
+                    {% if form.date_of_birth.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.date_of_birth.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Date of birth for individuals or incorporation date for organizations</p>
+                </div>
+
+                <!-- Nationality -->
+                <div>
+                    <label for="{{ form.nationality.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.nationality.label }}
+                        {% if form.nationality.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.nationality }}
+                    {% if form.nationality.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.nationality.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Country of Residence -->
+                <div>
+                    <label for="{{ form.country_of_residence.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.country_of_residence.label }}
+                        {% if form.country_of_residence.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.country_of_residence }}
+                    {% if form.country_of_residence.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.country_of_residence.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Identification Number -->
+                <div>
+                    <label for="{{ form.identification_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.identification_number.label }}
+                        {% if form.identification_number.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.identification_number }}
+                    {% if form.identification_number.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.identification_number.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Passport number, national ID, or company registration number</p>
+                </div>
+
+                <!-- Risk Level -->
+                <div>
+                    <label for="{{ form.risk_level.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.risk_level.label }}
+                        {% if form.risk_level.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.risk_level }}
+                    {% if form.risk_level.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.risk_level.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Address -->
+                <div class="md:col-span-2">
+                    <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.address.label }}
+                        {% if form.address.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.address.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Full address including street, city, state/province, and postal code</p>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="md:col-span-2">
+                    <label for="{{ form.additional_info.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.additional_info.label }}
+                        {% if form.additional_info.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.additional_info }}
+                    {% if form.additional_info.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.additional_info.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Any additional information relevant for screening purposes</p>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="mt-8 flex items-center justify-end space-x-4">
+                <a href="{% url 'aml_system:screening' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    {% if form.instance.pk %}
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                        </svg>
+                        Update Entity
+                    {% else %}
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Create Entity
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Help Section -->
+    <div class="mt-8 bg-green-50 border border-green-200 rounded-lg p-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-green-800">Entity Management Guidelines</h3>
+                <div class="mt-2 text-sm text-green-700">
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Ensure all information is accurate and up-to-date</li>
+                        <li>Use official names and identification numbers</li>
+                        <li>Select the appropriate entity type (Individual, Organization, etc.)</li>
+                        <li>Provide complete address information for better screening accuracy</li>
+                        {% if not form.instance.pk %}
+                            <li>After creating the entity, you can proceed to create a screening</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'client_management/base.html' %}
+
+{% block client_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <h1 class="text-xs">Client List</h1>
+    <a href="{% url 'client_management:client_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Client
+    </a>
+</div>
+{% endblock %}
+
+{% block client_content %}
+<!-- Client Management Table -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="bg-gray-600 px-6 py-4">
+        <h6 class="text-white font-semibold text-xs m-0">All Clients</h6>
+    </div>
+    <div class="p-0">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="clientsTable">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Client Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Contact Person</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Phone</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Assigned Lawyer</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for client in clients %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-2 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span class="text-blue-600 font-medium text-sm">{{ client.name|first|upper }}</span>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-xs font-medium text-gray-900">
+                                        <a href="{% url 'client_management:client_detail' client.id %}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">{{ client.name }}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{{ client.contact_person }}</td>
+                        <td class="px-6 py-2 whitespace-nowrap text-xs text-gray-500">{{ client.email }}</td>
+                        <td class="px-6 py-2 whitespace-nowrap text-xs text-gray-900">{{ client.phone }}</td>
+                         <td class="px-6 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {% if client.assigned_lawyer %}
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                                            <span class="text-green-600 font-medium text-xs">{{ client.assigned_lawyer.get_full_name|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <span class="text-xs font-medium text-gray-900">{{ client.assigned_lawyer.get_full_name }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Not Assigned
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-2 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {% if client.is_active %}
+                                    Active
+                                {% else %}
+                                    Inactive
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-2 whitespace-nowrap text-xs font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'client_management:client_update' client.id %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    Edit
+                                </a>
+                                <a href="{% url 'client_management:client_delete' client.id %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                                    <i class="fas fa-trash mr-1"></i>
+                                    Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
+                                <p class="text-xs font-medium">No clients found</p>
+                                <p class="text-xs">Get started by adding your first client.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- DataTables Script -->
+<script>
+    $(document).ready(function() {
+        $('#clientsTable').DataTable();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Client Management{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'client_management/css/client_styles.css' %}">
+{% endblock %}
+
+{% block extra_js %}{% endblock %}
+
+{% block header_title %}Client Management - Dashboard{% endblock %}
+
+{% block content %}
+<!-- Add the navigation header with the same style as task management -->
+<div class="nav-bar -mt-3 -ml-3 mb-4 w-[calc(100%+1.5rem)]">
+    <a href="{% url 'client_management:client_dashboard' %}" class="nav-item{% if request.path == '/client/dashboard/' %} active{% endif %}">
+        Dashboard
+    </a>
+    <a href="{% url 'client_management:client_list' %}" class="nav-item{% if request.path == '/client/clients/' %} active{% endif %}">
+        All Clients
+    </a>
+    <a href="{% url 'client_management:client_create' %}" class="nav-item{% if request.path == '/client/clients/create/' %} active{% endif %}">
+        Add Client
+    </a>
+</div>
+<div class="bg-white rounded-lg shadow p-6">
+    {% block client_content %}{% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends 'client_portal/base.html' %}
+
+{% block page_title %}My Tasks{% endblock %}
+{% block header %}My Tasks{% endblock %}
+
+{% block main_content %}
+<div class="space-y-6">
+    <!-- Header Section -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">My Tasks</h1>
+            <p class="text-gray-600">Track and manage your assigned tasks</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <!-- Filter Dropdown -->
+            <div class="relative">
+                <select id="statusFilter" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <!-- Priority Filter -->
+            <div class="relative">
+                <select id="priorityFilter" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <option value="">All Priority</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Grid -->
+    {% if tasks %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="tasksGrid">
+            {% for task in tasks %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 task-card" 
+                 data-status="{{ task.status }}" data-priority="{{ task.priority }}">
+                <div class="p-6">
+                    <!-- Task Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ task.title }}</h3>
+                            <p class="text-gray-600 text-sm line-clamp-3">{{ task.description|truncatechars:100 }}</p>
+                        </div>
+                        <div class="ml-4 flex-shrink-0">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if task.priority == 'urgent' %}bg-red-100 text-red-800
+                                {% elif task.priority == 'high' %}bg-orange-100 text-orange-800
+                                {% elif task.priority == 'medium' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Task Details -->
+                    <div class="space-y-3">
+                        <!-- Status -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">Status:</span>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if task.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif task.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                {% elif task.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                        </div>
+
+                        <!-- Assigned Lawyer -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">Assigned to:</span>
+                            <span class="text-sm font-medium text-gray-900">{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</span>
+                        </div>
+
+                        <!-- Due Date -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">Due Date:</span>
+                            {% if task.due_date %}
+                                <span class="text-sm font-medium 
+                                    {% if task.due_date < today and task.status != 'completed' %}text-red-600
+                                    {% elif task.due_date <= next_week and task.status != 'completed' %}text-orange-600
+                                    {% else %}text-gray-900{% endif %}">
+                                    {{ task.due_date|date:"M d, Y" }}
+                                </span>
+                            {% else %}
+                                <span class="text-sm text-gray-400">No due date</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Created Date -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">Created:</span>
+                            <span class="text-sm text-gray-900">{{ task.created_at|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <a href="{% url 'client_portal:task_detail' task.id %}" 
+                           class="w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 inline-block">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg">
+            <div class="flex flex-1 justify-between sm:hidden">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</a>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ page_obj.paginator.count }}</span> results
+                    </p>
+                </div>
+                <div>
+                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                <span class="sr-only">Previous</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <span class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">{{ num }}</span>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <a href="?page={{ num }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                <span class="sr-only">Next</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No tasks assigned</h3>
+            <p class="mt-1 text-sm text-gray-500">You don't have any tasks assigned yet. Your lawyer will assign tasks as needed.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const statusFilter = document.getElementById('statusFilter');
+    const priorityFilter = document.getElementById('priorityFilter');
+    const taskCards = document.querySelectorAll('.task-card');
+
+    function filterTasks() {
+        const selectedStatus = statusFilter.value;
+        const selectedPriority = priorityFilter.value;
+
+        taskCards.forEach(card => {
+            const cardStatus = card.dataset.status;
+            const cardPriority = card.dataset.priority;
+            
+            const statusMatch = !selectedStatus || cardStatus === selectedStatus;
+            const priorityMatch = !selectedPriority || cardPriority === selectedPriority;
+            
+            if (statusMatch && priorityMatch) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    statusFilter.addEventListener('change', filterTasks);
+    priorityFilter.addEventListener('change', filterTasks);
+});
+</script>
+{% endblock %}

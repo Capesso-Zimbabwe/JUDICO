@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<div class="bg-white border-b border-gray-200">
+    <div class="px-8 py-4">
+        <div class="flex space-x-8">
+            <a href="{% url 'communication:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Dashboard</a>
+            <a href="{% url 'communication:messages' %}" class="{% if request.resolver_match.url_name == 'messages' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Messages</a>
+            <a href="{% url 'communication:notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Notifications</a>
+            <a href="{% url 'communication:settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Settings</a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="bg-gray-50 min-h-screen">
+    <div class="p-8">
+        {% block communication_content %}
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

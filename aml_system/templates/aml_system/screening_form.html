@@ -1,0 +1,171 @@
+{% extends 'aml_system/base.html' %}
+
+{% block aml_content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{{ title|default:"Create Screening" }}</h1>
+        <p class="mt-2 text-sm text-gray-600">Fill out the form below to create or update a screening.</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white shadow rounded-lg">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Screening Information</h3>
+            </div>
+            
+            <div class="px-6 py-4 space-y-6">
+                <!-- Entity Selection -->
+                <div>
+                    <label for="{{ form.entity.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.entity.label }}
+                        {% if form.entity.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.entity }}
+                    {% if form.entity.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.entity.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Select the entity to be screened.</p>
+                </div>
+
+                <!-- Screening Type -->
+                <div>
+                    <label for="{{ form.screening_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.screening_type.label }}
+                        {% if form.screening_type.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.screening_type }}
+                    {% if form.screening_type.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.screening_type.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Status -->
+                {% if form.status %}
+                <div>
+                    <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.status.label }}
+                        {% if form.status.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.status.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Risk Score -->
+                {% if form.risk_score %}
+                <div>
+                    <label for="{{ form.risk_score.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.risk_score.label }}
+                        {% if form.risk_score.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.risk_score }}
+                    {% if form.risk_score.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.risk_score.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Risk score from 0 to 100.</p>
+                </div>
+                {% endif %}
+
+                <!-- Priority -->
+                {% if form.priority %}
+                <div>
+                    <label for="{{ form.priority.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.priority.label }}
+                        {% if form.priority.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.priority }}
+                    {% if form.priority.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.priority.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Notes -->
+                {% if form.notes %}
+                <div>
+                    <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.notes.label }}
+                        {% if form.notes.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.notes.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Additional notes or comments about this screening.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Form Actions -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+                <a href="{% url 'aml_system:screening' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    {% if screening %}Update Screening{% else %}Create Screening{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Entity Creation Link -->
+    {% if not screening %}
+    <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600">
+            Don't see the entity you're looking for?
+            <a href="{% url 'aml_system:entity_create' %}" class="text-blue-600 hover:text-blue-800 font-medium">Create a new entity</a>
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Form styling */
+.form-control {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+select.form-control {
+    @apply bg-white;
+}
+
+textarea.form-control {
+    @apply resize-vertical;
+    min-height: 100px;
+}
+
+/* Apply form-control class to all form inputs */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    @apply form-control;
+}
+</style>
+{% endblock %}

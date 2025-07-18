@@ -1,0 +1,8 @@
+{% if daily_quote %}
+<div class="quote-container py-3 px-4 flex gap-2 items-center shadow-md text-xs text-gray-800 bg-gray-350">
+    <p class="quote-text italic font-bold">{{ daily_quote.text }}</p>
+    {% if daily_quote.author %}
+    <p class="quote-author text-right">— {{ daily_quote.author }}</p>
+    {% endif %}
+</div>
+{% endif %}

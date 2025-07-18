@@ -1,0 +1,30 @@
+{% extends 'client_management/base.html' %}
+
+{% block client_header %}
+<h1>Delete Client</h1>
+{% endblock %}
+
+{% block client_content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Confirm Deletion</h6>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">Warning!</h4>
+            <p>Are you sure you want to delete the client "{{ client.name }}"?</p>
+            <p>This action cannot be undone and will also delete all associated documents and data.</p>
+        </div>
+        
+        <form method="post" action="{% url 'client_management:client_delete' client.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Yes, Delete
+            </button>
+            <a href="{% url 'client_management:client_detail' client.id %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

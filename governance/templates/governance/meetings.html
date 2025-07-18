@@ -1,0 +1,175 @@
+{% extends 'governance/base.html' %}
+
+{% block title %}Governance - Meetings{% endblock %}
+
+{% block governance_content %}
+    <div class="mb-6 flex justify-between items-center">
+        <h1 class="text-2xl font-semibold text-gray-900">Meetings</h1>
+        <a href="{% url 'governance:create_meeting' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Schedule Meeting
+        </a>
+    </div>
+
+    <!-- Calendar View -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-medium text-gray-900">January 2024</h2>
+            <div class="flex space-x-2">
+                <button class="p-2 hover:bg-gray-100 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <button class="p-2 hover:bg-gray-100 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Calendar Grid -->
+        <div class="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">
+            <!-- Calendar Header -->
+            <div class="bg-gray-50 p-2 text-center text-sm font-medium text-gray-500">Sun</div>
+            <div class="bg-gray-50 p-2 text-center text-sm font-medium text-gray-500">Mon</div>
+            <div class="bg-gray-50 p-2 text-center text-sm font-medium text-gray-500">Tue</div>
+            <div class="bg-gray-50 p-2 text-center text-sm font-medium text-gray-500">Wed</div>
+            <div class="bg-gray-50 p-2 text-center text-sm font-medium text-gray-500">Thu</div>
+            <div class="bg-gray-50 p-2 text-center text-sm font-medium text-gray-500">Fri</div>
+            <div class="bg-gray-50 p-2 text-center text-sm font-medium text-gray-500">Sat</div>
+
+            <!-- Calendar Days -->
+            <!-- Example of a day with a meeting -->
+            <div class="bg-white p-2 min-h-[100px] hover:bg-gray-50">
+                <div class="text-sm text-gray-500">1</div>
+            </div>
+            <div class="bg-white p-2 min-h-[100px] hover:bg-gray-50">
+                <div class="text-sm text-gray-500">2</div>
+            </div>
+            <div class="bg-white p-2 min-h-[100px] hover:bg-gray-50">
+                <div class="text-sm text-gray-500">3</div>
+            </div>
+            <div class="bg-white p-2 min-h-[100px] hover:bg-gray-50">
+                <div class="text-sm text-gray-500">4</div>
+                <div class="mt-1 p-1 text-xs bg-blue-100 text-blue-700 rounded">
+                    10:00 AM - Board Meeting
+                </div>
+            </div>
+            <!-- Continue with remaining days -->
+        </div>
+    </div>
+
+    <!-- Upcoming Meetings List -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900">Upcoming Meetings</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for meeting in upcoming_meetings %}
+            <div class="p-6 hover:bg-gray-50">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-base font-medium text-gray-900">{{ meeting.title }}</h3>
+                        <p class="mt-1 text-sm text-gray-500">{{ meeting.description|truncatewords:20 }}</p>
+                        <div class="mt-2 flex items-center text-sm text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {{ meeting.date|date:"F j, Y g:i A" }}
+                            {% if meeting.location %}
+                                <span class="ml-2">• {{ meeting.location }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="mt-1 flex items-center text-sm text-gray-500">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ meeting.meeting_type }}-100 text-{{ meeting.meeting_type }}-800">
+                                {{ meeting.get_meeting_type_display }}
+                            </span>
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ meeting.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        {% if meeting.virtual_link %}
+                            <a href="{{ meeting.virtual_link }}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-sm">Join</a>
+                        {% endif %}
+                        <a href="{% url 'governance:view_meeting' meeting.id %}" class="text-gray-600 hover:text-gray-800 font-medium text-sm">Details</a>
+                        <a href="{% url 'governance:edit_meeting' meeting.id %}" class="text-gray-600 hover:text-gray-800 font-medium text-sm">Edit</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-6 text-center text-gray-500">
+                <p>No upcoming meetings scheduled.</p>
+                <a href="{% url 'governance:create_meeting' %}" class="mt-2 inline-block text-blue-600 hover:text-blue-800 font-medium">Schedule your first meeting</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- All Meetings List -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900">All Meetings</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meeting</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for meeting in all_meetings %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ meeting.title }}</div>
+                                <div class="text-sm text-gray-500">{{ meeting.description|truncatewords:10 }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ meeting.get_meeting_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ meeting.date|date:"M j, Y g:i A" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if meeting.status == 'scheduled' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{{ meeting.get_status_display }}</span>
+                            {% elif meeting.status == 'completed' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ meeting.get_status_display }}</span>
+                            {% elif meeting.status == 'cancelled' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{{ meeting.get_status_display }}</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{{ meeting.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'governance:view_meeting' meeting.id %}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                            <a href="{% url 'governance:edit_meeting' meeting.id %}" class="text-green-600 hover:text-green-900 mr-3">Edit</a>
+                            <a href="{% url 'governance:delete_meeting' meeting.id %}" class="text-red-600 hover:text-red-900">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            No meetings found. <a href="{% url 'governance:create_meeting' %}" class="text-blue-600 hover:text-blue-800 font-medium">Schedule your first meeting</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

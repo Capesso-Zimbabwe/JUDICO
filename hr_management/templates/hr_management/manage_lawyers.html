@@ -1,0 +1,50 @@
+{% extends 'hr_management/base.html' %}
+
+{% block title %}Manage Lawyers{% endblock %}
+
+{% block hr_content %}
+<div class="p-4 bg-white rounded-lg shadow">
+    <h2 class="text-xl font-semibold mb-4">Manage Lawyers</h2>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for user in users %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ user.get_full_name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ user.email }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs">
+                        {% if user.id in lawyer_users %}
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lawyer</span>
+                        {% else %}
+                            <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Regular User</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs">
+                        <a href="{% url 'hr_management:toggle_lawyer' user.id %}" class="text-blue-600 hover:underline">
+                            {% if user.id in lawyer_users %}
+                                Remove Lawyer Status
+                            {% else %}
+                                Make Lawyer
+                            {% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-6 py-4 text-center text-xs text-gray-500">No users found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

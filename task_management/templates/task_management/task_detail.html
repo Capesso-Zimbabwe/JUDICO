@@ -1,0 +1,115 @@
+{% extends "task_management/base.html" %}
+
+{% block header_title %}Task Management - Task Details{% endblock %}
+
+{% block task_content %}
+<div class="bg-white rounded-lg shadow p-4">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Task Details</h2>
+        <div class="flex space-x-2">
+            <a href="{% url 'task_update' task.id %}" class="bg-custom-orange text-white px-3 py-1 rounded text-xs hover:bg-opacity-90">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit
+            </a>
+            <a href="{% url 'task_delete' task.id %}" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete
+            </a>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Task Information -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Task Information</h3>
+            
+            <div class="mb-3">
+                <h4 class="text-xs font-medium text-gray-500">Title</h4>
+                <p class="text-sm">{{ task.title }}</p>
+            </div>
+            
+            <div class="mb-3">
+                <h4 class="text-xs font-medium text-gray-500">Description</h4>
+                <p class="text-sm whitespace-pre-line">{{ task.description }}</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <h4 class="text-xs font-medium text-gray-500">Status</h4>
+                    <p class="text-sm">
+                        {% if task.status == 'pending' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                        {% elif task.status == 'in_progress' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">In Progress</span>
+                        {% elif task.status == 'completed' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                        {% elif task.status == 'on_hold' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">On Hold</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="text-xs font-medium text-gray-500">Priority</h4>
+                    <p class="text-sm">
+                        {% if task.priority == 'low' %}
+                            <span class="text-green-600">Low</span>
+                        {% elif task.priority == 'medium' %}
+                            <span class="text-yellow-600">Medium</span>
+                        {% elif task.priority == 'high' %}
+                            <span class="text-orange-600">High</span>
+                        {% elif task.priority == 'urgent' %}
+                            <span class="text-red-600 font-semibold">Urgent</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="text-xs font-medium text-gray-500">Due Date</h4>
+                    <p class="text-sm">{{ task.due_date|date:"F d, Y" }}</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-xs font-medium text-gray-500">Created</h4>
+                    <p class="text-sm">{{ task.created_at|date:"F d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Assignment Information -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Assignment Information</h3>
+            
+            <div class="mb-3">
+                <h4 class="text-xs font-medium text-gray-500">Client</h4>
+                <p class="text-sm">{{ task.client.name }}</p>
+            </div>
+            
+            <div class="mb-3">
+                <h4 class="text-xs font-medium text-gray-500">Assigned To</h4>
+                <p class="text-sm">{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</p>
+            </div>
+            
+            <div class="mb-3">
+                <h4 class="text-xs font-medium text-gray-500">Created By</h4>
+                <p class="text-sm">{{ task.created_by.get_full_name|default:task.created_by.username }}</p>
+            </div>
+            
+            <div>
+                <h4 class="text-xs font-medium text-gray-500">Last Updated</h4>
+                <p class="text-sm">{{ task.updated_at|date:"F d, Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Tasks Section -->
+<div class="mt-8">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">All Tasks</h2>
+    {% include "task_management/task_table_partial.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends 'governance/base.html' %}
+
+{% block title %}{{ meeting.title }} - Governance{% endblock %}
+
+{% block governance_content %}
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6 flex justify-between items-start">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900">{{ meeting.title }}</h1>
+                <p class="mt-1 text-sm text-gray-600">{{ meeting.get_meeting_type_display }} • {{ meeting.date|date:"F j, Y g:i A" }}</p>
+            </div>
+            <div class="flex space-x-3">
+                {% if meeting.virtual_link %}
+                    <a href="{{ meeting.virtual_link }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Join Meeting
+                    </a>
+                {% endif %}
+                <a href="{% url 'governance:edit_meeting' meeting.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Meeting Details -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Meeting Details</h2>
+                    
+                    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Status</dt>
+                            <dd class="mt-1">
+                                {% if meeting.status == 'scheduled' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{{ meeting.get_status_display }}</span>
+                                {% elif meeting.status == 'completed' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ meeting.get_status_display }}</span>
+                                {% elif meeting.status == 'cancelled' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{{ meeting.get_status_display }}</span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{{ meeting.get_status_display }}</span>
+                                {% endif %}
+                            </dd>
+                        </div>
+                        
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Duration</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ meeting.duration }}</dd>
+                        </div>
+                        
+                        {% if meeting.location %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Location</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ meeting.location }}</dd>
+                        </div>
+                        {% endif %}
+                        
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Organizer</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ meeting.organizer.get_full_name|default:meeting.organizer.username }}</dd>
+                        </div>
+                    </dl>
+                    
+                    {% if meeting.description %}
+                    <div class="mt-6">
+                        <dt class="text-sm font-medium text-gray-500">Description</dt>
+                        <dd class="mt-2 text-sm text-gray-900">{{ meeting.description|linebreaks }}</dd>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Agenda -->
+                {% if meeting.agenda %}
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Agenda</h2>
+                    <div class="text-sm text-gray-900 whitespace-pre-line">{{ meeting.agenda }}</div>
+                </div>
+                {% endif %}
+
+                <!-- Meeting Minutes -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-medium text-gray-900">Meeting Minutes</h2>
+                        {% if meeting.status == 'completed' or meeting.status == 'in_progress' %}
+                            <a href="{% url 'governance:update_meeting_minutes' meeting.id %}" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                                {% if meeting.minutes %}Edit Minutes{% else %}Add Minutes{% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if meeting.minutes %}
+                        <div class="text-sm text-gray-900 whitespace-pre-line">{{ meeting.minutes }}</div>
+                    {% else %}
+                        <p class="text-sm text-gray-500 italic">
+                            {% if meeting.status == 'scheduled' %}
+                                Meeting minutes will be available after the meeting.
+                            {% else %}
+                                No meeting minutes recorded yet.
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Attendees -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Attendees ({{ meeting.attendees.count }})</h3>
+                    
+                    {% if meeting.attendees.exists %}
+                        <div class="space-y-3">
+                            {% for attendee in meeting.attendees.all %}
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                            <span class="text-sm font-medium text-gray-700">
+                                                {{ attendee.first_name.0|default:attendee.username.0|upper }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">
+                                            {{ attendee.get_full_name|default:attendee.username }}
+                                        </p>
+                                        {% if attendee.email %}
+                                            <p class="text-sm text-gray-500">{{ attendee.email }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-sm text-gray-500">No attendees specified.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                    
+                    <div class="space-y-3">
+                        {% if meeting.virtual_link %}
+                            <a href="{{ meeting.virtual_link }}" target="_blank" class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                                Join Virtual Meeting
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'governance:edit_meeting' meeting.id %}" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Edit Meeting
+                        </a>
+                        
+                        {% if meeting.status == 'completed' or meeting.status == 'in_progress' %}
+                            <a href="{% url 'governance:update_meeting_minutes' meeting.id %}" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                {% if meeting.minutes %}Edit Minutes{% else %}Add Minutes{% endif %}
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'governance:delete_meeting' meeting.id %}" class="w-full flex items-center justify-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50">
+                            Delete Meeting
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

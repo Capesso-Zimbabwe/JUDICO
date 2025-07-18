@@ -1,0 +1,133 @@
+{% extends 'governance/base.html' %}
+
+{% block title %}Generate New Report - Governance{% endblock %}
+
+{% block governance_content %}
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl w-full space-y-8">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Generate New Report</h1>
+            <p class="mt-2 text-gray-600">Fill in the details below to generate new report.</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- First Row: Report Title and Report Type -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Report Title*
+                        </label>
+                        <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" 
+                               value="{{ form.title.value|default:'' }}" 
+                               placeholder="Input Your Report Title"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                        {% if form.title.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.report_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Report Type*
+                        </label>
+                        <select name="{{ form.report_type.name }}" id="{{ form.report_type.id_for_label }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                            <option value="">Select Report Type</option>
+                            {% for choice in form.report_type.field.choices %}
+                                <option value="{{ choice.0 }}" {% if form.report_type.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.report_type.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.report_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Second Row: Period Start and Period End -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.period_start.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Period Start*
+                        </label>
+                        <input type="date" name="{{ form.period_start.name }}" id="{{ form.period_start.id_for_label }}" 
+                               value="{{ form.period_start.value|default:'' }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                        {% if form.period_start.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.period_start.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.period_end.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Period End*
+                        </label>
+                        <input type="date" name="{{ form.period_end.name }}" id="{{ form.period_end.id_for_label }}" 
+                               value="{{ form.period_end.value|default:'' }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                        {% if form.period_end.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.period_end.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Description Field -->
+                <div>
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Description
+                    </label>
+                    <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                              rows="4" placeholder="Input Report Description"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">{{ form.description.value|default:'' }}</textarea>
+                    {% if form.description.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Report Type Information -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <h3 class="text-sm font-medium text-blue-800 mb-3">Available Report Types:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <div class="text-sm text-blue-700">
+                                <span class="font-medium">Policy Compliance:</span> Analyzes policy adherence and compliance metrics
+                            </div>
+                            <div class="text-sm text-blue-700">
+                                <span class="font-medium">Meeting Summary:</span> Summarizes meeting activities and outcomes
+                            </div>
+                            <div class="text-sm text-blue-700">
+                                <span class="font-medium">Governance Metrics:</span> Provides key governance performance indicators
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-sm text-blue-700">
+                                <span class="font-medium">Quarterly Review:</span> Comprehensive quarterly governance review
+                            </div>
+                            <div class="text-sm text-blue-700">
+                                <span class="font-medium">Annual Review:</span> Annual governance assessment and summary
+                            </div>
+                            <div class="text-sm text-blue-700">
+                                <span class="font-medium">Custom Report:</span> Generate custom reports based on specific requirements
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex justify-center space-x-4 pt-6">
+                    <a href="{% url 'governance:reports' %}" 
+                       class="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-200 font-medium">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
+                        Generate Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

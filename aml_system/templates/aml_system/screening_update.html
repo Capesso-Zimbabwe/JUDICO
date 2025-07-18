@@ -1,0 +1,197 @@
+{% extends 'aml_system/base.html' %}
+
+{% block title %}Update Screening - {{ screening.entity.name }} - AML System{% endblock %}
+
+{% block aml_content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Update Screening</h1>
+                <p class="mt-2 text-gray-600">Modify screening details for {{ screening.entity.name }}</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'aml_system:screening_detail' screening.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    View Details
+                </a>
+                <a href="{% url 'aml_system:screening' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Screenings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900">Screening Information</h2>
+            <p class="mt-1 text-sm text-gray-500">Update the screening details below</p>
+        </div>
+        
+        <form method="post" class="p-6">
+            {% csrf_token %}
+            
+            <!-- Entity Information (Read-only) -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Entity Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Entity Name</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ screening.entity.name }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Entity Type</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ screening.entity.entity_type|title }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Screening Type -->
+                <div>
+                    <label for="{{ form.screening_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.screening_type.label }}
+                        {% if form.screening_type.field.required %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    {{ form.screening_type }}
+                    {% if form.screening_type.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.screening_type.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Status -->
+                <div>
+                    <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.status.label }}
+                        {% if form.status.field.required %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.status.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Risk Score -->
+                <div>
+                    <label for="{{ form.risk_score.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.risk_score.label }}
+                        {% if form.risk_score.field.required %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    {{ form.risk_score }}
+                    {% if form.risk_score.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.risk_score.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Enter a value between 0 and 100</p>
+                </div>
+                
+                <!-- Priority -->
+                <div>
+                    <label for="{{ form.priority.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.priority.label }}
+                        {% if form.priority.field.required %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    {{ form.priority }}
+                    {% if form.priority.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.priority.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Notes -->
+            <div class="mt-6">
+                <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.notes.label }}
+                    {% if form.notes.field.required %}
+                        <span class="text-red-500">*</span>
+                    {% endif %}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.notes.errors.0 }}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Add any additional notes or observations about this screening</p>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="mt-8 flex items-center justify-end space-x-3">
+                <a href="{% url 'aml_system:screening_detail' screening.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    Update Screening
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Current Screening Results -->
+    {% if screening.screeningresult_set.exists %}
+    <div class="mt-8 bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900">Current Screening Results</h2>
+            <p class="mt-1 text-sm text-gray-500">Existing results for this screening</p>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                {% for result in screening.screeningresult_set.all %}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-gray-900">{{ result.watchlist_entry.watchlist.name }}</h3>
+                            {% if result.is_match %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Match Found
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    No Match
+                                </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-gray-600">Match Score: {{ result.match_score }}%</p>
+                        {% if result.notes %}
+                            <p class="text-sm text-gray-600 mt-2">{{ result.notes }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

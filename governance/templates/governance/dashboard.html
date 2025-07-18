@@ -1,0 +1,264 @@
+{% extends 'governance/base.html' %}
+
+{% block title %}Governance Dashboard{% endblock %}
+
+{% load static %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block governance_content %}
+<!-- Governance Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <div class="bg-white rounded-lg shadow p-3 governance-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-semibold text-gray-700">Active Policies</h3>
+                <p class="text-2xl font-bold">24</p>
+            </div>
+            <div class="bg-blue-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-3 governance-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-gray-700">Scheduled Meetings</h3>
+                <p class="text-2xl font-bold">8</p>
+            </div>
+            <div class="bg-yellow-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-3 governance-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-gray-700">Pending Reviews</h3>
+                <p class="text-2xl font-bold">6</p>
+            </div>
+            <div class="bg-red-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-3 governance-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-gray-700">Compliance Reports</h3>
+                <p class="text-2xl font-bold">15</p>
+            </div>
+            <div class="bg-green-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Policy Compliance Progress Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Policy Compliance Progress (Last 6 Months)</h3>
+        <div class="h-64">
+            <canvas id="complianceChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Governance Activity Status Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Governance Activity Status</h3>
+        <div class="h-64">
+            <canvas id="activityChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Second Row of Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Meeting Timeline Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Meeting Timeline</h3>
+        <div class="h-64">
+            <canvas id="timelineChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Document Categories Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Document Categories</h3>
+        <div class="h-64">
+            <canvas id="documentChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Policy Compliance Progress Chart
+        const complianceCtx = document.getElementById('complianceChart').getContext('2d');
+        const complianceChart = new Chart(complianceCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Compliance Milestones',
+                    data: [2, 4, 3, 6, 5, 8],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Milestones Completed',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+        
+        // Governance Activity Status Chart
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        const activityChart = new Chart(activityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Pending', 'Overdue'],
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: ['#34D399', '#60A5FA', '#FBBF24', '#F87171'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Meeting Timeline Chart
+        const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+        const timelineChart = new Chart(timelineCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Meetings',
+                    data: [3, 5, 2, 4],
+                    backgroundColor: ['#34D399', '#60A5FA', '#FBBF24', '#F87171'],
+                    borderWidth: 0,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Document Categories Chart
+        const documentCtx = document.getElementById('documentChart').getContext('2d');
+        const documentChart = new Chart(documentCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Policies', 'Reports', 'Minutes', 'Audits'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: ['#3B82F6', '#34D399', '#FBBF24', '#8B5CF6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

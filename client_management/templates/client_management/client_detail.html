@@ -1,0 +1,197 @@
+{% extends 'client_management/base.html' %}
+
+{% block client_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <h1 class="text-xs">{{ client.name }}</h1>
+    <div>
+        <a href="{% url 'client_management:client_update' client.id %}" class="btn btn-info">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a href="{% url 'client_management:client_delete' client.id %}" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block client_content %}
+<div class="row">
+    <!-- Client Information -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Client Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr>
+                            <th style="width: 30%">Contact Person:</th>
+                            <td>{{ client.contact_person }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td><a href="mailto:{{ client.email }}">{{ client.email }}</a></td>
+                        </tr>
+                        <tr>
+                            <th>Phone:</th>
+                            <td><a href="tel:{{ client.phone }}">{{ client.phone }}</a></td>
+                        </tr>
+                        <tr>
+                            <th>Address:</th>
+                            <td>{{ client.address }}</td>
+                        </tr>
+                        <tr>
+                            <th>Registration Date:</th>
+                            <td>{{ client.registration_date }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if client.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-warning">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Assigned Lawyer:</th>
+                            <td>{{ client.assigned_lawyer.get_full_name|default:"Not Assigned" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Documents -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Client Documents</h6>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDocumentModal">
+                    <i class="fas fa-upload"></i> Upload Document
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Uploaded</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for document in documents %}
+                            <tr>
+                                <td>{{ document.title }}</td>
+                                <td>{{ document.uploaded_at }}</td>
+                                <td>
+                                    <a href="{{ document.document.url }}" class="btn btn-sm btn-primary" target="_blank">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-danger delete-document" data-document-id="{{ document.id }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No documents found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Related Tasks -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 text-xs font-weight-bold text-primary">Related Tasks</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Assigned To</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in client.task_set.all %}
+                    <tr>
+                        <td><a href="{% url 'task_management:task_detail' task.id %}">{{ task.title }}</a></td>
+                        <td>
+                            {% if task.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif task.status == 'in_progress' %}
+                            <span class="badge bg-primary">In Progress</span>
+                            {% elif task.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                            {% elif task.status == 'on_hold' %}
+                            <span class="badge bg-secondary">On Hold</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if task.priority == 'high' %}
+                            <span class="text-danger">High</span>
+                            {% elif task.priority == 'medium' %}
+                            <span class="text-warning">Medium</span>
+                            {% elif task.priority == 'low' %}
+                            <span class="text-success">Low</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ task.assigned_to.get_full_name }}</td>
+                        <td>{{ task.due_date }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No tasks found for this client.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadDocumentModalLabel">Upload Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'client_management:upload_document' client.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Document Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="document" class="form-label">Document File</label>
+                        <input type="file" class="form-control" id="document" name="document" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

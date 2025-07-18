@@ -1,0 +1,187 @@
+{% extends 'client_portal/base.html' %}
+{% load static %}
+
+{% block page_title %}Communications{% endblock %}
+{% block header %}Communications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-custom-orange { background-color: #f58020; }
+    .text-custom-orange { color: #f58020; }
+    .border-custom-orange { border-color: #f58020; }
+    .hover\:border-custom-orange:hover { border-color: #f58020; }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<div class="space-y-4">
+    <!-- Professional Header -->
+    <div class="bg-white rounded-lg shadow-sm border-l-4 border-custom-orange p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-custom-orange bg-opacity-10 p-2 rounded-lg">
+                    <i class="fas fa-comments text-custom-orange text-lg"></i>
+                </div>
+                <div>
+                     <h1 class="text-lg font-bold text-gray-900">Communications</h1>
+                     <p class="text-xs text-gray-600 mt-1">Stay connected with your legal team</p>
+                 </div>
+            </div>
+            <button class="bg-custom-orange hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-xs">
+                <i class="fas fa-plus mr-1"></i>New Message
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow-sm border p-4 hover:border-custom-orange transition-all duration-200">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-100 p-2 rounded-lg">
+                    <i class="fas fa-inbox text-blue-600 text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">Inbox</h3>
+                    <p class="text-xs text-gray-600">{{ message_stats.unread }} unread messages</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border p-4 hover:border-custom-orange transition-all duration-200">
+            <div class="flex items-center space-x-3">
+                <div class="bg-green-100 p-2 rounded-lg">
+                    <i class="fas fa-paper-plane text-green-600 text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">Sent</h3>
+                    <p class="text-xs text-gray-600">{{ message_stats.total_sent }} sent messages</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border p-4 hover:border-custom-orange transition-all duration-200">
+            <div class="flex items-center space-x-3">
+                <div class="bg-purple-100 p-2 rounded-lg">
+                    <i class="fas fa-bell text-purple-600 text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
+                    <p class="text-xs text-gray-600">{{ message_stats.unread_notifications }} unread notifications</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Messages Section -->
+    <div class="bg-white rounded-lg shadow-sm border">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-900">Recent Messages</h3>
+                <div class="flex items-center space-x-2">
+                    <button class="text-xs text-gray-600 hover:text-custom-orange transition duration-200">
+                        <i class="fas fa-filter mr-1"></i>Filter
+                    </button>
+                    <button class="text-xs text-gray-600 hover:text-custom-orange transition duration-200">
+                        <i class="fas fa-search mr-1"></i>Search
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Message List -->
+        <div class="divide-y divide-gray-200">
+            {% for message in recent_messages %}
+            <div class="p-4 hover:bg-gray-50 transition duration-200">
+                <div class="flex items-start space-x-3">
+                    <div class="{% if not message.is_read and message.recipient == user %}bg-custom-orange bg-opacity-10{% else %}bg-gray-100{% endif %} p-2 rounded-full">
+                        <i class="fas fa-user {% if not message.is_read and message.recipient == user %}text-custom-orange{% else %}text-gray-600{% endif %} text-xs"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="text-xs font-semibold text-gray-900">
+                                    {% if message.sender == user %}
+                                        To: {{ message.recipient.get_full_name|default:message.recipient.username }}
+                                    {% else %}
+                                        From: {{ message.sender.get_full_name|default:message.sender.username }}
+                                    {% endif %}
+                                </h4>
+                                {% if not message.is_read and message.recipient == user %}
+                                <span class="bg-custom-orange text-white text-xs px-2 py-1 rounded-full">New</span>
+                                {% endif %}
+                                {% if message.message_type != 'general' %}
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{{ message.get_message_type_display }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-xs text-gray-500">{{ message.created_at|timesince }} ago</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1">{{ message.subject }}</p>
+                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ message.content|truncatewords:20 }}</p>
+                        <div class="flex items-center space-x-3 mt-2">
+                            <button class="text-xs text-custom-orange hover:text-orange-600 font-medium">
+                                <i class="fas fa-reply mr-1"></i>Reply
+                            </button>
+                            <button class="text-xs text-gray-600 hover:text-gray-800">
+                                <i class="fas fa-forward mr-1"></i>Forward
+                            </button>
+                            <button class="text-xs text-gray-600 hover:text-gray-800">
+                                <i class="fas fa-archive mr-1"></i>Archive
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <!-- Empty State -->
+            <div class="p-12 text-center">
+                <div class="bg-gray-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-comments text-gray-400 text-2xl"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900 mb-2">No Messages Available</h3>
+                <p class="text-xs text-gray-500 mb-6">You don't have any messages yet. Your legal team will communicate with you here.</p>
+                <div class="flex justify-center space-x-3">
+                    <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition duration-200 text-xs">
+                        <i class="fas fa-sync-alt mr-1"></i>Refresh
+                    </button>
+                    <button class="bg-custom-orange hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-xs">
+                        <i class="fas fa-plus mr-1"></i>Start Conversation
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    
+    <!-- Communication Tools -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="bg-blue-100 p-2 rounded-lg">
+                    <i class="fas fa-video text-blue-600 text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">Video Consultation</h3>
+                    <p class="text-xs text-gray-600">Schedule a video call</p>
+                </div>
+            </div>
+            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-xs">
+                <i class="fas fa-calendar mr-1"></i>Schedule Meeting
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="bg-green-100 p-2 rounded-lg">
+                    <i class="fas fa-phone text-green-600 text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">Phone Support</h3>
+                    <p class="text-xs text-gray-600">Call your legal team</p>
+                </div>
+            </div>
+            <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-xs">
+                <i class="fas fa-phone mr-1"></i>Call Now
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

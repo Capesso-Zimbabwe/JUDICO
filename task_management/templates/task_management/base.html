@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block header_title %}Task Management{% endblock %}
+
+{% block content %}
+<!-- Add the navigation header with the same style as finance management -->
+<div class="bg-white border-b border-gray-200 mb-6">
+    <nav class="flex space-x-8 px-6 py-3">
+        <a href="{% url 'task_dashboard' %}" class="{% if request.resolver_match.url_name == 'task_dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-1 font-medium text-sm transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'task_list' %}" class="{% if request.resolver_match.url_name == 'task_list' and not request.GET.status %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-1 font-medium text-sm transition-colors duration-200">
+            All Tasks
+        </a>
+        <a href="{% url 'task_create' %}" class="{% if request.resolver_match.url_name == 'task_create' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-1 font-medium text-sm transition-colors duration-200">
+            Add Task
+        </a>
+        <a href="{% url 'task_list' %}?status=pending" class="{% if request.GET.status == 'pending' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-1 font-medium text-sm transition-colors duration-200">
+            Pending
+        </a>
+        <a href="{% url 'task_list' %}?status=in_progress" class="{% if request.GET.status == 'in_progress' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-1 font-medium text-sm transition-colors duration-200">
+            In Progress
+        </a>
+        <a href="{% url 'task_list' %}?status=completed" class="{% if request.GET.status == 'completed' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-1 font-medium text-sm transition-colors duration-200">
+            Completed
+        </a>
+    </nav>
+</div>
+<div class="bg-white rounded-lg shadow p-6">
+    {% block task_content %}{% endblock %}
+</div>
+{% endblock %}

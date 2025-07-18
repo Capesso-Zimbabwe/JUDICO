@@ -1,0 +1,271 @@
+{% extends 'aml_system/base.html' %}
+
+{% block title %}AML Dashboard{% endblock %}
+
+{% load static %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block aml_content %}
+<!-- AML Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <div class="bg-white rounded-lg shadow p-3 aml-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-semibold text-gray-700">Active Screenings</h3>
+                <p class="text-2xl font-bold">142</p>
+            </div>
+            <div class="bg-red-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-3 aml-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-gray-700">High Risk Alerts</h3>
+                <p class="text-2xl font-bold">23</p>
+            </div>
+            <div class="bg-orange-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-3 aml-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-gray-700">Pending Reviews</h3>
+                <p class="text-2xl font-bold">18</p>
+            </div>
+            <div class="bg-yellow-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-3 aml-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-gray-700">Compliance Score</h3>
+                <p class="text-2xl font-bold">94%</p>
+            </div>
+            <div class="bg-green-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Risk Assessment Trends Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Risk Assessment Trends (Last 6 Months)</h3>
+        <div class="h-64">
+            <canvas id="riskTrendsChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Alert Status Distribution Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Alert Status Distribution</h3>
+        <div class="h-64">
+            <canvas id="alertStatusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Second Row of Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Screening Volume Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Daily Screening Volume</h3>
+        <div class="h-64">
+            <canvas id="screeningVolumeChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Transaction Risk Categories Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Transaction Risk Categories</h3>
+        <div class="h-64">
+            <canvas id="riskCategoriesChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Risk Assessment Trends Chart
+        const riskTrendsCtx = document.getElementById('riskTrendsChart').getContext('2d');
+        const riskTrendsChart = new Chart(riskTrendsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'High Risk Cases',
+                    data: [12, 19, 15, 25, 22, 30],
+                    borderColor: '#EF4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }, {
+                    label: 'Medium Risk Cases',
+                    data: [25, 35, 28, 40, 38, 45],
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Cases',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+        
+        // Alert Status Distribution Chart
+        const alertStatusCtx = document.getElementById('alertStatusChart').getContext('2d');
+        const alertStatusChart = new Chart(alertStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['New', 'Under Review', 'Resolved', 'Escalated'],
+                datasets: [{
+                    data: [23, 18, 45, 14],
+                    backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#8B5CF6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Screening Volume Chart
+        const screeningVolumeCtx = document.getElementById('screeningVolumeChart').getContext('2d');
+        const screeningVolumeChart = new Chart(screeningVolumeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Screenings',
+                    data: [45, 52, 38, 61, 48, 25, 18],
+                    backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280'],
+                    borderWidth: 0,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Transaction Risk Categories Chart
+        const riskCategoriesCtx = document.getElementById('riskCategoriesChart').getContext('2d');
+        const riskCategoriesChart = new Chart(riskCategoriesCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Suspicious Activity', 'Large Transactions', 'Cross-Border', 'Cash Intensive', 'PEP Related'],
+                datasets: [{
+                    data: [35, 25, 20, 12, 8],
+                    backgroundColor: ['#EF4444', '#F59E0B', '#3B82F6', '#10B981', '#8B5CF6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

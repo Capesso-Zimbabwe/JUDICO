@@ -1,0 +1,74 @@
+<!-- Task Table with consistent styling -->
+{% if tasks %}
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for task in tasks %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">
+                        <a href="{% url 'task_detail' task.id %}" class="text-blue-600 hover:text-blue-900">{{ task.title }}</a>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">{{ task.client.name }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% if task.status == 'pending' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                    {% elif task.status == 'in_progress' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">In Progress</span>
+                    {% elif task.status == 'completed' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                    {% elif task.status == 'on_hold' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">On Hold</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">
+                        {% if task.priority == 'low' %}
+                            <span class="text-green-600">Low</span>
+                        {% elif task.priority == 'medium' %}
+                            <span class="text-yellow-600">Medium</span>
+                        {% elif task.priority == 'high' %}
+                            <span class="text-orange-600">High</span>
+                        {% elif task.priority == 'urgent' %}
+                            <span class="text-red-600 font-semibold">Urgent</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">{{ task.due_date|date:"M d, Y" }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a href="{% url 'task_update' task.id %}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
+                    <a href="{% url 'task_delete' task.id %}" class="text-red-600 hover:text-red-900">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<!-- Empty state with consistent styling -->
+<div class="bg-white rounded-lg shadow p-8 text-center">
+    <p class="text-gray-500 text-sm mb-4">No tasks found.</p>
+    <a href="{% url 'task_create' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        Create your first task
+    </a>
+</div>
+{% endif %}
