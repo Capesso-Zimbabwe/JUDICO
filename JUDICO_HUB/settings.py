@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'communication',
     'governance',
     'compliance',
-    'aml_system',
+    'kyc_app',
     'lawyer_portal',
     'client_portal',
     'theme',
@@ -63,7 +63,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'channels',
     'tailwind',
-    'django_extensions'  # Add django_extensions for runscript command
+    'django_extensions',  # Add django_extensions for runscript command
+    'widget_tweaks'  # Add django-widget-tweaks
 ]
 
 # Update these settings

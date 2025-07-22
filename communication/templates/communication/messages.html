@@ -8,129 +8,501 @@
     .text-custom-orange { color: #f58020; }
     .border-custom-orange { border-color: #f58020; }
     .hover\:border-custom-orange:hover { border-color: #f58020; }
+    
+    /* WhatsApp-like styles */
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background-color: #111b21;
+    }
+    
+    .chat-container {
+        height: calc(100vh - 80px);
+        min-height: 600px;
+        background-color: #111b21;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .conversation-list {
+        overflow-y: auto;
+        background-color: #111b21;
+        border-right: 1px solid #222e35;
+    }
+    
+    .conversation-item {
+        cursor: pointer;
+        transition: background-color 0.2s;
+        padding: 12px 16px;
+        border-bottom: 1px solid #222e35;
+    }
+    
+    .conversation-item:hover {
+        background-color: #222e35;
+    }
+    
+    .conversation-item.active {
+        background-color: #2a3942;
+    }
+    
+    .chat-area {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background-color: #0b141a;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><pattern id="chat-bg" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23d9d9d9" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23chat-bg)"/></svg>');
+    }
+    
+    .chat-header {
+        background-color: #202c33;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid #222e35;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: transparent;
+        padding-bottom: 1rem;
+        min-height: 0;
+    }
+    
+    .message-bubble {
+        max-width: 65%;
+        margin-bottom: 0.5rem;
+        word-wrap: break-word;
+        position: relative;
+        border-radius: 7.5px;
+        padding: 6px 7px 8px 9px;
+        box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+    }
+    
+    .message-sent {
+        margin-left: auto;
+        background-color: #005c4b;
+        color: #e9edef;
+        border-radius: 7.5px 7.5px 0 7.5px;
+    }
+    
+    .message-received {
+        background-color: #202c33;
+        color: #e9edef;
+        border-radius: 7.5px 7.5px 7.5px 0;
+    }
+    
+    .message-time {
+        font-size: 11px;
+        color: #8696a0;
+        margin-top: 2px;
+        text-align: right;
+    }
+    
+    /* Style for quotes in messages */
+    .message-bubble blockquote,
+    .message-bubble q {
+        background-color: transparent !important;
+        border-left: 3px solid #8696a0;
+        padding-left: 8px;
+        margin: 5px 0;
+        color: inherit;
+    }
+    
+    .chat-input {
+        background-color: #202c33;
+        padding: 10px 16px;
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        border-top: 1px solid #222e35;
+    }
+    
+    .chat-input-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .chat-input-field {
+        flex: 1;
+        background-color: #2a3942;
+        border: none;
+        border-radius: 21px;
+        padding: 9px 12px;
+        font-size: 15px;
+        outline: none;
+        color: #e9edef;
+    }
+    
+    .chat-input-field::placeholder {
+        color: #8696a0;
+    }
+    
+    .send-button {
+        background-color: #00a884;
+        border: none;
+        border-radius: 50%;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #111b21;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .send-button:hover {
+        background-color: #017561;
+    }
+    
+    .empty-chat {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        background: transparent;
+        color: #8696a0;
+    }
+    
+    .conversation-avatar {
+        width: 49px;
+        height: 49px;
+        border-radius: 50%;
+        background-color: #00a884;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #111b21;
+        font-weight: 500;
+        font-size: 18px;
+    }
+    
+    .chat-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #00a884;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #111b21;
+        font-weight: 500;
+    }
+    
+    /* WhatsApp-like header and search */
+    .search-container {
+        background-color: #111b21;
+        padding: 10px 12px;
+    }
+    
+    .search-input {
+        background-color: #202c33;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 32px;
+        width: 100%;
+        color: #e9edef;
+        font-size: 14px;
+    }
+    
+    .search-input::placeholder {
+        color: #8696a0;
+    }
+    
+    .conversations-header {
+        background-color: #202c33;
+        padding: 10px 16px;
+        color: #e9edef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 </style>
 {% endblock %}
 
 {% block communication_content %}
-<div class="container mx-auto px-4 py-6">
-    <!-- Professional Header -->
-    <div class="bg-white rounded-lg shadow-sm border-l-4 border-custom-orange p-6 mb-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-custom-orange bg-opacity-10 p-2 rounded-lg">
-                    <i class="fas fa-comments text-custom-orange text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold text-gray-900">Messages</h1>
-                    <p class="text-xs text-gray-600 mt-1">Manage your communications</p>
-                </div>
-            </div>
-            <a href="{% url 'communication:message_create' %}" class="bg-custom-orange hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 text-xs">
-                <i class="fas fa-plus mr-1"></i>New Message
-            </a>
-        </div>
-    </div>
+<div class="container mx-auto px-0 py-0">
 
-    <!-- Search and Filter Section -->
-    <div class="bg-white rounded-lg shadow-sm border p-4 mb-6">
-        <form method="get" class="flex flex-wrap gap-3">
-            <div class="flex-1 min-w-[200px]">
-                <input type="text" name="search" placeholder="Search messages..." class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-custom-orange focus:border-custom-orange">
+    <!-- Chat Container -->
+    <div class="chat-container flex">
+        <!-- Conversation List -->
+        <div class="w-1/3 conversation-list">
+            <div class="conversations-header">
+                <h3 class="font-semibold text-white">WhatsApp</h3>
+                <div class="flex space-x-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="19" cy="12" r="1"></circle>
+                        <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                </div>
             </div>
-            <div class="w-full md:w-auto">
-                <select name="filter" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-custom-orange focus:border-custom-orange">
-                    <option value="all">All Messages</option>
-                    <option value="unread">Unread</option>
-                    <option value="sent">Sent</option>
-                    <option value="received">Received</option>
-                </select>
+            <div class="search-container">
+                <div class="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-2.5 text-gray-400">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="search-conversations" placeholder="Search or start new chat" class="search-input">
+                </div>
             </div>
-            <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-3 rounded-lg transition duration-200 text-xs">
-                <i class="fas fa-search mr-1"></i>Search
-            </button>
-        </form>
-    </div>
-
-    <!-- Messages List -->
-    <div class="space-y-3">
-        {% if messages %}
-            {% for message in messages %}
-            <div class="bg-white rounded-lg shadow-sm border hover:border-custom-orange transition duration-200 overflow-hidden{% if not message.read %} border-l-4 border-l-custom-orange{% endif %}">
-                <div class="p-4">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
-                            <!-- Message Header -->
-                            <div class="flex items-center mb-2">
-                                <div class="flex items-center space-x-2">
-                                    <span class="font-medium text-gray-900 text-xs">{{ message.sender }}</span>
-                                    <i class="fas fa-arrow-right text-gray-400 text-xs"></i>
-                                    <span class="font-medium text-gray-900 text-xs">{{ message.recipient }}</span>
-                                </div>
-                                <div class="ml-auto flex items-center space-x-2">
-                                    {% if not message.read %}
-                                    <span class="bg-custom-orange text-white text-xs px-2 py-1 rounded-full font-medium">New</span>
-                                    {% endif %}
-                                    <span class="text-xs text-gray-500">{{ message.timestamp|date:"M d, Y H:i" }}</span>
-                                </div>
+            
+            <div id="conversations-list">
+                {% for conversation in conversations %}
+                <div class="conversation-item" data-user-id="{{ conversation.user.id }}" onclick="openConversation({{ conversation.user.id }}, '{{ conversation.user.get_full_name|default:conversation.user.username }}')">
+                    <div class="flex items-center space-x-3">
+                        <div class="conversation-avatar">
+                            {{ conversation.user.first_name.0|default:conversation.user.username.0|upper }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-white truncate text-sm">
+                                    {{ conversation.user.get_full_name|default:conversation.user.username }}
+                                </h4>
+                                <span class="text-xs text-gray-400">
+                                    {{ conversation.latest_message.created_at|date:"H:i" }}
+                                </span>
                             </div>
-                            
-                            <!-- Message Content -->
-                            <h3 class="text-sm font-medium text-gray-900 mb-1">{{ message.subject }}</h3>
-                            <p class="text-xs text-gray-600 line-clamp-2">{{ message.content }}</p>
+                            <p class="text-sm text-gray-400 truncate mt-1">
+                                {% if conversation.latest_message.sender == user %}
+                                    You: {{ conversation.latest_message.content }}
+                                {% else %}
+                                    {{ conversation.latest_message.content }}
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
-                    
-                    <!-- Message Actions -->
-                    <div class="flex items-center justify-end space-x-3 mt-3 pt-3 border-t border-gray-100">
-                        <a href="#" class="text-custom-orange hover:text-opacity-80 text-xs font-medium flex items-center">
-                            <i class="fas fa-reply mr-1"></i>Reply
-                        </a>
-                        <a href="#" class="text-gray-500 hover:text-gray-700 text-xs font-medium flex items-center">
-                            <i class="fas fa-forward mr-1"></i>Forward
-                        </a>
-                        <button class="text-gray-500 hover:text-gray-700 text-xs">
-                            <i class="fas fa-ellipsis-h"></i>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-gray-400">
+                    <i class="fas fa-comments fa-2x mb-3"></i>
+                    <p class="text-sm mb-2">No conversations yet</p>
+                    <a href="{% url 'communication:new_conversation' %}" class="text-xs text-green-500 hover:underline cursor-pointer">Start a new conversation</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="flex-1 chat-area">
+            <!-- Chat Header -->
+            <div id="chat-header" class="chat-header p-3 hidden">
+                <div class="flex items-center space-x-3">
+                    <div class="chat-avatar" id="chat-avatar">
+                        U
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white" id="chat-name">User Name</h3>
+                        <p class="text-sm text-gray-400">online</p>
+                    </div>
+                    <div class="ml-auto flex items-center space-x-2">
+                        <button class="p-2 text-gray-400 hover:text-gray-200 rounded-full hover:bg-gray-700">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor"/>
+                            </svg>
+                        </button>
+                        <button class="p-2 text-gray-400 hover:text-gray-200 rounded-full hover:bg-gray-700">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/>
+                            </svg>
                         </button>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="bg-white rounded-lg shadow-sm border p-8 text-center">
-                <div class="text-gray-400 mb-4">
-                    <i class="fas fa-inbox fa-2x"></i>
+
+            <!-- Default Empty State -->
+            <div id="empty-chat" class="empty-chat">
+                <div class="text-center text-gray-400">
+                    <i class="fas fa-comment-dots fa-3x mb-4"></i>
+                    <h3 class="text-lg font-medium mb-2">Select a conversation</h3>
+                    <p class="text-sm">Choose a conversation from the list to start chatting</p>
                 </div>
-                <h3 class="text-sm font-medium text-gray-900 mb-1">No Messages Available</h3>
-                <p class="text-xs text-gray-600">Start a new conversation or adjust your search filters</p>
             </div>
-        {% endif %}
-    </div>
 
-    <!-- Pagination -->
-    {% if messages.has_other_pages %}
-    <div class="flex justify-center mt-6">
-        <nav class="flex space-x-1" aria-label="Pagination">
-            {% if messages.has_previous %}
-            <a href="?page={{ messages.previous_page_number }}" class="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-medium">
-                Previous
-            </a>
-            {% endif %}
-            
-            {% for num in messages.paginator.page_range %}
-            {% if messages.number == num %}
-            <span class="px-3 py-2 rounded-lg bg-custom-orange text-white text-xs font-medium">{{ num }}</span>
-            {% else %}
-            <a href="?page={{ num }}" class="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-medium">{{ num }}</a>
-            {% endif %}
-            {% endfor %}
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="chat-messages hidden">
+                <!-- Messages will be loaded here -->
+            </div>
 
-            {% if messages.has_next %}
-            <a href="?page={{ messages.next_page_number }}" class="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-medium">
-                Next
-            </a>
-            {% endif %}
-        </nav>
+            <!-- Chat Input -->
+            <div id="chat-input" class="chat-input hidden">
+                <form id="message-form" class="chat-input-form">
+                    {% csrf_token %}
+                    <input type="hidden" id="recipient-id" value="">
+                    <input type="text" id="message-content" placeholder="Type a message" class="chat-input-field" required>
+                    <button type="submit" class="send-button">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M1.101 21.757L23.8 12.028L1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-    {% endif %}
 </div>
+
+<script>
+let currentUserId = null;
+let currentUserName = null;
+
+function openConversation(userId, userName) {
+    currentUserId = userId;
+    currentUserName = userName;
+    
+    // Update active conversation
+    document.querySelectorAll('.conversation-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+    if (conversationItem) {
+        conversationItem.classList.add('active');
+    }
+    
+    // Show chat area
+    document.getElementById('empty-chat').classList.add('hidden');
+    document.getElementById('chat-header').classList.remove('hidden');
+    document.getElementById('chat-messages').classList.remove('hidden');
+    document.getElementById('chat-input').classList.remove('hidden');
+    
+    // Update chat header
+    document.getElementById('chat-name').textContent = userName;
+    document.getElementById('chat-avatar').textContent = userName.charAt(0).toUpperCase();
+    document.getElementById('recipient-id').value = userId;
+    
+    // Load messages
+    loadMessages(userId);
+}
+
+function loadMessages(userId) {
+    fetch(`/communication/api/messages/${userId}/`)
+        .then(response => response.json())
+        .then(messages => {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = '';
+            
+            messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                const isSent = message.sender__username === '{{ user.username }}';
+                
+                messageDiv.className = `message-bubble ${isSent ? 'message-sent' : 'message-received'}`;
+                // Process content to handle quotes properly
+                let processedContent = message.content
+                    .replace(/"/g, '&quot;')
+                    .replace(/&gt;(.+?)(?=\n|$)/g, '<blockquote>$1</blockquote>');
+                
+                messageDiv.innerHTML = `
+                    <div class="text-sm">${processedContent}</div>
+                    <div class="message-time">${new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+            });
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        })
+        .catch(error => {
+            console.error('Error loading messages:', error);
+        });
+}
+
+function sendMessage(content, recipientId) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/communication/api/messages/${recipientId}/send/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            content: content
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Reload messages
+            loadMessages(recipientId);
+            // Clear input
+            document.getElementById('message-content').value = '';
+        } else {
+            alert('Error sending message: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Error sending message');
+    });
+}
+
+// Handle message form submission
+document.getElementById('message-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const content = document.getElementById('message-content').value.trim();
+    const recipientId = document.getElementById('recipient-id').value;
+    
+    if (content && recipientId) {
+        sendMessage(content, recipientId);
+    }
+});
+
+// Search conversations
+document.getElementById('search-conversations').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const conversations = document.querySelectorAll('.conversation-item');
+    
+    conversations.forEach(conversation => {
+        const name = conversation.querySelector('h4').textContent.toLowerCase();
+        const message = conversation.querySelector('p').textContent.toLowerCase();
+        
+        if (name.includes(searchTerm) || message.includes(searchTerm)) {
+            conversation.style.display = 'block';
+        } else {
+            conversation.style.display = 'none';
+        }
+    });
+});
+
+// Auto-refresh messages every 5 seconds
+setInterval(() => {
+    if (currentUserId) {
+        loadMessages(currentUserId);
+    }
+}, 5000);
+
+// Check for user parameter in URL to auto-open conversation
+window.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user');
+    const userName = urlParams.get('name');
+    
+    if (userId) {
+        // Find the conversation item and click it
+        const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+        if (conversationItem) {
+            conversationItem.click();
+        } else {
+            // If conversation doesn't exist, create a new one by opening the chat immediately
+            const displayName = userName || 'User';
+            openConversation(parseInt(userId), displayName);
+            
+            // Hide the empty state and show chat interface immediately
+            document.getElementById('empty-chat').classList.add('hidden');
+            document.getElementById('chat-header').classList.remove('hidden');
+            document.getElementById('chat-messages').classList.remove('hidden');
+            document.getElementById('chat-input').classList.remove('hidden');
+        }
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+</script>
 {% endblock %}

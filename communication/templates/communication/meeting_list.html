@@ -1,0 +1,104 @@
+{% extends 'communication/base.html' %}
+
+{% block title %}Communication - Meetings{% endblock %}
+
+{% block communication_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Meetings</h1>
+        <a href="{% url 'communication:meeting_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            <i class="fas fa-plus mr-2"></i>New Meeting
+        </a>
+    </div>
+    
+    {% if meetings %}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meeting</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organizer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for meeting in meetings %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ meeting.title }}</div>
+                                {% if meeting.description %}
+                                <div class="text-sm text-gray-500">{{ meeting.description|truncatechars:50 }}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if meeting.meeting_type == 'consultation' %}bg-blue-100 text-blue-800
+                                {% elif meeting.meeting_type == 'case_review' %}bg-green-100 text-green-800
+                                {% elif meeting.meeting_type == 'court_hearing' %}bg-red-100 text-red-800
+                                {% elif meeting.meeting_type == 'deposition' %}bg-yellow-100 text-yellow-800
+                                {% elif meeting.meeting_type == 'team_meeting' %}bg-purple-100 text-purple-800
+                                {% elif meeting.meeting_type == 'client_meeting' %}bg-indigo-100 text-indigo-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ meeting.get_meeting_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div>{{ meeting.start_datetime|date:"M j, Y" }}</div>
+                            <div class="text-gray-500">{{ meeting.start_datetime|time:"g:i A" }} - {{ meeting.end_datetime|time:"g:i A" }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {% if meeting.location %}
+                                <i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>{{ meeting.location|truncatechars:30 }}
+                            {% else %}
+                                <span class="text-gray-400">No location</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if meeting.status == 'scheduled' %}bg-blue-100 text-blue-800
+                                {% elif meeting.status == 'in_progress' %}bg-yellow-100 text-yellow-800
+                                {% elif meeting.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif meeting.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% elif meeting.status == 'rescheduled' %}bg-purple-100 text-purple-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ meeting.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ meeting.organizer.get_full_name|default:meeting.organizer.username }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'communication:meeting_detail' meeting.id %}" class="text-blue-600 hover:text-blue-900 mr-3">
+                                View
+                            </a>
+                            {% if meeting.organizer == request.user %}
+                            <a href="#" class="text-indigo-600 hover:text-indigo-900">
+                                Edit
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <i class="fas fa-calendar-alt text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No meetings found</h3>
+        <p class="text-gray-500 mb-6">You don't have any meetings scheduled yet.</p>
+        <a href="{% url 'communication:meeting_create' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            <i class="fas fa-plus mr-2"></i>Schedule Your First Meeting
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'communication/base.html' %}
+
+{% block title %}Communication - New Conversation{% endblock %}
+
+{% block communication_content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Start New Conversation</h1>
+        <a href="{% url 'communication:messages' %}" class="text-gray-600 hover:text-gray-800">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Messages
+        </a>
+    </div>
+
+    <!-- User Selection -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Select a user to start chatting with:</h2>
+        
+        <!-- Search Users -->
+        <div class="mb-6">
+            <div class="relative">
+                <input type="text" id="search-users" placeholder="Search users..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom-orange focus:border-transparent">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- Users List -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="users-list">
+            {% for user in users %}
+            <div class="user-item p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors" onclick="startConversation({{ user.id }}, '{{ user.get_full_name|default:user.username }}')">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-custom-orange text-white rounded-full flex items-center justify-center font-semibold">
+                        {{ user.first_name.0|default:user.username.0|upper }}
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</h3>
+                        <p class="text-sm text-gray-500">{{ user.email }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center text-gray-500 py-8">
+                <i class="fas fa-users fa-2x mb-3"></i>
+                <p>No users available to start a conversation with.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Search functionality
+document.getElementById('search-users').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const userItems = document.querySelectorAll('.user-item');
+    
+    userItems.forEach(function(item) {
+        const userName = item.querySelector('h3').textContent.toLowerCase();
+        const userEmail = item.querySelector('p').textContent.toLowerCase();
+        
+        if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+// Start conversation function
+function startConversation(userId, userName) {
+    // Show loading state
+    const userItem = event.currentTarget;
+    userItem.style.opacity = '0.6';
+    userItem.style.pointerEvents = 'none';
+    
+    // Redirect to messages page and open conversation immediately
+    window.location.href = `{% url 'communication:messages' %}?user=${userId}&name=${encodeURIComponent(userName)}`;
+}
+</script>
+
+<style>
+.bg-custom-orange { background-color: #f58020; }
+.text-custom-orange { color: #f58020; }
+.border-custom-orange { border-color: #f58020; }
+.focus\:ring-custom-orange:focus { --tw-ring-color: #f58020; }
+</style>
+{% endblock %}

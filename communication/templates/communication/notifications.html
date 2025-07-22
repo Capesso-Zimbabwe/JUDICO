@@ -1,17 +1,19 @@
 {% extends 'communication/base.html' %}
+{% load static %}
 
 {% block title %}Communication - Notifications{% endblock %}
 
 {% block communication_content %}
+{% csrf_token %}
 <div class="container mx-auto px-4 py-8">
     <!-- Header Section -->
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Notifications</h1>
         <div class="flex space-x-4">
-            <button id="markAllRead" class="text-blue-600 hover:text-blue-800 font-semibold">
+            <button onclick="markAllNotificationsAsRead()" class="text-blue-600 hover:text-blue-800 font-semibold">
                 <i class="fas fa-check-double mr-2"></i>Mark all as read
             </button>
-            <button id="clearAll" class="text-gray-600 hover:text-gray-800 font-semibold">
+            <button onclick="clearAllNotifications()" class="text-gray-600 hover:text-gray-800 font-semibold">
                 <i class="fas fa-trash-alt mr-2"></i>Clear all
             </button>
         </div>
@@ -20,15 +22,15 @@
     <!-- Filter Section -->
     <div class="bg-white rounded-lg shadow-md p-4 mb-6">
         <div class="flex flex-wrap gap-4">
-            <button class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 {% if filter == 'all' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+            <a href="?filter=all" class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 {% if filter == 'all' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
                 All
-            </button>
-            <button class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 {% if filter == 'unread' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
-                Unread
-            </button>
-            <button class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 {% if filter == 'important' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+            </a>
+            <a href="?filter=unread" class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 {% if filter == 'unread' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Unread ({{ unread_count }})
+            </a>
+            <a href="?filter=important" class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 {% if filter == 'important' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
                 Important
-            </button>
+            </a>
         </div>
     </div>
 
@@ -36,27 +38,35 @@
     <div class="space-y-4">
         {% if notifications %}
             {% for notification in notifications %}
-            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 {% if not notification.read %}border-l-4 border-blue-600{% endif %}">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 {% if not notification.is_read %}border-l-4 border-blue-600{% endif %}" onclick="{% if not notification.is_read %}markNotificationAsRead({{ notification.id }}){% endif %}">
                 <div class="p-4">
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
                             <div class="flex items-center mb-2">
-                                <span class="font-semibold text-gray-900">{{ notification.type }}</span>
-                                <span class="ml-4 text-sm text-gray-500">{{ notification.timestamp|date:"M d, Y H:i" }}</span>
-                                {% if notification.priority == 'high' %}
+                                <span class="font-semibold text-gray-900">{{ notification.get_notification_type_display }}</span>
+                                <span class="ml-4 text-sm text-gray-500">{{ notification.created_at|date:"M d, Y H:i" }}</span>
+                                {% if notification.notification_type == 'appointment' %}
                                 <span class="ml-2 px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">Important</span>
                                 {% endif %}
+                                {% if not notification.is_read %}
+                                <span class="ml-2 px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">New</span>
+                                {% endif %}
                             </div>
-                            <p class="text-gray-700">{{ notification.message }}</p>
-                            {% if notification.action_url %}
-                            <a href="{{ notification.action_url }}" class="inline-block mt-2 text-blue-600 hover:text-blue-800 font-medium">
-                                View details<i class="fas fa-arrow-right ml-2"></i>
+                            <h3 class="font-medium text-gray-900 mb-1">{{ notification.title }}</h3>
+                            <p class="text-gray-700">{{ notification.content }}</p>
+                            {% if notification.related_message %}
+                            <a href="{% url 'communication:messages' %}" class="inline-block mt-2 text-blue-600 hover:text-blue-800 font-medium">
+                                View message<i class="fas fa-arrow-right ml-2"></i>
                             </a>
                             {% endif %}
                         </div>
                         <div class="ml-4 flex-shrink-0">
-                            <button class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                                <i class="fas fa-times"></i>
+                            <button onclick="event.stopPropagation(); markNotificationAsRead({{ notification.id }})" class="text-gray-400 hover:text-gray-600 transition-colors duration-200" title="Mark as read">
+                                {% if not notification.is_read %}
+                                <i class="fas fa-check"></i>
+                                {% else %}
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                {% endif %}
                             </button>
                         </div>
                     </div>

@@ -1,0 +1,282 @@
+{% extends 'communication/base.html' %}
+
+{% block title %}Communication - {{ meeting.title }}{% endblock %}
+
+{% block communication_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center">
+                <a href="{% url 'communication:meeting_list' %}" class="text-gray-500 hover:text-gray-700 mr-4">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1 class="text-2xl font-bold text-gray-900">{{ meeting.title }}</h1>
+            </div>
+            
+            <div class="flex space-x-2">
+                {% if meeting.organizer == request.user %}
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-edit mr-2"></i>Edit
+                </button>
+                {% endif %}
+                
+                {% if meeting.meeting_link %}
+                <a href="{{ meeting.meeting_link }}" target="_blank" 
+                   class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-video mr-2"></i>Join Meeting
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Meeting Details -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Meeting Info Card -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Meeting Details</h3>
+                            
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <i class="fas fa-tag w-5 text-gray-400 mr-3"></i>
+                                    <div>
+                                        <span class="text-sm text-gray-500">Type:</span>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            {% if meeting.meeting_type == 'consultation' %}bg-blue-100 text-blue-800
+                                            {% elif meeting.meeting_type == 'case_review' %}bg-green-100 text-green-800
+                                            {% elif meeting.meeting_type == 'court_hearing' %}bg-red-100 text-red-800
+                                            {% elif meeting.meeting_type == 'deposition' %}bg-yellow-100 text-yellow-800
+                                            {% elif meeting.meeting_type == 'team_meeting' %}bg-purple-100 text-purple-800
+                                            {% elif meeting.meeting_type == 'client_meeting' %}bg-indigo-100 text-indigo-800
+                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                            {{ meeting.get_meeting_type_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <i class="fas fa-info-circle w-5 text-gray-400 mr-3"></i>
+                                    <div>
+                                        <span class="text-sm text-gray-500">Status:</span>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            {% if meeting.status == 'scheduled' %}bg-blue-100 text-blue-800
+                                            {% elif meeting.status == 'in_progress' %}bg-yellow-100 text-yellow-800
+                                            {% elif meeting.status == 'completed' %}bg-green-100 text-green-800
+                                            {% elif meeting.status == 'cancelled' %}bg-red-100 text-red-800
+                                            {% elif meeting.status == 'rescheduled' %}bg-purple-100 text-purple-800
+                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                            {{ meeting.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <i class="fas fa-user w-5 text-gray-400 mr-3"></i>
+                                    <div>
+                                        <span class="text-sm text-gray-500">Organizer:</span>
+                                        <span class="ml-2 text-sm font-medium text-gray-900">
+                                            {{ meeting.organizer.get_full_name|default:meeting.organizer.username }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock w-5 text-gray-400 mr-3"></i>
+                                    <div>
+                                        <span class="text-sm text-gray-500">Duration:</span>
+                                        <span class="ml-2 text-sm font-medium text-gray-900">
+                                            {{ meeting.duration_minutes }} minutes
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Schedule</h3>
+                            
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar w-5 text-gray-400 mr-3"></i>
+                                    <div>
+                                        <span class="text-sm text-gray-500">Date:</span>
+                                        <span class="ml-2 text-sm font-medium text-gray-900">
+                                            {{ meeting.start_datetime|date:"l, F j, Y" }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock w-5 text-gray-400 mr-3"></i>
+                                    <div>
+                                        <span class="text-sm text-gray-500">Time:</span>
+                                        <span class="ml-2 text-sm font-medium text-gray-900">
+                                            {{ meeting.start_datetime|time:"g:i A" }} - {{ meeting.end_datetime|time:"g:i A" }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                {% if meeting.location %}
+                                <div class="flex items-start">
+                                    <i class="fas fa-map-marker-alt w-5 text-gray-400 mr-3 mt-0.5"></i>
+                                    <div>
+                                        <span class="text-sm text-gray-500">Location:</span>
+                                        <span class="ml-2 text-sm font-medium text-gray-900 block">
+                                            {{ meeting.location }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if meeting.meeting_link %}
+                                <div class="flex items-start">
+                                    <i class="fas fa-video w-5 text-gray-400 mr-3 mt-0.5"></i>
+                                    <div>
+                                        <span class="text-sm text-gray-500">Meeting Link:</span>
+                                        <a href="{{ meeting.meeting_link }}" target="_blank" 
+                                           class="ml-2 text-sm text-blue-600 hover:text-blue-800 block break-all">
+                                            {{ meeting.meeting_link }}
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                {% if meeting.description %}
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Description</h3>
+                    <div class="text-gray-700 whitespace-pre-wrap">{{ meeting.description }}</div>
+                </div>
+                {% endif %}
+                
+                <!-- Related Client -->
+                {% if meeting.related_client %}
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Related Client</h3>
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 p-2 rounded-full mr-3">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">{{ meeting.related_client.name }}</div>
+                            {% if meeting.related_client.email %}
+                            <div class="text-sm text-gray-500">{{ meeting.related_client.email }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Participants -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Participants ({{ meeting.participants.count }})</h3>
+                    <div class="space-y-3">
+                        {% for participant in meeting.participants.all %}
+                        <div class="flex items-center">
+                            <div class="bg-gray-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-user text-gray-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ participant.get_full_name|default:participant.username }}
+                                    {% if participant == meeting.organizer %}
+                                    <span class="text-xs text-blue-600">(Organizer)</span>
+                                    {% endif %}
+                                </div>
+                                {% if participant.email %}
+                                <div class="text-xs text-gray-500">{{ participant.email }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="space-y-2">
+                        {% if meeting.meeting_link %}
+                        <a href="{{ meeting.meeting_link }}" target="_blank" 
+                           class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-center block">
+                            <i class="fas fa-video mr-2"></i>Join Meeting
+                        </a>
+                        {% endif %}
+                        
+                        <button onclick="copyMeetingDetails()" 
+                                class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-copy mr-2"></i>Copy Details
+                        </button>
+                        
+                        <a href="{% url 'communication:message_create' %}" 
+                           class="w-full bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-center block">
+                            <i class="fas fa-envelope mr-2"></i>Send Message
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Meeting Status -->
+                {% if meeting.is_upcoming %}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                        <span class="text-sm font-medium text-blue-800">Upcoming Meeting</span>
+                    </div>
+                    <p class="text-sm text-blue-700 mt-1">
+                        This meeting is scheduled for {{ meeting.start_datetime|timeuntil }}.
+                    </p>
+                </div>
+                {% elif meeting.is_today %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                        <span class="text-sm font-medium text-yellow-800">Today's Meeting</span>
+                    </div>
+                    <p class="text-sm text-yellow-700 mt-1">
+                        This meeting is scheduled for today at {{ meeting.start_datetime|time:"g:i A" }}.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyMeetingDetails() {
+    const details = `Meeting: {{ meeting.title }}
+Date: {{ meeting.start_datetime|date:"l, F j, Y" }}
+Time: {{ meeting.start_datetime|time:"g:i A" }} - {{ meeting.end_datetime|time:"g:i A" }}
+{% if meeting.location %}Location: {{ meeting.location }}
+{% endif %}{% if meeting.meeting_link %}Meeting Link: {{ meeting.meeting_link }}
+{% endif %}{% if meeting.description %}Description: {{ meeting.description }}{% endif %}`;
+    
+    navigator.clipboard.writeText(details).then(function() {
+        // Show success message
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        button.classList.add('bg-green-600');
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('bg-green-600');
+            button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        alert('Failed to copy meeting details');
+    });
+}
+</script>
+{% endblock %}

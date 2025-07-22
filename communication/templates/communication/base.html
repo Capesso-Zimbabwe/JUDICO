@@ -4,11 +4,24 @@
 <!-- Navigation Bar -->
 <div class="bg-white border-b border-gray-200">
     <div class="px-8 py-4">
-        <div class="flex space-x-8">
-            <a href="{% url 'communication:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Dashboard</a>
-            <a href="{% url 'communication:messages' %}" class="{% if request.resolver_match.url_name == 'messages' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Messages</a>
-            <a href="{% url 'communication:notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Notifications</a>
-            <a href="{% url 'communication:settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Settings</a>
+        <div class="flex justify-between items-center">
+            <div class="flex space-x-8">
+                <a href="{% url 'communication:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Dashboard</a>
+                <a href="{% url 'communication:messages' %}" class="{% if request.resolver_match.url_name == 'messages' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Messages</a>
+                <a href="{% url 'communication:notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Notifications</a>
+                <a href="{% url 'communication:settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Settings</a>
+            </div>
+            
+            <!-- Notification Icon with Badge -->
+            <div class="relative">
+                <a href="{% url 'communication:notifications' %}" id="notificationIcon" class="relative p-2 text-gray-500 hover:text-blue-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <!-- Notification Badge -->
+                    <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -20,4 +33,99 @@
         {% endblock %}
     </div>
 </div>
+
+<!-- Notification JavaScript -->
+<script>
+// Function to update notification count
+function updateNotificationCount() {
+    fetch('{% url "communication:notification_count_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notificationBadge');
+            const count = data.unread_count;
+            
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching notification count:', error);
+        });
+}
+
+// Update notification count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateNotificationCount();
+    
+    // Update notification count every 30 seconds
+    setInterval(updateNotificationCount, 30000);
+});
+
+// Function to mark notification as read
+function markNotificationAsRead(notificationId) {
+    fetch(`/communication/api/notifications/${notificationId}/read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateNotificationCount();
+        }
+    })
+    .catch(error => {
+        console.error('Error marking notification as read:', error);
+    });
+}
+
+// Function to mark all notifications as read
+function markAllNotificationsAsRead() {
+    fetch('{% url "communication:mark_all_notifications_read" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateNotificationCount();
+            location.reload(); // Refresh the page to show updated notifications
+        }
+    })
+    .catch(error => {
+        console.error('Error marking all notifications as read:', error);
+    });
+}
+
+// Function to clear all notifications
+function clearAllNotifications() {
+    if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+        fetch('{% url "communication:clear_all_notifications" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateNotificationCount();
+                location.reload(); // Refresh the page to show updated notifications
+            }
+        })
+        .catch(error => {
+            console.error('Error clearing all notifications:', error);
+        });
+    }
+}
+</script>
 {% endblock %}

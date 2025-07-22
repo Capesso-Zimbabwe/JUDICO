@@ -19,7 +19,7 @@ urlpatterns = [
     path('document/', lambda request: redirect('/documents/')),
     path('governance/', include('governance.urls', namespace='governance')),
     path('compliance/', include('compliance.urls', namespace='compliance')),
-    path('aml/', include('aml_system.urls', namespace='aml_system')),
+    path('kyc/', include('kyc_app.urls', namespace='kyc_app')),
     path('communication/', include('communication.urls', namespace='communication')),
     path('client/', include('client_management.urls', namespace='client_management')),
 
