@@ -3107,3 +3107,120 @@ def debug_field_lengths(request):
         'char_fields': char_fields,
         'test_results': test_results
     })
+
+@login_required
+def combined_reports(request):
+    """
+    Combined view for both viewing reports and generating new reports.
+    Merges functionality from kyc_reports_list and reports_dashboard.
+    """
+    # Get filter parameters for reports list
+    report_type = request.GET.get('type', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    decision = request.GET.get('decision', '')
+    search_query = request.GET.get('q', '')
+    
+    # Start with all reports
+    reports = KYCReport.objects.all()
+    
+    # Apply filters
+    if report_type:
+        reports = reports.filter(report_type=report_type)
+    
+    if date_from:
+        try:
+            from_date = datetime.strptime(date_from, '%Y-%m-%d')
+            reports = reports.filter(generated_at__gte=from_date)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            to_date = datetime.strptime(date_to, '%Y-%m-%d')
+            to_date = to_date.replace(hour=23, minute=59, second=59)
+            reports = reports.filter(generated_at__lte=to_date)
+        except ValueError:
+            pass
+    
+    if decision:
+        reports = reports.filter(decision=decision)
+    
+    if search_query:
+        reports = reports.filter(
+            Q(report_id__icontains=search_query) |
+            Q(kyc_profile__full_name__icontains=search_query) |
+            Q(business_kyc__business_name__icontains=search_query)
+        )
+    
+    # Stats for the dashboard
+    total_reports = reports.count()
+    approved_reports = reports.filter(decision='APPROVED').count()
+    rejected_reports = reports.filter(decision='REJECTED').count()
+    individual_reports = reports.filter(report_type='INDIVIDUAL').count()
+    business_reports = reports.filter(report_type='BUSINESS').count()
+    
+    # Get individual profiles with approved or rejected status
+    approved_individuals = KYCProfile.objects.filter(
+        workflow_state__current_state='APPROVED',
+    ).select_related('workflow_state')
+    
+    rejected_individuals = KYCProfile.objects.filter(
+        workflow_state__current_state='REJECTED',
+    ).select_related('workflow_state')
+    
+    # Get business profiles with approved or rejected status
+    approved_businesses = KYCBusiness.objects.filter(
+        workflow_state__current_state='APPROVED',
+    ).select_related('workflow_state')
+    
+    rejected_businesses = KYCBusiness.objects.filter(
+        workflow_state__current_state='REJECTED',
+    ).select_related('workflow_state')
+    
+    # Add risk level information to profiles
+    individuals = list(approved_individuals) + list(rejected_individuals)
+    businesses = list(approved_businesses) + list(rejected_businesses)
+    
+    # Get risk levels for individual profiles
+    for profile in individuals:
+        try:
+            test_result = KYCTestResult.objects.filter(kyc_profile=profile).latest('created_at')
+            profile.risk_level = test_result.risk_level
+        except KYCTestResult.DoesNotExist:
+            profile.risk_level = None
+    
+    # Get risk levels for business profiles
+    # Note: It appears KYCTestResult doesn't have a business_kyc field
+    # So we'll set risk_level to None for all businesses
+    for business in businesses:
+        business.risk_level = None
+    
+    # Get recently generated reports
+    recent_reports = KYCReport.objects.all().order_by('-generated_at')[:10]
+    
+    context = {
+        # Reports list context
+        'reports': reports,
+        'total_reports': total_reports,
+        'approved_reports': approved_reports,
+        'rejected_reports': rejected_reports,
+        'individual_reports': individual_reports,
+        'business_reports': business_reports,
+        'filter_type': report_type,
+        'filter_date_from': date_from,
+        'filter_date_to': date_to,
+        'filter_decision': decision,
+        'search_query': search_query,
+        
+        # Reports generation context
+        'individuals': individuals,
+        'businesses': businesses,
+        'approved_individuals': approved_individuals.count(),
+        'rejected_individuals': rejected_individuals.count(),
+        'approved_businesses': approved_businesses.count(),
+        'rejected_businesses': rejected_businesses.count(),
+        'recent_reports': recent_reports,
+    }
+    
+    return render(request, 'kyc_app/combined_reports.html', context)

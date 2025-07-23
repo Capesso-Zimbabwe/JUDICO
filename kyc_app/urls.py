@@ -35,14 +35,18 @@ urlpatterns = [
     path('reopen-kyc-review/<int:profile_id>/', views.reopen_kyc_review, name='reopen_kyc_review'),
     
     # KYC Reports URLs
-    path('reports/', views.kyc_reports_list, name='kyc_reports_list'),
+    path('reports/', views.combined_reports, name='kyc_reports_list'),
     path('report/<str:report_id>/', views.view_kyc_report, name='view_kyc_report'),
     path('generate-report/<int:profile_id>/<str:report_type>/', views.generate_kyc_report, name='generate_kyc_report'),
     path('download-report/<str:report_id>/', views.download_kyc_report, name='download_kyc_report'),
     
-    # Reports Dashboard and Batch Generation
-    path('reports-dashboard/', views.reports_dashboard, name='reports_dashboard'),
+    # Reports Dashboard and Batch Generation (keeping for backward compatibility)
+    path('reports-dashboard/', views.combined_reports, name='reports_dashboard'),
     path('batch-generate-reports/', views.batch_generate_reports, name='batch_generate_reports'),
+    
+    # Legacy reports URLs (redirecting to combined view)
+    path('reports-old/', views.kyc_reports_list, name='kyc_reports_list_old'),
+    path('reports-dashboard-old/', views.reports_dashboard, name='reports_dashboard_old'),
     
     # Bulk Import URLs
     path('bulk-import/', views.bulk_import_profiles, name='bulk_import_profiles'),

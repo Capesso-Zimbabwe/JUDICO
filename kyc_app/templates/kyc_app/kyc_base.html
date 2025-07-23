@@ -38,11 +38,8 @@
   <a href="{% url 'kyc_app:kyc_workflow_dashboard' %}" class="kyc-menu-item {% if request.resolver_match.url_name == 'kyc_workflow_dashboard' %}active{% endif %}">
     Work Flow Dashboard
   </a>
-  <a href="{% url 'kyc_app:kyc_reports_list' %}" class="kyc-menu-item {% if request.resolver_match.url_name == 'kyc_reports_list' %}active{% endif %}">
+  <a href="{% url 'kyc_app:kyc_reports_list' %}" class="kyc-menu-item {% if request.resolver_match.url_name == 'kyc_reports_list' or request.resolver_match.url_name == 'reports_dashboard' %}active{% endif %}">
     Reports
-  </a>
-  <a href="{% url 'kyc_app:reports_dashboard' %}" class="kyc-menu-item {% if request.resolver_match.url_name == 'reports_dashboard' %}active{% endif %}">
-    Generate Reports
   </a>
   <a href="{% url 'kyc_app:check_individual' %}" class="kyc-menu-item {% if request.resolver_match.url_name == 'check_individual' %}active{% endif %}">
     Individual Check
