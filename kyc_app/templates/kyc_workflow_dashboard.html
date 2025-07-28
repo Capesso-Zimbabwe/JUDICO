@@ -1,12 +1,12 @@
 {% extends "kyc_app/kyc_base.html" %}
 {% load static %}
 
-{% block title %}KYC Workflow Dashboard{% endblock %}
+{% block title %}Workflow{% endblock %}
 
 {% block kyc_content %}
 <div class="bg-gray-100 min-h-screen p-6">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">KYC Workflow Dashboard</h1>
+    <h1 class="text-2xl font-bold text-gray-800">Workflow</h1>
     <div class="flex space-x-2">
       <a href="{% url 'kyc_app:register_kyc_profile' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
         <i class="fas fa-user-plus mr-2"></i> New KYC Profile

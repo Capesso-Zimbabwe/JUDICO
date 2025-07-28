@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contract List{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contract-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    .contract-card:hover {
+        transform: translateY(-2px);
+    }
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .status-draft { background-color: #f8f9fa; color: #6c757d; }
+    .status-pending_signature { background-color: #fff3cd; color: #856404; }
+    .status-signed { background-color: #d4edda; color: #155724; }
+    .status-executed { background-color: #d1ecf1; color: #0c5460; }
+    .status-terminated { background-color: #f8d7da; color: #721c24; }
+    .status-expired { background-color: #e2e3e5; color: #383d41; }
+    .filter-form {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Contract Management</h1>
+                    <p class="text-muted">Manage all contracts and agreements</p>
+                </div>
+                <a href="{% url 'contract_management:contract_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Contract
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-form">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                {{ filter_form.status.label_tag }}
+                {{ filter_form.status }}
+            </div>
+            <div class="col-md-3">
+                {{ filter_form.contract_type.label_tag }}
+                {{ filter_form.contract_type }}
+            </div>
+            <div class="col-md-3">
+                {{ filter_form.client.label_tag }}
+                {{ filter_form.client }}
+            </div>
+            <div class="col-md-3">
+                {{ filter_form.assigned_lawyer.label_tag }}
+                {{ filter_form.assigned_lawyer }}
+            </div>
+            <div class="col-md-6">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search_query }}" placeholder="Search contracts...">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-search me-1"></i>Filter
+                </button>
+                <a href="{% url 'contract_management:contract_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Contract List -->
+    <div class="row">
+        {% for contract in page_obj %}
+        <div class="col-md-6 col-lg-4">
+            <div class="contract-card">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">
+                            <a href="{% url 'contract_management:contract_detail' contract.pk %}" 
+                               class="text-decoration-none">{{ contract.title }}</a>
+                        </h5>
+                        <span class="status-badge status-{{ contract.status }}">{{ contract.get_status_display }}</span>
+                    </div>
+                    
+                    <p class="card-text text-muted mb-2">{{ contract.description|truncatewords:15 }}</p>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-user me-1"></i>{{ contract.client.name }}
+                        </small><br>
+                        <small class="text-muted">
+                            <i class="fas fa-gavel me-1"></i>{{ contract.assigned_lawyer.get_full_name|default:"Unassigned" }}
+                        </small><br>
+                        <small class="text-muted">
+                            <i class="fas fa-file-contract me-1"></i>{{ contract.get_contract_type_display }}
+                        </small>
+                    </div>
+                    
+                    {% if contract.contract_value %}
+                    <div class="mb-3">
+                        <strong class="text-success">${{ contract.contract_value|floatformat:2 }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ contract.created_at|date:"M d, Y" }}</small>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'contract_management:contract_detail' contract.pk %}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'contract_management:contract_update' contract.pk %}" 
+                               class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-file-contract fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No contracts found</h4>
+                <p class="text-muted">Create your first contract to get started.</p>
+                <a href="{% url 'contract_management:contract_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Contract
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Contract pagination">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% for key, value in filter_form.data.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% for key, value in filter_form.data.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% for key, value in filter_form.data.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% for key, value in filter_form.data.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-submit form on filter change
+    document.querySelectorAll('select[name="status"], select[name="contract_type"], select[name="client"], select[name="assigned_lawyer"]').forEach(function(select) {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+</script>
+{% endblock %}

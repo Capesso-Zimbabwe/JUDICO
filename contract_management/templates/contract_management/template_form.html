@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Contract Template{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .page-header {
+        background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    .form-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        padding: 35px;
+        margin-bottom: 20px;
+    }
+    .form-section {
+        margin-bottom: 35px;
+        padding-bottom: 25px;
+        border-bottom: 1px solid #eee;
+    }
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    .section-title i {
+        margin-right: 10px;
+        color: #6f42c1;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+    }
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+    .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+    }
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    .form-control.is-valid {
+        border-color: #28a745;
+    }
+    .required {
+        color: #dc3545;
+    }
+    .help-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(111, 66, 193, 0.4);
+    }
+    .btn-secondary {
+        border: 2px solid #6c757d;
+        background: transparent;
+        color: #6c757d;
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+        background: #6c757d;
+        color: white;
+    }
+    .preview-section {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 15px;
+    }
+    .preview-title {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 10px;
+    }
+    .preview-content {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    .character-count {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-align: right;
+        margin-top: 5px;
+    }
+    .category-suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .category-suggestion {
+        background: #e9ecef;
+        color: #495057;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .category-suggestion:hover {
+        background: #6f42c1;
+        color: white;
+    }
+    .template-variables {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        border-radius: 0 8px 8px 0;
+        margin-top: 15px;
+    }
+    .variable-item {
+        font-family: 'Courier New', monospace;
+        background: #f5f5f5;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin: 2px;
+        display: inline-block;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="form-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2">{% if form.instance.pk %}Edit{% else %}Create{% endif %} Contract Template</h1>
+                    <p class="mb-0 opacity-75">{% if form.instance.pk %}Update the existing template{% else %}Create a reusable contract template{% endif %}</p>
+                </div>
+                <div>
+                    <a href="{% url 'contract_management:template_list' %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Templates
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Form -->
+        <div class="form-card">
+            <form method="post" id="templateForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Basic Information
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    {{ form.name.label }}
+                                    {% if form.name.field.required %}<span class="required">*</span>{% endif %}
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.help_text %}
+                                <div class="help-text">{{ form.name.help_text }}</div>
+                                {% endif %}
+                                {% if form.name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="{{ form.category.id_for_label }}" class="form-label">
+                                    {{ form.category.label }}
+                                    {% if form.category.field.required %}<span class="required">*</span>{% endif %}
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.help_text %}
+                                <div class="help-text">{{ form.category.help_text }}</div>
+                                {% endif %}
+                                {% if form.category.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.category.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Category Suggestions -->
+                                <div class="category-suggestions">
+                                    <span class="category-suggestion" onclick="setCategory('Service Agreement')">Service Agreement</span>
+                                    <span class="category-suggestion" onclick="setCategory('Employment')">Employment</span>
+                                    <span class="category-suggestion" onclick="setCategory('NDA')">NDA</span>
+                                    <span class="category-suggestion" onclick="setCategory('Partnership')">Partnership</span>
+                                    <span class="category-suggestion" onclick="setCategory('Lease')">Lease</span>
+                                    <span class="category-suggestion" onclick="setCategory('Sales')">Sales</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            {{ form.description.label }}
+                            {% if form.description.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.description }}
+                        <div class="character-count" id="descriptionCount">0 / 500 characters</div>
+                        {% if form.description.help_text %}
+                        <div class="help-text">{{ form.description.help_text }}</div>
+                        {% endif %}
+                        {% if form.description.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.description.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Default Terms and Conditions -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-list-alt"></i>
+                        Default Terms & Conditions
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.default_terms.id_for_label }}" class="form-label">
+                            {{ form.default_terms.label }}
+                            {% if form.default_terms.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.default_terms }}
+                        <div class="character-count" id="termsCount">0 characters</div>
+                        {% if form.default_terms.help_text %}
+                        <div class="help-text">{{ form.default_terms.help_text }}</div>
+                        {% endif %}
+                        {% if form.default_terms.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.default_terms.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Template Variables Info -->
+                        <div class="template-variables">
+                            <h6 class="mb-2">
+                                <i class="fas fa-code me-2"></i>Available Template Variables
+                            </h6>
+                            <p class="small mb-2">You can use these variables in your terms and conditions. They will be automatically replaced when creating contracts:</p>
+                            <div>
+                                <span class="variable-item">{{client_name}}</span>
+                                <span class="variable-item">{{lawyer_name}}</span>
+                                <span class="variable-item">{{contract_date}}</span>
+                                <span class="variable-item">{{start_date}}</span>
+                                <span class="variable-item">{{end_date}}</span>
+                                <span class="variable-item">{{contract_value}}</span>
+                                <span class="variable-item">{{today_date}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preview Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-eye"></i>
+                        Template Preview
+                    </div>
+                    
+                    <div class="preview-section">
+                        <div class="preview-title">Template Preview:</div>
+                        <div class="preview-content" id="templatePreview">
+                            <em>Fill in the template details above to see a preview...</em>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'contract_management:template_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" id="previewBtn" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i>Preview
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>{% if form.instance.pk %}Update{% else %}Create{% endif %} Template
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-4">
+            <div class="alert alert-info">
+                <h6 class="alert-heading">
+                    <i class="fas fa-lightbulb me-2"></i>Template Creation Tips
+                </h6>
+                <ul class="mb-0 small">
+                    <li>Use descriptive names that clearly identify the template's purpose</li>
+                    <li>Choose appropriate categories to help organize and find templates</li>
+                    <li>Include comprehensive default terms that can be customized per contract</li>
+                    <li>Use template variables to automatically populate contract-specific information</li>
+                    <li>Test your template by creating a sample contract before finalizing</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const nameField = document.getElementById('{{ form.name.id_for_label }}');
+        const categoryField = document.getElementById('{{ form.category.id_for_label }}');
+        const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
+        const termsField = document.getElementById('{{ form.default_terms.id_for_label }}');
+        const previewDiv = document.getElementById('templatePreview');
+        const form = document.getElementById('templateForm');
+        
+        // Character counters
+        function updateDescriptionCount() {
+            const count = descriptionField.value.length;
+            document.getElementById('descriptionCount').textContent = `${count} / 500 characters`;
+            
+            if (count > 500) {
+                document.getElementById('descriptionCount').classList.add('text-danger');
+            } else {
+                document.getElementById('descriptionCount').classList.remove('text-danger');
+            }
+        }
+        
+        function updateTermsCount() {
+            const count = termsField.value.length;
+            document.getElementById('termsCount').textContent = `${count} characters`;
+        }
+        
+        // Update preview
+        function updatePreview() {
+            const name = nameField.value.trim();
+            const category = categoryField.value.trim();
+            const description = descriptionField.value.trim();
+            const terms = termsField.value.trim();
+            
+            if (!name && !category && !description && !terms) {
+                previewDiv.innerHTML = '<em>Fill in the template details above to see a preview...</em>';
+                return;
+            }
+            
+            let previewHTML = '';
+            
+            if (name) {
+                previewHTML += `<div class="mb-2"><strong>Template Name:</strong> ${name}</div>`;
+            }
+            
+            if (category) {
+                previewHTML += `<div class="mb-2"><strong>Category:</strong> ${category}</div>`;
+            }
+            
+            if (description) {
+                previewHTML += `<div class="mb-3"><strong>Description:</strong> ${description}</div>`;
+            }
+            
+            if (terms) {
+                previewHTML += `<div class="mb-2"><strong>Default Terms:</strong></div>`;
+                previewHTML += `<div class="border rounded p-2 bg-white small" style="max-height: 200px; overflow-y: auto;">${terms.replace(/\n/g, '<br>')}</div>`;
+            }
+            
+            previewDiv.innerHTML = previewHTML || '<em>No content to preview</em>';
+        }
+        
+        // Event listeners
+        descriptionField.addEventListener('input', function() {
+            updateDescriptionCount();
+            updatePreview();
+        });
+        
+        termsField.addEventListener('input', function() {
+            updateTermsCount();
+            updatePreview();
+        });
+        
+        nameField.addEventListener('input', updatePreview);
+        categoryField.addEventListener('input', updatePreview);
+        
+        // Form validation
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            requiredFields.forEach(field => {
+                field.classList.remove('is-invalid', 'is-valid');
+                
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.add('is-valid');
+                }
+            });
+            
+            // Validate description length
+            if (descriptionField.value.length > 500) {
+                descriptionField.classList.add('is-invalid');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
+        });
+        
+        // Preview button
+        document.getElementById('previewBtn').addEventListener('click', function() {
+            updatePreview();
+            // Scroll to preview
+            previewDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        
+        // Initialize counters and preview
+        updateDescriptionCount();
+        updateTermsCount();
+        updatePreview();
+    });
+    
+    // Category suggestion function
+    function setCategory(category) {
+        document.getElementById('{{ form.category.id_for_label }}').value = category;
+        document.getElementById('templatePreview').scrollIntoView({ behavior: 'smooth' });
+        
+        // Trigger change event to update preview
+        const event = new Event('input', { bubbles: true });
+        document.getElementById('{{ form.category.id_for_label }}').dispatchEvent(event);
+    }
+</script>
+{% endblock %}

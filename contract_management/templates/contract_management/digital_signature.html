@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Digital Signature - {{ contract.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .signature-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .contract-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    .signature-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 20px;
+    }
+    .contract-preview {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 30px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .signature-pad-container {
+        border: 3px solid #dee2e6;
+        border-radius: 10px;
+        background: white;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .signature-pad {
+        border: 2px dashed #6c757d;
+        border-radius: 8px;
+        cursor: crosshair;
+        display: block;
+        margin: 0 auto;
+    }
+    .signature-controls {
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+    .btn-sign {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 15px 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+    .btn-sign:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        color: white;
+    }
+    .btn-sign:disabled {
+        background: #6c757d;
+        transform: none;
+        box-shadow: none;
+    }
+    .signature-info {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 20px;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 20px;
+    }
+    .signer-details {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    .required {
+        color: #dc3545;
+    }
+    .signature-preview {
+        border: 2px solid #28a745;
+        border-radius: 8px;
+        padding: 15px;
+        background: #f8fff9;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .legal-notice {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+    .step {
+        display: flex;
+        align-items: center;
+        margin: 0 15px;
+    }
+    .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #dee2e6;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    .step.active .step-number {
+        background: #28a745;
+        color: white;
+    }
+    .step.completed .step-number {
+        background: #20c997;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="signature-container">
+        <!-- Contract Header -->
+        <div class="contract-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-2">Digital Signature Required</h1>
+                    <p class="mb-2 opacity-75">{{ contract.title }}</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-light text-dark">{{ contract.get_contract_type_display }}</span>
+                        <span class="badge bg-light text-dark">{{ contract.client.name }}</span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="small opacity-75">Signature Request for</div>
+                    <div class="h5 mb-0">{{ signature_request.signer_name }}</div>
+                    <div class="small opacity-75">{{ signature_request.signer_role }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <span>Review Contract</span>
+            </div>
+            <div class="step active">
+                <div class="step-number">2</div>
+                <span>Digital Signature</span>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <span>Complete</span>
+            </div>
+        </div>
+
+        <!-- Signer Information -->
+        <div class="signer-details">
+            <h5 class="mb-3">
+                <i class="fas fa-user me-2 text-primary"></i>Signer Information
+            </h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Name:</strong><br>
+                    {{ signature_request.signer_name }}
+                </div>
+                <div class="col-md-4">
+                    <strong>Email:</strong><br>
+                    {{ signature_request.signer_email }}
+                </div>
+                <div class="col-md-4">
+                    <strong>Role:</strong><br>
+                    {{ signature_request.signer_role }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contract Preview -->
+        <div class="signature-card">
+            <h5 class="mb-3">
+                <i class="fas fa-file-contract me-2 text-primary"></i>Contract Summary
+            </h5>
+            
+            <div class="contract-preview">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Contract Title:</strong><br>
+                        {{ contract.title }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Contract Type:</strong><br>
+                        {{ contract.get_contract_type_display }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Client:</strong><br>
+                        {{ contract.client.name }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Assigned Lawyer:</strong><br>
+                        {{ contract.assigned_lawyer.get_full_name|default:"Not assigned" }}
+                    </div>
+                </div>
+                
+                {% if contract.start_date or contract.end_date %}
+                <div class="row mb-3">
+                    {% if contract.start_date %}
+                    <div class="col-md-6">
+                        <strong>Start Date:</strong><br>
+                        {{ contract.start_date|date:"F d, Y" }}
+                    </div>
+                    {% endif %}
+                    {% if contract.end_date %}
+                    <div class="col-md-6">
+                        <strong>End Date:</strong><br>
+                        {{ contract.end_date|date:"F d, Y" }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if contract.contract_value %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Contract Value:</strong><br>
+                        ${{ contract.contract_value|floatformat:2 }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if contract.description %}
+                <div class="mb-3">
+                    <strong>Description:</strong><br>
+                    {{ contract.description|linebreaks }}
+                </div>
+                {% endif %}
+                
+                {% if contract.terms_and_conditions %}
+                <div class="mb-3">
+                    <strong>Terms & Conditions:</strong><br>
+                    <div class="border rounded p-3 bg-white" style="max-height: 200px; overflow-y: auto;">
+                        {{ contract.terms_and_conditions|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if contract.document %}
+            <div class="text-center mt-3">
+                <a href="{{ contract.document.url }}" class="btn btn-outline-primary" target="_blank">
+                    <i class="fas fa-download me-2"></i>Download Full Contract Document
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Legal Notice -->
+        <div class="legal-notice">
+            <h6 class="mb-2">
+                <i class="fas fa-exclamation-triangle me-2"></i>Legal Notice
+            </h6>
+            <p class="mb-0 small">
+                By signing this document electronically, you acknowledge that you have read, understood, and agree to be bound by the terms and conditions of this contract. Your electronic signature has the same legal effect as a handwritten signature.
+            </p>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-card">
+            <h5 class="mb-4">
+                <i class="fas fa-signature me-2 text-success"></i>Digital Signature
+            </h5>
+            
+            <form method="post" id="signatureForm">
+                {% csrf_token %}
+                
+                <!-- Signature Pad -->
+                <div class="signature-pad-container">
+                    <label class="form-label fw-bold mb-3">Please sign in the box below:</label>
+                    <canvas id="signaturePad" class="signature-pad" width="600" height="200"></canvas>
+                    <div class="signature-controls">
+                        <button type="button" id="clearSignature" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-eraser me-2"></i>Clear
+                        </button>
+                        <button type="button" id="undoSignature" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-undo me-2"></i>Undo
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="signerName" class="form-label">
+                                Confirm Your Full Name <span class="required">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="signerName" name="signer_name" 
+                                   value="{{ signature_request.signer_name }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="signatureDate" class="form-label">
+                                Signature Date <span class="required">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="signatureDate" name="signature_date" 
+                                   value="{% now 'Y-m-d' %}" required readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="ipAddress" class="form-label">IP Address (Auto-detected)</label>
+                    <input type="text" class="form-control" id="ipAddress" name="ip_address" readonly>
+                </div>
+                
+                <!-- Consent Checkboxes -->
+                <div class="mb-4">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="consentRead" required>
+                        <label class="form-check-label" for="consentRead">
+                            I have read and understood the contract terms and conditions <span class="required">*</span>
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="consentSign" required>
+                        <label class="form-check-label" for="consentSign">
+                            I agree to sign this contract electronically <span class="required">*</span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="consentLegal" required>
+                        <label class="form-check-label" for="consentLegal">
+                            I understand that my electronic signature is legally binding <span class="required">*</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Hidden field for signature data -->
+                <input type="hidden" id="signatureData" name="signature_data">
+                
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'contract_management:contract_detail' contract.pk %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                    
+                    <button type="submit" id="submitSignature" class="btn btn-sign" disabled>
+                        <i class="fas fa-signature me-2"></i>Sign Contract
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Information Panel -->
+        <div class="signature-info">
+            <h6 class="mb-2">
+                <i class="fas fa-info-circle me-2"></i>Signature Information
+            </h6>
+            <ul class="mb-0 small">
+                <li>Your signature will be securely stored and associated with this contract</li>
+                <li>A timestamp and IP address will be recorded for legal purposes</li>
+                <li>You will receive a confirmation email once the signature is complete</li>
+                <li>This signature is legally binding and equivalent to a handwritten signature</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize signature pad
+        const canvas = document.getElementById('signaturePad');
+        const signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgba(255, 255, 255, 0)',
+            penColor: 'rgb(0, 0, 0)',
+            velocityFilterWeight: 0.7,
+            minWidth: 0.5,
+            maxWidth: 2.5,
+            throttle: 16,
+            minPointDistance: 3
+        });
+        
+        // Resize canvas
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext('2d').scale(ratio, ratio);
+            signaturePad.clear();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Clear signature
+        document.getElementById('clearSignature').addEventListener('click', function() {
+            signaturePad.clear();
+            validateForm();
+        });
+        
+        // Undo last stroke
+        document.getElementById('undoSignature').addEventListener('click', function() {
+            const data = signaturePad.toData();
+            if (data) {
+                data.pop();
+                signaturePad.fromData(data);
+            }
+            validateForm();
+        });
+        
+        // Form validation
+        const form = document.getElementById('signatureForm');
+        const submitBtn = document.getElementById('submitSignature');
+        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        
+        function validateForm() {
+            const hasSignature = !signaturePad.isEmpty();
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            const nameValid = document.getElementById('signerName').value.trim().length > 0;
+            
+            submitBtn.disabled = !(hasSignature && allChecked && nameValid);
+        }
+        
+        // Add event listeners
+        signaturePad.addEventListener('endStroke', validateForm);
+        checkboxes.forEach(cb => cb.addEventListener('change', validateForm));
+        document.getElementById('signerName').addEventListener('input', validateForm);
+        
+        // Get user's IP address
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ipAddress').value = data.ip;
+            })
+            .catch(error => {
+                console.log('Could not fetch IP address:', error);
+                document.getElementById('ipAddress').value = 'Unknown';
+            });
+        
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (signaturePad.isEmpty()) {
+                alert('Please provide your signature before submitting.');
+                return;
+            }
+            
+            // Convert signature to base64
+            const signatureData = signaturePad.toDataURL('image/png');
+            document.getElementById('signatureData').value = signatureData;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            
+            // Submit form
+            this.submit();
+        });
+        
+        // Initial validation
+        validateForm();
+    });
+</script>
+{% endblock %}

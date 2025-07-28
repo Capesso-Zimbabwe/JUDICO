@@ -8,8 +8,11 @@ from . import views
 app_name = 'kyc_app'
 
 urlpatterns = [
-    # Root URL - redirect to workflow dashboard
-    path('', views.kyc_workflow_dashboard, name='kyc_root'),
+    # Root URL - redirect to main dashboard
+    path('', views.kyc_dashboard, name='kyc_root'),
+    
+    # Main KYC Dashboard
+    path('dashboard/', views.kyc_dashboard, name='kyc_dashboard'),
     
     # KYC Registration URLs
     path('register-business/', views.register_kyc_business, name='registerrr_kyc_business'),

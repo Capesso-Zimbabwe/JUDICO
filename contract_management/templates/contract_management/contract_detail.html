@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ contract.title }} - Contract Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contract-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    .detail-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-draft { background-color: #f8f9fa; color: #6c757d; }
+    .status-pending_signature { background-color: #fff3cd; color: #856404; }
+    .status-signed { background-color: #d4edda; color: #155724; }
+    .status-executed { background-color: #d1ecf1; color: #0c5460; }
+    .status-terminated { background-color: #f8d7da; color: #721c24; }
+    .status-expired { background-color: #e2e3e5; color: #383d41; }
+    .priority-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .priority-low { background-color: #d1ecf1; color: #0c5460; }
+    .priority-medium { background-color: #fff3cd; color: #856404; }
+    .priority-high { background-color: #f8d7da; color: #721c24; }
+    .priority-urgent { background-color: #721c24; color: white; }
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    .info-value {
+        color: #6c757d;
+    }
+    .signature-item {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .signature-pending {
+        border-left: 4px solid #ffc107;
+    }
+    .signature-signed {
+        border-left: 4px solid #28a745;
+    }
+    .signature-rejected {
+        border-left: 4px solid #dc3545;
+    }
+    .amendment-item {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #17a2b8;
+    }
+    .action-buttons {
+        gap: 10px;
+    }
+    .timeline-item {
+        position: relative;
+        padding-left: 30px;
+        margin-bottom: 20px;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #007bff;
+    }
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 16px;
+        width: 2px;
+        height: calc(100% + 4px);
+        background-color: #dee2e6;
+    }
+    .timeline-item:last-child::after {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Contract Header -->
+    <div class="contract-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h2 mb-2">{{ contract.title }}</h1>
+                <p class="mb-3 opacity-75">{{ contract.description|truncatewords:20 }}</p>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="status-badge status-{{ contract.status }}">{{ contract.get_status_display }}</span>
+                    <span class="priority-badge priority-{{ contract.priority }}">{{ contract.get_priority_display }} Priority</span>
+                    {% if contract.contract_value %}
+                    <span class="badge bg-light text-dark fs-6">${{ contract.contract_value|floatformat:2 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="d-flex flex-column align-items-end action-buttons">
+                    <div class="btn-group mb-2">
+                        <a href="{% url 'contract_management:contract_update' contract.pk %}" class="btn btn-light">
+                            <i class="fas fa-edit me-2"></i>Edit
+                        </a>
+                        <button type="button" class="btn btn-light dropdown-toggle dropdown-toggle-split" 
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'contract_management:add_signature_request' contract.pk %}">
+                                <i class="fas fa-signature me-2"></i>Add Signature Request
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'contract_management:add_amendment' contract.pk %}">
+                                <i class="fas fa-plus me-2"></i>Add Amendment
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'contract_management:contract_delete' contract.pk %}">
+                                <i class="fas fa-trash me-2"></i>Delete Contract
+                            </a></li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'contract_management:contract_list' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Contract Information -->
+            <div class="detail-card">
+                <h4 class="mb-4">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>Contract Information
+                </h4>
+                
+                <div class="info-item">
+                    <span class="info-label">Contract Type:</span>
+                    <span class="info-value">{{ contract.get_contract_type_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Client:</span>
+                    <span class="info-value">
+                        <a href="{% url 'client_management:client_detail' contract.client.pk %}" class="text-decoration-none">
+                            {{ contract.client.name }}
+                        </a>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Assigned Lawyer:</span>
+                    <span class="info-value">{{ contract.assigned_lawyer.get_full_name|default:"Unassigned" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Created By:</span>
+                    <span class="info-value">{{ contract.created_by.get_full_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Start Date:</span>
+                    <span class="info-value">{{ contract.start_date|date:"F d, Y"|default:"Not set" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">End Date:</span>
+                    <span class="info-value">{{ contract.end_date|date:"F d, Y"|default:"Not set" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Created:</span>
+                    <span class="info-value">{{ contract.created_at|date:"F d, Y g:i A" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Updated:</span>
+                    <span class="info-value">{{ contract.updated_at|date:"F d, Y g:i A" }}</span>
+                </div>
+                {% if contract.signed_at %}
+                <div class="info-item">
+                    <span class="info-label">Signed Date:</span>
+                    <span class="info-value">{{ contract.signed_at|date:"F d, Y g:i A" }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Terms and Conditions -->
+            {% if contract.terms_and_conditions %}
+            <div class="detail-card">
+                <h4 class="mb-4">
+                    <i class="fas fa-list-alt me-2 text-primary"></i>Terms & Conditions
+                </h4>
+                <div class="border rounded p-3 bg-light">
+                    {{ contract.terms_and_conditions|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Document -->
+            {% if contract.document %}
+            <div class="detail-card">
+                <h4 class="mb-4">
+                    <i class="fas fa-file-pdf me-2 text-primary"></i>Contract Document
+                </h4>
+                <div class="d-flex align-items-center justify-content-between p-3 border rounded">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-pdf fa-2x text-danger me-3"></i>
+                        <div>
+                            <h6 class="mb-1">{{ contract.document.name }}</h6>
+                            <small class="text-muted">Contract Document</small>
+                        </div>
+                    </div>
+                    <a href="{{ contract.document.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="detail-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+                </h5>
+                <div class="d-grid gap-2">
+                    {% if contract.status == 'draft' %}
+                    <button class="btn btn-success btn-sm" onclick="updateStatus('pending_signature')">
+                        <i class="fas fa-paper-plane me-2"></i>Send for Signature
+                    </button>
+                    {% endif %}
+                    {% if contract.status == 'signed' %}
+                    <button class="btn btn-info btn-sm" onclick="updateStatus('executed')">
+                        <i class="fas fa-check-circle me-2"></i>Mark as Executed
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'contract_management:add_signature_request' contract.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-signature me-2"></i>Add Signature
+                    </a>
+                    <a href="{% url 'contract_management:add_amendment' contract.pk %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-plus me-2"></i>Add Amendment
+                    </a>
+                </div>
+            </div>
+
+            <!-- Signatures -->
+            <div class="detail-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-signature me-2 text-info"></i>Signatures
+                    </h5>
+                    <a href="{% url 'contract_management:add_signature_request' contract.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
+                
+                {% for signature in signatures %}
+                <div class="signature-item signature-{{ signature.status }}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1">{{ signature.signer_name }}</h6>
+                            <small class="text-muted">{{ signature.signer_email }}</small>
+                        </div>
+                        <span class="badge bg-{{ signature.status|yesno:'success,warning,danger' }}">
+                            {{ signature.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="small text-muted">
+                        <div>Role: {{ signature.signer_role }}</div>
+                        {% if signature.signed_at %}
+                        <div>Signed: {{ signature.signed_at|date:"M d, Y g:i A" }}</div>
+                        {% else %}
+                        <div>Requested: {{ signature.created_at|date:"M d, Y g:i A" }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-3">
+                    <i class="fas fa-signature fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No signatures requested</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Amendments -->
+            {% if amendments %}
+            <div class="detail-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2 text-secondary"></i>Amendments
+                    </h5>
+                    <a href="{% url 'contract_management:add_amendment' contract.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
+                
+                {% for amendment in amendments %}
+                <div class="amendment-item">
+                    <h6 class="mb-2">{{ amendment.title }}</h6>
+                    <p class="mb-2 small">{{ amendment.description|truncatewords:15 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ amendment.created_at|date:"M d, Y" }}</small>
+                        {% if amendment.document %}
+                        <a href="{{ amendment.document.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <i class="fas fa-download"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Activity Timeline -->
+            <div class="detail-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-history me-2 text-success"></i>Activity Timeline
+                </h5>
+                
+                <div class="timeline-item">
+                    <div class="fw-bold">Contract Created</div>
+                    <div class="small text-muted">{{ contract.created_at|date:"M d, Y g:i A" }}</div>
+                    <div class="small">by {{ contract.created_by.get_full_name }}</div>
+                </div>
+                
+                {% if contract.signed_at %}
+                <div class="timeline-item">
+                    <div class="fw-bold text-success">Contract Signed</div>
+                    <div class="small text-muted">{{ contract.signed_at|date:"M d, Y g:i A" }}</div>
+                </div>
+                {% endif %}
+                
+                {% for signature in signatures %}
+                {% if signature.signed_at %}
+                <div class="timeline-item">
+                    <div class="fw-bold">Signed by {{ signature.signer_name }}</div>
+                    <div class="small text-muted">{{ signature.signed_at|date:"M d, Y g:i A" }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                
+                {% for amendment in amendments %}
+                <div class="timeline-item">
+                    <div class="fw-bold">Amendment Added</div>
+                    <div class="small text-muted">{{ amendment.created_at|date:"M d, Y g:i A" }}</div>
+                    <div class="small">{{ amendment.title }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateStatus(newStatus) {
+        if (confirm('Are you sure you want to update the contract status?')) {
+            fetch(`{% url 'contract_management:update_contract_status' contract.pk %}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `status=${newStatus}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the status.');
+            });
+        }
+    }
+</script>
+{% endblock %}

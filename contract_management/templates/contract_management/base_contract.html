@@ -1,0 +1,550 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contract Management - JUDICO{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Contract Management Specific Styles */
+    .contract-header {
+        background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+    }
+    
+    .contract-nav {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .nav-pills .nav-link {
+        border-radius: 8px;
+        padding: 12px 20px;
+        margin-right: 10px;
+        color: #6c757d;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-pills .nav-link:hover {
+        background-color: #f8f9fa;
+        color: #17a2b8;
+    }
+    
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+        color: white;
+    }
+    
+    .contract-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .contract-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-draft {
+        background-color: #ffeaa7;
+        color: #d63031;
+    }
+    
+    .status-active {
+        background-color: #55efc4;
+        color: #00b894;
+    }
+    
+    .status-pending {
+        background-color: #fab1a0;
+        color: #e17055;
+    }
+    
+    .status-expired {
+        background-color: #fd79a8;
+        color: #e84393;
+    }
+    
+    .status-terminated {
+        background-color: #ddd;
+        color: #636e72;
+    }
+    
+    .priority-high {
+        color: #dc3545;
+    }
+    
+    .priority-medium {
+        color: #ffc107;
+    }
+    
+    .priority-low {
+        color: #28a745;
+    }
+    
+    .action-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+        color: white;
+    }
+    
+    .btn-primary-gradient:hover {
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #17a2b8;
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .breadcrumb-custom .breadcrumb-item.active {
+        color: white;
+        font-weight: 600;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .search-box {
+        position: relative;
+    }
+    
+    .search-box .form-control {
+        padding-left: 45px;
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+    }
+    
+    .search-box .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    .filter-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .table-responsive {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        color: #495057;
+        padding: 15px;
+    }
+    
+    .table td {
+        border: none;
+        padding: 15px;
+        vertical-align: middle;
+    }
+    
+    .table tbody tr {
+        border-bottom: 1px solid #f1f3f4;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .pagination {
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .page-link {
+        border: none;
+        color: #6c757d;
+        padding: 10px 15px;
+        margin: 0 2px;
+        border-radius: 8px;
+    }
+    
+    .page-link:hover {
+        background-color: #f8f9fa;
+        color: #17a2b8;
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+        border: none;
+    }
+    
+    .alert-custom {
+        border: none;
+        border-radius: 10px;
+        padding: 15px 20px;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 40px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+    
+    @media (max-width: 768px) {
+        .contract-header {
+            padding: 20px 0;
+        }
+        
+        .contract-nav {
+            padding: 15px;
+        }
+        
+        .nav-pills .nav-link {
+            padding: 10px 15px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .contract-card {
+            padding: 20px;
+        }
+        
+        .stats-number {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% block contract_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<!-- Contract Header -->
+<div class="contract-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-custom">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'contract_management:dashboard' %}" class="text-white-50">
+                                <i class="fas fa-file-contract me-1"></i>Contracts
+                            </a>
+                        </li>
+                        {% block breadcrumb %}{% endblock %}
+                    </ol>
+                </nav>
+                <h1 class="h2 mb-2">{% block page_title %}Contract Management{% endblock %}</h1>
+                <p class="mb-0 opacity-75">{% block page_description %}Manage contracts, signatures, and amendments{% endblock %}</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                {% block header_actions %}
+                <a href="{% url 'contract_management:contract_create' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>New Contract
+                </a>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contract Navigation -->
+<div class="container-fluid">
+    <div class="contract-nav">
+        <ul class="nav nav-pills" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                   href="{% url 'contract_management:dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {% if request.resolver_match.url_name == 'contract_list' %}active{% endif %}" 
+                   href="{% url 'contract_management:contract_list' %}">
+                    <i class="fas fa-file-contract me-2"></i>All Contracts
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}" 
+                   href="{% url 'contract_management:template_list' %}">
+                    <i class="fas fa-file-alt me-2"></i>Templates
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="#" onclick="showComingSoon('Reports')">
+                    <i class="fas fa-chart-bar me-2"></i>Reports
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="#" onclick="showComingSoon('Settings')">
+                    <i class="fas fa-cog me-2"></i>Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Page Content -->
+    {% block contract_content %}
+    <div class="contract-card">
+        <p>Contract management content goes here...</p>
+    </div>
+    {% endblock %}
+</div>
+
+<!-- Loading Spinner -->
+<div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3 text-muted">Loading...</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Common JavaScript functions for contract management
+    
+    // Show loading spinner
+    function showLoading() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+    }
+    
+    // Hide loading spinner
+    function hideLoading() {
+        document.getElementById('loadingSpinner').style.display = 'none';
+    }
+    
+    // Show coming soon message
+    function showComingSoon(feature) {
+        alert(`${feature} feature is coming soon!`);
+    }
+    
+    // Format currency
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    }
+    
+    // Format date
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+    
+    // Show confirmation dialog
+    function confirmAction(message, callback) {
+        if (confirm(message)) {
+            callback();
+        }
+    }
+    
+    // Show success message
+    function showSuccess(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+    
+    // Show error message
+    function showError(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        // Auto remove after 7 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 7000);
+    }
+    
+    // AJAX helper function
+    function makeAjaxRequest(url, method = 'GET', data = null, headers = {}) {
+        const defaultHeaders = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        };
+        
+        return fetch(url, {
+            method: method,
+            headers: { ...defaultHeaders, ...headers },
+            body: data ? JSON.stringify(data) : null
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .catch(error => {
+            console.error('AJAX request failed:', error);
+            showError('An error occurred. Please try again.');
+            throw error;
+        });
+    }
+    
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Initialize Bootstrap popovers
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl);
+        });
+        
+        // Auto-hide alerts
+        const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.classList.remove('show');
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.parentNode.removeChild(alert);
+                        }
+                    }, 150);
+                }
+            }, 5000);
+        });
+    });
+    
+    // Search functionality
+    function initializeSearch(searchInputId, searchUrl) {
+        const searchInput = document.getElementById(searchInputId);
+        if (!searchInput) return;
+        
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            searchTimeout = setTimeout(() => {
+                if (query.length >= 2 || query.length === 0) {
+                    performSearch(query, searchUrl);
+                }
+            }, 300);
+        });
+    }
+    
+    function performSearch(query, url) {
+        showLoading();
+        
+        const searchParams = new URLSearchParams(window.location.search);
+        if (query) {
+            searchParams.set('search', query);
+        } else {
+            searchParams.delete('search');
+        }
+        
+        const newUrl = `${url}?${searchParams.toString()}`;
+        window.location.href = newUrl;
+    }
+</script>
+{% block contract_extra_js %}{% endblock %}
+{% endblock %}

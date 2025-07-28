@@ -22,6 +22,7 @@ urlpatterns = [
     path('kyc/', include('kyc_app.urls', namespace='kyc_app')),
     path('communication/', include('communication.urls', namespace='communication')),
     path('client/', include('client_management.urls', namespace='client_management')),
+    path('contracts/', include('contract_management.urls', namespace='contract_management')),
 
 
     # admin 

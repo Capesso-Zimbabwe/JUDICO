@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "kyc_app/kyc_base.html" %}
 {% load kyc_tags %}
 
 {% block sidebar %}
@@ -53,6 +53,16 @@
             KYC Reports
         </a>
     </li>
+    <li>
+        <a href="{% url 'contract_management:contract_dashboard' %}" class="sidebar-link block py-2 px-3 hover:text-custom-orange text-gray-700">
+            <span class="sidebar-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </span>
+            Contract Management
+        </a>
+    </li>
     <li class="absolute bottom-0 left-0 w-full border-t border-gray-700 mt-auto py-2">
         <form id="logout-form" method="post" action="{% url 'logout' %}">{% csrf_token %}</form>
         <button onclick="document.getElementById('logout-form').submit()" href="#" class="sidebar-link block w-full py-3 px-3 hover:text-white text-slate-200">
@@ -69,7 +79,7 @@
 
 {% block title %}Approval Details - {{ profile.full_name }}{% endblock %}
 
-{% block content %}
+{% block kyc_content %}
 <div class="py-6 px-4 sm:px-6 lg:px-8 mx-auto max-w-6xl">
     <div class="mb-6">
         <nav class="flex" aria-label="Breadcrumb">

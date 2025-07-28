@@ -91,7 +91,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <!-- Task Timeline Chart -->
     <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Task Timeline</h3>
+        <h3 class="font-semibold text-gray-700 mb-2">Task Creation Timeline</h3>
         <div class="h-64">
             <canvas id="taskTimelineChart"></canvas>
         </div>
@@ -102,6 +102,63 @@
         <h3 class="font-semibold text-gray-700 mb-2">Top Clients by Tasks</h3>
         <div class="h-64">
             <canvas id="clientTasksChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Third Row of Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Lawyer Performance Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Top Lawyers by Assigned Tasks</h3>
+        <div class="h-64">
+            <canvas id="lawyerTasksChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Task Completion Rate Chart -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Task Completion Rate</h3>
+        <div class="h-64">
+            <canvas id="completionRateChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Fourth Row of Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Monthly Task Distribution -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Monthly Task Distribution</h3>
+        <div class="h-64">
+            <canvas id="monthlyTaskChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Task Status Trend -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Task Status Trends</h3>
+        <div class="h-64">
+            <canvas id="statusTrendChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Fifth Row of Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Priority vs Status Heatmap -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Priority vs Status Matrix</h3>
+        <div class="h-64">
+            <canvas id="priorityStatusChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Overdue Tasks Analysis -->
+    <div class="bg-white rounded-lg shadow p-3">
+        <h3 class="font-semibold text-gray-700 mb-2">Task Due Date Analysis</h3>
+        <div class="h-64">
+            <canvas id="dueDateChart"></canvas>
         </div>
     </div>
 </div>
@@ -248,6 +305,297 @@
                         ticks: {
                             font: {
                                 size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Lawyer Tasks Chart
+        const lawyerTasksCtx = document.getElementById('lawyerTasksChart').getContext('2d');
+        const lawyerTasksChart = new Chart(lawyerTasksCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ lawyer_labels|safe }},
+                datasets: [{
+                    data: {{ lawyer_tasks_data|safe }},
+                    backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Task Completion Rate Chart
+        const completionRateCtx = document.getElementById('completionRateChart').getContext('2d');
+        const completionRate = {{ completed_tasks }} / {{ total_tasks }} * 100;
+        const completionRateChart = new Chart(completionRateCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Remaining'],
+                datasets: [{
+                    data: [completionRate, 100 - completionRate],
+                    backgroundColor: ['#10B981', '#E5E7EB'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            },
+            plugins: [{
+                beforeDraw: function(chart) {
+                    const width = chart.width,
+                          height = chart.height,
+                          ctx = chart.ctx;
+                    ctx.restore();
+                    const fontSize = (height / 114).toFixed(2);
+                    ctx.font = fontSize + "em sans-serif";
+                    ctx.textBaseline = "middle";
+                    const text = Math.round(completionRate) + "%",
+                          textX = Math.round((width - ctx.measureText(text).width) / 2),
+                          textY = height / 2;
+                    ctx.fillText(text, textX, textY);
+                    ctx.save();
+                }
+            }]
+        });
+        
+        // Monthly Task Distribution Chart
+        const monthlyTaskCtx = document.getElementById('monthlyTaskChart').getContext('2d');
+        const monthlyTaskChart = new Chart(monthlyTaskCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Tasks Created',
+                    data: {{ monthly_task_data|safe }},
+                    backgroundColor: '#3B82F6',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Task Status Trend Chart
+        const statusTrendCtx = document.getElementById('statusTrendChart').getContext('2d');
+        const statusTrendChart = new Chart(statusTrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Completed',
+                    data: [8, 12, 15, 18],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }, {
+                    label: 'In Progress',
+                    data: [5, 8, 6, 9],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }, {
+                    label: 'Pending',
+                    data: [10, 8, 12, 7],
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        stacked: true,
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Priority vs Status Matrix Chart
+        const priorityStatusCtx = document.getElementById('priorityStatusChart').getContext('2d');
+        const priorityStatusChart = new Chart(priorityStatusCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Low Priority',
+                    data: [{x: 1, y: {{ pending_tasks }}}, {x: 2, y: {{ in_progress_tasks }}}, {x: 3, y: {{ completed_tasks }}}],
+                    backgroundColor: '#10B981',
+                    pointRadius: 8
+                }, {
+                    label: 'Medium Priority',
+                    data: [{x: 1, y: {{ medium_priority_tasks }}}, {x: 2, y: 8}, {x: 3, y: 12}],
+                    backgroundColor: '#F59E0B',
+                    pointRadius: 8
+                }, {
+                    label: 'High Priority',
+                    data: [{x: 1, y: {{ high_priority_tasks }}}, {x: 2, y: 6}, {x: 3, y: 9}],
+                    backgroundColor: '#EF4444',
+                    pointRadius: 8
+                }, {
+                    label: 'Urgent Priority',
+                    data: [{x: 1, y: {{ urgent_priority_tasks }}}, {x: 2, y: 3}, {x: 3, y: 5}],
+                    backgroundColor: '#DC2626',
+                    pointRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        min: 0.5,
+                        max: 3.5,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                const labels = ['', 'Pending', 'In Progress', 'Completed'];
+                                return labels[value];
+                            },
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Status'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Tasks'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Due Date Analysis Chart
+        const dueDateCtx = document.getElementById('dueDateChart').getContext('2d');
+        const dueDateChart = new Chart(dueDateCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Overdue', 'Due Today', 'Due This Week', 'Due Next Week', 'Future'],
+                datasets: [{
+                    label: 'Tasks',
+                    data: [{{ overdue_tasks }}, {{ due_today_tasks }}, {{ due_this_week_tasks }}, {{ due_next_week_tasks }}, {{ future_tasks }}],
+                    backgroundColor: ['#DC2626', '#F59E0B', '#3B82F6', '#10B981', '#6B7280'],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 11
                             }
                         }
                     }

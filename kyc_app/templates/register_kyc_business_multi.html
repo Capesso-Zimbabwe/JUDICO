@@ -56,35 +56,7 @@
       {% endif %}
     {% endif %}
     
-    <!-- Form Steps Progress Bar -->
-    <div class="mb-8">
-      <div class="flex justify-between items-center">
-      <div id="step-1-indicator" class="flex flex-col items-center">
-          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
-        <span class="text-xs mt-1">Business Info</span>
-      </div>
-        <div class="h-1 flex-1 mx-2 bg-gray-300" id="progress-1-2"></div>
-      <div id="step-2-indicator" class="flex flex-col items-center opacity-50">
-          <div class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold">2</div>
-          <span class="text-xs mt-1">Documents</span>
-        </div>
-        <div class="h-1 flex-1 mx-2 bg-gray-300" id="progress-2-3"></div>
-      <div id="step-3-indicator" class="flex flex-col items-center opacity-50">
-          <div class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold">3</div>
-          <span class="text-xs mt-1">Contact Info</span>
-        </div>
-        <div class="h-1 flex-1 mx-2 bg-gray-300" id="progress-3-4"></div>
-      <div id="step-4-indicator" class="flex flex-col items-center opacity-50">
-          <div class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold">4</div>
-          <span class="text-xs mt-1">Owners</span>
-        </div>
-        <div class="h-1 flex-1 mx-2 bg-gray-300" id="progress-4-5"></div>
-      <div id="step-5-indicator" class="flex flex-col items-center opacity-50">
-          <div class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold">5</div>
-          <span class="text-xs mt-1">Financial Info</span>
-        </div>
-      </div>
-    </div>
+
     
     <form id="business-kyc-form" method="POST" enctype="multipart/form-data" class="space-y-6">
       {% csrf_token %}
@@ -601,33 +573,45 @@
       
       <!-- Form Navigation Buttons -->
       <div class="flex justify-between mt-6">
-        <button 
-          type="button" 
-          id="prev-btn" 
-          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 hidden"
+        <button
+          type="button"
+          id="prev-btn"
+          class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 hidden"
         >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
           Previous
         </button>
         <div>
           <button
             type="button"
             id="save-draft-btn"
-            class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 mr-2"
+            class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 mr-3"
           >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
             Save as Draft
           </button>
           <button 
             type="button" 
             id="next-btn" 
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all duration-200"
           >
             Next
+            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
           </button>
           <button 
             type="submit" 
             id="submit-btn" 
-            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 hidden"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-sm transition-all duration-200 hidden"
           >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
             Submit
           </button>
         </div>
@@ -818,46 +802,7 @@
       addBeneficialOwner();
     });
     
-    // Update progress bar based on current step
-    function updateProgressBar() {
-      // Update step indicators
-      for (let i = 1; i <= totalSteps; i++) {
-        const indicator = document.getElementById(`step-${i}-indicator`);
-        const innerCircle = indicator.querySelector('div');
-        
-        if (i < currentStep) {
-          // Completed steps
-          indicator.classList.remove('opacity-50');
-          innerCircle.classList.remove('bg-gray-400');
-          innerCircle.classList.add('bg-green-600');
-        } else if (i === currentStep) {
-          // Current step
-          indicator.classList.remove('opacity-50');
-          innerCircle.classList.remove('bg-gray-400', 'bg-green-600');
-          innerCircle.classList.add('bg-blue-600');
-        } else {
-          // Future steps
-          indicator.classList.add('opacity-50');
-          innerCircle.classList.remove('bg-blue-600', 'bg-green-600');
-          innerCircle.classList.add('bg-gray-400');
-        }
-      }
-      
-      // Update progress bars between steps
-      for (let i = 1; i < totalSteps; i++) {
-        const progressBar = document.getElementById(`progress-${i}-${i+1}`);
-        
-        if (i < currentStep) {
-          // Progress bars before current step
-          progressBar.classList.remove('bg-gray-300');
-          progressBar.classList.add('bg-green-600');
-        } else {
-          // Progress bars after or at current step
-          progressBar.classList.remove('bg-green-600');
-          progressBar.classList.add('bg-gray-300');
-        }
-      }
-    }
+
     
     // Validate fields in the current step
     function validateStep(step) {
@@ -1029,8 +974,7 @@
         submitBtn.classList.add('hidden');
       }
       
-      // Update progress indicators
-      updateProgressBar();
+
       
       // Update current step in hidden field
       currentStepInput.value = step;

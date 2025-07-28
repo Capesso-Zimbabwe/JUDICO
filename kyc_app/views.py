@@ -34,6 +34,146 @@ logger = logging.getLogger(__name__)
 
 # Create your views here.
 
+@login_required
+def kyc_dashboard(request):
+    """
+    Comprehensive KYC Dashboard with metrics and charts similar to governance dashboard.
+    Provides overview of all KYC activities, risk assessments, and workflow states.
+    """
+    # Calculate date ranges for metrics
+    today = timezone.now().date()
+    week_ago = today - timedelta(days=7)
+    month_ago = today - timedelta(days=30)
+    year_ago = today - timedelta(days=365)
+    
+    # Total counts
+    total_individual_profiles = KYCProfile.objects.count()
+    total_business_profiles = KYCBusiness.objects.count()
+    total_profiles = total_individual_profiles + total_business_profiles
+    
+    # Active profiles (non-draft)
+    active_individual_profiles = KYCProfile.objects.filter(is_draft=False).count()
+    active_business_profiles = KYCBusiness.objects.filter(is_draft=False).count()
+    active_profiles = active_individual_profiles + active_business_profiles
+    
+    # New profiles this week
+    new_individual_profiles = KYCProfile.objects.filter(created_at__gte=week_ago).count()
+    new_business_profiles = KYCBusiness.objects.filter(created_at__gte=week_ago).count()
+    new_profiles_this_week = new_individual_profiles + new_business_profiles
+    
+    # Workflow state counts
+    workflow_states = KYCWorkflowState.objects.values('current_state').annotate(count=Count('id'))
+    state_counts = {state['current_state']: state['count'] for state in workflow_states}
+    
+    # Pending reviews (submitted + in review states)
+    pending_review_states = ['SUBMITTED', 'DOC_REVIEW', 'SCREENING', 'INVESTIGATION', 'APPROVAL_PENDING']
+    pending_reviews = KYCWorkflowState.objects.filter(current_state__in=pending_review_states).count()
+    
+    # Risk assessment metrics
+    risk_assessments = KYCTestResult.objects.values('risk_level').annotate(count=Count('id'))
+    risk_counts = {risk['risk_level']: risk['count'] for risk in risk_assessments}
+    
+    # High-risk flags
+    high_risk_profiles = KYCTestResult.objects.filter(risk_level='High').count()
+    pep_profiles = KYCTestResult.objects.filter(politically_exposed_person=True).count()
+    sanctions_matches = KYCTestResult.objects.filter(sanctions_list_check=True).count()
+    
+    # Document expiry tracking
+    thirty_days_from_now = today + timedelta(days=30)
+    expiring_documents = KYCProfile.objects.filter(
+        id_expiry_date__lte=thirty_days_from_now,
+        id_expiry_date__gt=today
+    ).count()
+    
+    expired_documents = KYCProfile.objects.filter(
+        id_expiry_date__lt=today
+    ).count()
+    
+    # Monthly registration trends (last 12 months)
+    monthly_data = []
+    for i in range(12):
+        month_start = today.replace(day=1) - timedelta(days=i*30)
+        month_end = month_start + timedelta(days=30)
+        
+        individual_count = KYCProfile.objects.filter(
+            created_at__date__gte=month_start,
+            created_at__date__lt=month_end
+        ).count()
+        
+        business_count = KYCBusiness.objects.filter(
+            created_at__date__gte=month_start,
+            created_at__date__lt=month_end
+        ).count()
+        
+        monthly_data.append({
+            'month': month_start.strftime('%b %Y'),
+            'individuals': individual_count,
+            'businesses': business_count,
+            'total': individual_count + business_count
+        })
+    
+    monthly_data.reverse()  # Show oldest to newest
+    
+    # Recent activities
+    recent_activities = []
+    recent_workflows = KYCWorkflowState.objects.filter(
+        updated_at__gte=week_ago
+    ).order_by('-updated_at')[:10]
+    
+    for workflow in recent_workflows:
+        if workflow.history:
+            latest_activity = workflow.history[-1] if workflow.history else None
+            if latest_activity:
+                recent_activities.append({
+                    'timestamp': timezone.datetime.fromisoformat(latest_activity['timestamp']),
+                    'profile_name': workflow.get_subject_name(),
+                    'profile_id': workflow.get_subject_id(),
+                    'description': f"Status changed to {workflow.get_current_state_display()}",
+                    'user': latest_activity.get('by_user', 'System'),
+                    'is_business': bool(workflow.business_kyc)
+                })
+    
+    # Sort activities by timestamp
+    recent_activities.sort(key=lambda x: x['timestamp'], reverse=True)
+    
+    context = {
+        # Overview metrics
+        'total_profiles': total_profiles,
+        'active_profiles': active_profiles,
+        'new_profiles_this_week': new_profiles_this_week,
+        'pending_reviews': pending_reviews,
+        
+        # Profile breakdown
+        'total_individual_profiles': total_individual_profiles,
+        'total_business_profiles': total_business_profiles,
+        'active_individual_profiles': active_individual_profiles,
+        'active_business_profiles': active_business_profiles,
+        
+        # Risk metrics
+        'high_risk_profiles': high_risk_profiles,
+        'pep_profiles': pep_profiles,
+        'sanctions_matches': sanctions_matches,
+        
+        # Document tracking
+        'expiring_documents': expiring_documents,
+        'expired_documents': expired_documents,
+        
+        # Chart data
+        'workflow_state_data': json.dumps(list(state_counts.values())),
+        'workflow_state_labels': json.dumps(list(state_counts.keys())),
+        'risk_level_data': json.dumps([risk_counts.get('Low', 0), risk_counts.get('Medium', 0), risk_counts.get('High', 0)]),
+        'risk_level_labels': json.dumps(['Low Risk', 'Medium Risk', 'High Risk']),
+        'monthly_trend_data': json.dumps(monthly_data),
+        
+        # Recent activities
+        'recent_activities': recent_activities[:10],
+        
+        # Today for template use
+        'today': today,
+    }
+    
+    return render(request, 'kyc_dashboard.html', context)
+
 @csrf_exempt
 def register_kyc_business(request):
     """
@@ -254,8 +394,8 @@ def register_kyc_profile(request):
     
     # Choose template based on preference - standard or multi-step
     # You can make this configurable or use A/B testing to see which works better
-    template_name = 'register_kyc_profile_multi.html'  # For the multi-step form
-    # template_name = 'register_kyc_profile.html'  # For the standard form
+    # template_name = 'register_kyc_profile_multi.html'  # For the multi-step form
+    template_name = 'register_kyc_profile.html'  # For the standard form
     
     return render(request, template_name, {
         "form": form,

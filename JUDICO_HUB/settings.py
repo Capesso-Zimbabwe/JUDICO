@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     # Remove the default admin
     # 'django.contrib.admin',
+
     'admin_portal.apps.AdminPortalAdminConfig',  # Use the specific config class
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
     'client_portal',
     'theme',
     'quotes',  # Add the quotes app
+    'contract_management',  # Add the contract management app
     
     # Third-party apps
     'rest_framework',
@@ -80,6 +82,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+
 ]
 
 ROOT_URLCONF = 'JUDICO_HUB.urls'

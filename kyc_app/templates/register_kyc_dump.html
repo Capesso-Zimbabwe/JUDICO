@@ -1,41 +1,15 @@
-{% extends "base.html" %}
+{% extends "kyc_app/kyc_base.html" %}
 {% load static %}
 {% load widget_tweaks %}
 
 {% block title %}KYC Registration{% endblock %}
 
-{% block content %}
-<div class="container mx-auto px-4 py-8">
-    <!-- Page Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">KYC Registration</h1>
-            <p class="text-gray-600 mt-1">Register a new KYC profile for compliance</p>
-        </div>
-        <a href="{% url 'kyc_app:kyc_workflow_dashboard' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg inline-flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Dashboard
-        </a>
-    </div>
-    
-    <!-- Registration Type Tabs -->
-    <div class="mb-6">
-        <div class="border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8">
-                <a href="#" id="business-tab" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" aria-current="page">
-                    Business Registration
-                </a>
-                <a href="{% url 'kyc_app:register_kyc_profile' %}" id="individual-tab" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                    Individual Registration
-                </a>
-            </nav>
-        </div>
-    </div>
-    
-    <!-- Registration Form Container -->
-    <div class="bg-white shadow-md rounded-lg p-6">
+{% block kyc_content %}
+<div class="flex justify-center items-center min-h-screen bg-gray-100 p-6 text-sm">
+  <div class="w-full max-w-5xl bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-lg font-bold text-gray-800 text-center mb-6">
+      Business KYC Registration
+    </h2>
     
     <!-- Display Django messages -->
     {% if messages %}
@@ -115,284 +89,254 @@
       <input type="hidden" id="beneficial_owners_data" value="{{ form.instance.beneficial_owners|default:'[]'|escapejs }}">
       <input type="hidden" name="beneficial_owners" id="beneficial_owners_json" value="[]">
       
-      <!-- Step 1: Business Information -->
-      <div id="step-1">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Business Information</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Business ID -->
-          <div>
-            <label for="{{ form.business_id.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Business ID <span class="text-red-500">*</span>
-            </label>
-            {{ form.business_id|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
+      <!-- Business Information -->
+      <div class="mb-6">
+        <div class="bg-gray-100 p-4 rounded-md">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Business Information</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Business ID -->
+            <div>
+              <label for="{{ form.business_id.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Business ID <span class="text-red-500">*</span>
+              </label>
+              {{ form.business_id|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
             {% if form.business_id.errors %}
             <span class="text-red-500 text-xs mt-1 block">
               {{ form.business_id.errors.0 }}
             </span>
             {% endif %}
           </div>
-          <!-- Business Name -->
-          <div>
-            <label for="{{ form.business_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Business Name <span class="text-red-500">*</span>
-            </label>
-            {{ form.business_name|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
+            <!-- Business Name -->
+            <div>
+              <label for="{{ form.business_name.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Business Name <span class="text-red-500">*</span>
+              </label>
+              {{ form.business_name|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
             {% if form.business_name.errors %}
             <span class="text-red-500 text-xs mt-1 block">
               {{ form.business_name.errors.0 }}
             </span>
             {% endif %}
           </div>
-          <!-- Registration Date -->
-          <div>
-            <label for="{{ form.registration_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Registration Date <span class="text-red-500">*</span>
-            </label>
-            {{ form.registration_date|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.registration_date.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.registration_date.errors.0 }}
-            </span>
-            {% endif %}
-            <small class="text-gray-500 text-xs">Format: YYYY-MM-DD</small>
-          </div>
-          <!-- Business Type -->
-          <div>
-            <label for="{{ form.business_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Business Type <span class="text-red-500">*</span>
-            </label>
-            {{ form.business_type|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.business_type.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.business_type.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          <!-- Industry Sector -->
-          <div>
-            <label for="{{ form.industry_sector.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Industry Sector <span class="text-red-500">*</span>
-            </label>
-            {{ form.industry_sector|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.industry_sector.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.industry_sector.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          <!-- Business Website -->
-          <div>
-            <label for="{{ form.business_website.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Business Website
-            </label>
-            {{ form.business_website|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.business_website.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.business_website.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      
-      <!-- Step 2: Identification Documents -->
-      <div id="step-2" class="hidden">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Identification Documents</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Registration Number -->
-          <div>
-            <label for="{{ form.registration_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Registration Number <span class="text-red-500">*</span>
-            </label>
-            {{ form.registration_number|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.registration_number.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.registration_number.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          <!-- Tax ID Number -->
-          <div>
-            <label for="{{ form.tax_id_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Tax ID Number <span class="text-red-500">*</span>
-            </label>
-            {{ form.tax_id_number|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.tax_id_number.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.tax_id_number.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          <!-- Country of Registration -->
-          <div>
-            <label for="{{ form.registration_country.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Country of Registration <span class="text-red-500">*</span>
-            </label>
-            {{ form.registration_country|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.registration_country.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.registration_country.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          <!-- License Expiry Date -->
-          <div>
-            <label for="{{ form.license_expiry_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              License Expiry Date <span class="text-red-500">*</span>
-            </label>
-            {{ form.license_expiry_date|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.license_expiry_date.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.license_expiry_date.errors.0 }}
-            </span>
-            {% endif %}
-            <small class="text-gray-500 text-xs">Format: YYYY-MM-DD</small>
-          </div>
-          <!-- Business Registration Document -->
-          <div class="col-span-2 mt-4">
-            <label for="{{ form.registration_document.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Upload Business Registration Document
-            </label>
-            <div class="flex flex-col">
-              <div class="flex items-center">
-                {{ form.registration_document|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|attr:"accept:.pdf,.jpg,.jpeg,.png" }}
-              </div>
-              <div id="registration_document_preview" class="mt-2 hidden">
-                <p class="text-sm text-gray-600 mb-1">Document Preview:</p>
-                <div class="border border-gray-200 rounded-lg p-2 inline-block">
-                  <img src="" alt="Registration Document Preview" class="max-h-32 max-w-full">
-                </div>
-              </div>
-              <div class="mt-1 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <small class="text-gray-600 text-sm">Accepted formats: PDF, JPG, PNG - Max 10MB</small>
-              </div>
-              <span class="error-message text-red-500 text-sm mt-1 {% if form.registration_document.errors %}visible{% else %}hidden{% endif %}" id="error-registration_document">
-                {% if form.registration_document.errors %}{{ form.registration_document.errors.0 }}{% endif %}
+            <!-- Registration Date -->
+            <div>
+              <label for="{{ form.registration_date.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Registration Date <span class="text-red-500">*</span>
+              </label>
+              {{ form.registration_date|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.registration_date.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.registration_date.errors.0 }}
               </span>
+              {% endif %}
             </div>
-          </div>
-
-          <!-- Tax Registration Document -->
-          <div class="col-span-2 mt-4">
-            <label for="{{ form.tax_document.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Tax Registration Document
-            </label>
-            <div class="flex flex-col">
-              <div class="flex items-center">
-                {{ form.tax_document|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|attr:"accept:.pdf,.jpg,.jpeg,.png" }}
-              </div>
-              <div id="tax_document_preview" class="mt-2 hidden">
-                <p class="text-sm text-gray-600 mb-1">Document Preview:</p>
-                <div class="border border-gray-200 rounded-lg p-2 inline-block">
-                  <img src="" alt="Tax Document Preview" class="max-h-32 max-w-full">
-                </div>
-              </div>
-              <div class="mt-1 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <small class="text-gray-600 text-sm">Accepted formats: PDF, JPG, PNG - Max 10MB</small>
-              </div>
-              <span class="error-message text-red-500 text-sm mt-1 {% if form.tax_document.errors %}visible{% else %}hidden{% endif %}" id="error-tax_document">
-                {% if form.tax_document.errors %}{{ form.tax_document.errors.0 }}{% endif %}
+            <!-- Business Type -->
+            <div>
+              <label for="{{ form.business_type.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Business Type <span class="text-red-500">*</span>
+              </label>
+              {{ form.business_type|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.business_type.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.business_type.errors.0 }}
               </span>
+              {% endif %}
+            </div>
+            <!-- Industry Sector -->
+            <div>
+              <label for="{{ form.industry_sector.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Industry Sector <span class="text-red-500">*</span>
+              </label>
+              {{ form.industry_sector|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.industry_sector.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.industry_sector.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Business Website -->
+            <div>
+              <label for="{{ form.business_website.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Business Website
+              </label>
+              {{ form.business_website|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.business_website.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.business_website.errors.0 }}
+              </span>
+              {% endif %}
             </div>
           </div>
         </div>
       </div>
       
-      <!-- Step 3: Contact Information -->
-      <div id="step-3" class="hidden">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Contact Information</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Business Email -->
-          <div>
-            <label for="{{ form.business_email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Business Email <span class="text-red-500">*</span>
-            </label>
-            {{ form.business_email|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.business_email.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.business_email.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          <!-- Business Phone Number -->
-          <div>
-            <label for="{{ form.business_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Business Phone Number <span class="text-red-500">*</span>
-            </label>
-            {{ form.business_phone|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.business_phone.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.business_phone.errors.0 }}
-            </span>
-            {% endif %}
-            <div class="mt-1 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <small class="text-gray-600 text-sm">Format: Include country code (e.g., +1234567890)</small>
+      <!-- Identification Documents -->
+      <div class="mb-6">
+        <div class="bg-gray-100 p-4 rounded-md">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Identification Documents</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Registration Number -->
+            <div>
+              <label for="{{ form.registration_number.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Registration Number <span class="text-red-500">*</span>
+              </label>
+              {{ form.registration_number|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.registration_number.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.registration_number.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Tax ID Number -->
+            <div>
+              <label for="{{ form.tax_id_number.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Tax ID Number <span class="text-red-500">*</span>
+              </label>
+              {{ form.tax_id_number|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.tax_id_number.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.tax_id_number.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Country of Registration -->
+            <div>
+              <label for="{{ form.registration_country.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Country of Registration <span class="text-red-500">*</span>
+              </label>
+              {{ form.registration_country|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.registration_country.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.registration_country.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- License Expiry Date -->
+            <div>
+              <label for="{{ form.license_expiry_date.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                License Expiry Date <span class="text-red-500">*</span>
+              </label>
+              {{ form.license_expiry_date|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.license_expiry_date.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.license_expiry_date.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Business Registration Document -->
+            <div class="col-span-2">
+              <label for="{{ form.registration_document.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Upload Business Registration Document
+              </label>
+              {{ form.registration_document|add_class:"rounded-md border border-gray-300 p-1 text-xs" }}
+              {% if form.registration_document.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.registration_document.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Tax Registration Document -->
+            <div class="col-span-2">
+              <label for="{{ form.tax_document.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Tax Registration Document
+              </label>
+              {{ form.tax_document|add_class:"rounded-md border border-gray-300 p-1 text-xs" }}
+              {% if form.tax_document.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.tax_document.errors.0 }}
+              </span>
+              {% endif %}
             </div>
           </div>
-          <!-- Business Address -->
-          <div class="col-span-1 md:col-span-2">
-            <label for="{{ form.business_address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-             Business Address <span class="text-red-500">*</span>
-            </label>
-            {{ form.business_address|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.business_address.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.business_address.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          <!-- City -->
-          <div>
-            <label for="{{ form.business_city.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              City <span class="text-red-500">*</span>
-            </label>
-            {{ form.business_city|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.business_city.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.business_city.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          <!-- Country -->
-          <div>
-            <label for="{{ form.business_country.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Country <span class="text-red-500">*</span>
-            </label>
-            {{ form.business_country|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.business_country.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.business_country.errors.0 }}
-            </span>
-            {% endif %}
+        </div>
+      </div>
+      
+      <!-- Contact Information -->
+      <div class="mb-6">
+        <div class="bg-gray-100 p-4 rounded-md">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Contact Information</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Business Email -->
+            <div>
+              <label for="{{ form.business_email.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Business Email <span class="text-red-500">*</span>
+              </label>
+              {{ form.business_email|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.business_email.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.business_email.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Business Phone Number -->
+            <div>
+              <label for="{{ form.business_phone.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Business Phone Number <span class="text-red-500">*</span>
+              </label>
+              {{ form.business_phone|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.business_phone.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.business_phone.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Business Address -->
+            <div class="col-span-2">
+              <label for="{{ form.business_address.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Business Address <span class="text-red-500">*</span>
+              </label>
+              {{ form.business_address|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.business_address.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.business_address.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- City -->
+            <div>
+              <label for="{{ form.business_city.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                City <span class="text-red-500">*</span>
+              </label>
+              {{ form.business_city|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.business_city.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.business_city.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Country -->
+            <div>
+              <label for="{{ form.business_country.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Country <span class="text-red-500">*</span>
+              </label>
+              {{ form.business_country|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.business_country.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.business_country.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Step 4: Ownership Structure & Financial Information -->
-      <div id="step-4" class="hidden">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Ownership & Financial Information</h3>
+      <!-- Ownership Structure & Financial Information -->
+      <div class="mb-6">
+        <div class="bg-gray-100 p-4 rounded-md">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Ownership & Financial Information</h3>
         
-        <!-- Ownership Structure -->
-        <div class="mb-6">
-          <label for="{{ form.ownership_structure.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-            Ownership Structure <span class="text-red-500">*</span>
-          </label>
-          {{ form.ownership_structure|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-          {% if form.ownership_structure.errors %}
-          <span class="text-red-500 text-xs mt-1 block">
-            {{ form.ownership_structure.errors.0 }}
-          </span>
-          {% endif %}
-        </div>
+          <!-- Ownership Structure -->
+          <div class="mb-4">
+            <label for="{{ form.ownership_structure.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+              Ownership Structure <span class="text-red-500">*</span>
+            </label>
+            {{ form.ownership_structure|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+            {% if form.ownership_structure.errors %}
+            <span class="text-red-500 text-xs mt-1 block">
+              {{ form.ownership_structure.errors.0 }}
+            </span>
+            {% endif %}
+          </div>
         
         <!-- Beneficial Owner Section -->
         <div id="beneficial_owners_section" class="mb-6">
@@ -543,130 +487,117 @@
             {{ form.aml_policy|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
           </div>
         </div>
-      </div>
-      
-      <!-- Step 5: Banking Information -->
-      <div id="step-5" class="hidden">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Banking Information</h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Bank Name -->
-          <div>
-            <label for="{{ form.bank_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Bank Name <span class="text-red-500">*</span>
-            </label>
-            {{ form.bank_name|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.bank_name.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.bank_name.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          
-          <!-- Account Number -->
-          <div>
-            <label for="{{ form.account_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Account Number <span class="text-red-500">*</span>
-            </label>
-            {{ form.account_number|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.account_number.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.account_number.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          
-          <!-- Account Type -->
-          <div>
-            <label for="{{ form.account_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              Account Type <span class="text-red-500">*</span>
-            </label>
-            {{ form.account_type|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.account_type.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.account_type.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-          
-          <!-- SWIFT Code -->
-          <div>
-            <label for="{{ form.swift_code.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-              SWIFT/BIC Code <span class="text-red-500">*</span>
-            </label>
-            {{ form.swift_code|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"|add_error_class:"border-red-500 bg-red-50" }}
-            {% if form.swift_code.errors %}
-            <span class="text-red-500 text-xs mt-1 block">
-              {{ form.swift_code.errors.0 }}
-            </span>
-            {% endif %}
-          </div>
-        </div>
-        
-        <!-- Compliance Officer -->
-        <div class="mt-6">
-          <label for="{{ form.compliance_officer.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-            Compliance Officer Name
-          </label>
-          {{ form.compliance_officer|add_class:"w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" }}
-          <span class="error-message text-red-500 text-xs mt-1 {% if form.compliance_officer.errors %}visible{% else %}hidden{% endif %}" id="error-compliance_officer">
-            {% if form.compliance_officer.errors %}{{ form.compliance_officer.errors.0 }}{% endif %}
-          </span>
-        </div>
-        
-        <!-- Declaration Checkboxes -->
-        <div class="mt-6 space-y-3">
-          <div class="flex items-start">
-            <div class="flex items-center h-5">
-              <input id="declaration_accepted" name="declaration_accepted" type="checkbox" class="focus:ring-2 focus:ring-blue-500 h-5 w-5 text-blue-600 border-gray-300 rounded">
-            </div>
-            <div class="ml-3">
-              <label for="declaration_accepted" class="text-sm font-medium text-gray-700">I declare that all information provided is accurate and complete.</label>
-            </div>
-          </div>
-          <div class="flex items-start">
-            <div class="flex items-center h-5">
-              <input id="consent_accepted" name="consent_accepted" type="checkbox" class="focus:ring-2 focus:ring-blue-500 h-5 w-5 text-blue-600 border-gray-300 rounded">
-            </div>
-            <div class="ml-3">
-              <label for="consent_accepted" class="text-sm font-medium text-gray-700">I consent to the processing of this information for KYC/AML purposes.</label>
-            </div>
-          </div>
         </div>
       </div>
       
-      <!-- Form Navigation Buttons -->
-      <div class="flex justify-between mt-8">
-        <button 
-          type="button" 
-          id="prev-btn" 
-          class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors focus:ring-2 focus:ring-gray-300 focus:outline-none hidden"
+      <!-- Banking Information -->
+      <div class="mb-6">
+        <div class="bg-gray-100 p-4 rounded-md">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Banking Information</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Bank Name -->
+            <div>
+              <label for="{{ form.bank_name.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Bank Name <span class="text-red-500">*</span>
+              </label>
+              {{ form.bank_name|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.bank_name.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.bank_name.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            
+            <!-- Account Number -->
+            <div>
+              <label for="{{ form.account_number.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Account Number <span class="text-red-500">*</span>
+              </label>
+              {{ form.account_number|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.account_number.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.account_number.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            
+            <!-- Account Type -->
+            <div>
+              <label for="{{ form.account_type.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                Account Type <span class="text-red-500">*</span>
+              </label>
+              {{ form.account_type|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.account_type.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.account_type.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+            
+            <!-- SWIFT Code -->
+            <div>
+              <label for="{{ form.swift_code.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+                SWIFT/BIC Code <span class="text-red-500">*</span>
+              </label>
+              {{ form.swift_code|add_class:"rounded-md border border-gray-300 p-1 text-xs"|add_error_class:"border-red-500 bg-red-50" }}
+              {% if form.swift_code.errors %}
+              <span class="text-red-500 text-xs mt-1 block">
+                {{ form.swift_code.errors.0 }}
+              </span>
+              {% endif %}
+            </div>
+          </div>
+        
+          <!-- Compliance Officer -->
+          <div class="mt-4">
+            <label for="{{ form.compliance_officer.id_for_label }}" class="block text-xs text-gray-700 font-semibold">
+              Compliance Officer Name
+            </label>
+            {{ form.compliance_officer|add_class:"rounded-md border border-gray-300 p-1 text-xs" }}
+            <span class="error-message text-red-500 text-xs mt-1 {% if form.compliance_officer.errors %}visible{% else %}hidden{% endif %}" id="error-compliance_officer">
+              {% if form.compliance_officer.errors %}{{ form.compliance_officer.errors.0 }}{% endif %}
+            </span>
+          </div>
+          
+          <!-- Declaration Checkboxes -->
+          <div class="mt-4 space-y-3">
+            <div class="flex items-start">
+              <div class="flex items-center h-5">
+                <input id="declaration_accepted" name="declaration_accepted" type="checkbox" class="focus:ring-2 focus:ring-blue-500 h-5 w-5 text-blue-600 border-gray-300 rounded">
+              </div>
+              <div class="ml-3">
+                <label for="declaration_accepted" class="text-xs text-gray-700 font-semibold">I declare that all information provided is accurate and complete.</label>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="flex items-center h-5">
+                <input id="consent_accepted" name="consent_accepted" type="checkbox" class="focus:ring-2 focus:ring-blue-500 h-5 w-5 text-blue-600 border-gray-300 rounded">
+              </div>
+              <div class="ml-3">
+                <label for="consent_accepted" class="text-xs text-gray-700 font-semibold">I consent to the processing of this information for KYC/AML purposes.</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Form Actions -->
+      <div class="flex justify-center gap-4 mt-8">
+        <button
+          type="button"
+          id="save-draft-btn"
+          class="px-6 py-2.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
+          onclick="saveDraft()"
         >
-          Previous
+          Save as Draft
         </button>
-        <div>
-          <button
-            type="button"
-            id="save-draft-btn"
-            class="px-5 py-2.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none mr-3"
-          >
-            Save as Draft
-          </button>
-          <button 
-            type="button" 
-            id="next-btn" 
-            class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
-            Next
-          </button>
-          <button 
-            type="submit" 
-            id="submit-btn" 
-            class="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors focus:ring-2 focus:ring-green-500 focus:outline-none hidden"
-          >
-            Submit
-          </button>
-        </div>
+        <button 
+          type="submit" 
+          id="submit-btn" 
+          class="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors focus:ring-2 focus:ring-green-500 focus:outline-none"
+        >
+          Submit
+        </button>
       </div>
     </form>
   </div>
@@ -763,75 +694,15 @@
       }
     }
     
-    // Multi-step form handling
-    // Initialize with step 1 or determine from errors
-    let currentStep = 1;
-    
-    // This hidden input will be populated server-side with the step that has errors
-    const initialStepInput = document.getElementById('initial_step');
-    if (initialStepInput && initialStepInput.value) {
-      currentStep = parseInt(initialStepInput.value) || 1;
-    }
-
-    const totalSteps = 5;
+    // Form handling
     const form = document.getElementById('businessKycForm');
-    const nextBtn = document.getElementById('next-btn');
-    const prevBtn = document.getElementById('prev-btn');
     const submitBtn = document.getElementById('submit-btn');
     const saveDraftBtn = document.getElementById('save-draft-btn');
-    const currentStepInput = document.getElementById('current_step');
     const isDraftInput = document.getElementById('is_draft');
     
-    // Required fields by step
-    const requiredFields = {
-      1: ['business_id', 'business_name', 'registration_date', 'business_type', 'industry_sector'],
-      2: ['registration_number', 'tax_id_number', 'registration_country', 'license_expiry_date'],
-      3: ['business_email', 'business_phone', 'business_address', 'business_city', 'business_country'],
-      4: ['ownership_structure', 'annual_revenue', 'source_of_funds', 'business_purpose', 'transaction_volume'],
-      5: ['bank_name', 'account_number', 'account_type', 'swift_code']
-    };
+
     
-    function updateProgressBar() {
-      // Update progress indicators
-      for (let i = 1; i <= totalSteps; i++) {
-        const indicator = document.getElementById(`step-${i}-indicator`);
-        const innerCircle = indicator.querySelector('div');
-        
-        if (i < currentStep) {
-          // Completed steps
-          indicator.classList.remove('opacity-50');
-          innerCircle.classList.remove('bg-gray-400');
-          innerCircle.classList.add('bg-green-600');
-        } else if (i === currentStep) {
-          // Current step
-          indicator.classList.remove('opacity-50');
-          innerCircle.classList.remove('bg-gray-400');
-          innerCircle.classList.add('bg-blue-600');
-        } else {
-          // Future steps
-          indicator.classList.add('opacity-50');
-          innerCircle.classList.remove('bg-blue-600', 'bg-green-600');
-          innerCircle.classList.add('bg-gray-400');
-        }
-      }
-      
-      // Update progress bars between steps
-      for (let i = 1; i < totalSteps; i++) {
-        const progressBar = document.getElementById(`progress-${i}-${i+1}`);
-        
-        if (i < currentStep) {
-          // Progress bars before current step
-          progressBar.classList.remove('bg-gray-300');
-          progressBar.classList.add('bg-green-600');
-        } else {
-          // Progress bars after or at current step
-          progressBar.classList.remove('bg-green-600');
-          progressBar.classList.add('bg-gray-300');
-        }
-      }
-    }
-    
-    function validateStep(step) {
+    function validateForm() {
       let isValid = true;
       
       // Skip validation for draft saves
@@ -850,8 +721,17 @@
         field.classList.remove('border-red-500');
       });
       
-      // Validate required fields for the current step
-      requiredFields[step].forEach(fieldName => {
+      // Required fields for the entire form
+      const requiredFields = [
+        'business_id', 'business_name', 'registration_date', 'business_type', 'industry_sector',
+        'registration_number', 'tax_id_number', 'registration_country', 'license_expiry_date',
+        'business_email', 'business_phone', 'business_address', 'business_city', 'business_country',
+        'ownership_structure', 'annual_revenue', 'source_of_funds', 'business_purpose', 'transaction_volume',
+        'bank_name', 'account_number', 'account_type', 'swift_code'
+      ];
+      
+      // Validate required fields
+      requiredFields.forEach(fieldName => {
         const field = document.querySelector(`[name="${fieldName}"]`);
         if (!field) return; // Skip if field doesn't exist
         
@@ -866,113 +746,77 @@
         }
       });
       
-      // Registration date validation for step 1
-      if (step === 1) {
-        const regDateField = document.querySelector('[name="registration_date"]');
-        const regDateErrorEl = document.getElementById('error-registration_date');
-        
-        if (regDateField && regDateField.value) {
-          try {
-            // Check if date is valid
-            const regDateValue = regDateField.value;
-            const regDateParts = regDateValue.split('-');
-            
-            if (regDateParts.length !== 3 || 
-                isNaN(parseInt(regDateParts[0])) || 
-                isNaN(parseInt(regDateParts[1])) || 
-                isNaN(parseInt(regDateParts[2]))) {
-              isValid = false;
-              regDateErrorEl.textContent = 'Invalid date format. Use YYYY-MM-DD';
-              regDateErrorEl.classList.remove('hidden');
-              regDateField.classList.add('border-red-500');
-            } else {
-              // Check if date is not in the future
-              const regDate = new Date(regDateField.value);
-              const now = new Date();
-              
-              if (regDate > now) {
-                isValid = false;
-                regDateErrorEl.textContent = 'Registration date cannot be in the future';
-                regDateErrorEl.classList.remove('hidden');
-                regDateField.classList.add('border-red-500');
-              }
-            }
-          } catch (e) {
+      // Registration date validation
+      const regDateField = document.querySelector('[name="registration_date"]');
+      const regDateErrorEl = document.getElementById('error-registration_date');
+      
+      if (regDateField && regDateField.value) {
+        try {
+          const regDate = new Date(regDateField.value);
+          const now = new Date();
+          
+          if (regDate > now) {
             isValid = false;
-            regDateErrorEl.textContent = 'Invalid date format. Use YYYY-MM-DD';
+            regDateErrorEl.textContent = 'Registration date cannot be in the future';
             regDateErrorEl.classList.remove('hidden');
             regDateField.classList.add('border-red-500');
           }
+        } catch (e) {
+          isValid = false;
+          regDateErrorEl.textContent = 'Invalid date format';
+          regDateErrorEl.classList.remove('hidden');
+          regDateField.classList.add('border-red-500');
         }
       }
       
-      // License expiry date validation for step 2
-      if (step === 2) {
-        const expiryField = document.querySelector('[name="license_expiry_date"]');
-        const expiryErrorEl = document.getElementById('error-license_expiry_date');
-        
-        if (expiryField && expiryField.value) {
-          try {
-            // Check if date is valid
-            const expiryValue = expiryField.value;
-            const expiryParts = expiryValue.split('-');
-            
-            if (expiryParts.length !== 3 || 
-                isNaN(parseInt(expiryParts[0])) || 
-                isNaN(parseInt(expiryParts[1])) || 
-                isNaN(parseInt(expiryParts[2]))) {
-              isValid = false;
-              expiryErrorEl.textContent = 'Invalid date format. Use YYYY-MM-DD';
-              expiryErrorEl.classList.remove('hidden');
-              expiryField.classList.add('border-red-500');
-            } else {
-              // Check if expiry date is in the future
-              const expiry = new Date(expiryField.value);
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              
-              if (expiry < today) {
-                isValid = false;
-                expiryErrorEl.textContent = 'License has already expired';
-                expiryErrorEl.classList.remove('hidden');
-                expiryField.classList.add('border-red-500');
-              }
-            }
-          } catch (e) {
+      // License expiry date validation
+      const expiryField = document.querySelector('[name="license_expiry_date"]');
+      const expiryErrorEl = document.getElementById('error-license_expiry_date');
+      
+      if (expiryField && expiryField.value) {
+        try {
+          const expiry = new Date(expiryField.value);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          if (expiry < today) {
             isValid = false;
-            expiryErrorEl.textContent = 'Invalid date format. Use YYYY-MM-DD';
+            expiryErrorEl.textContent = 'License has already expired';
             expiryErrorEl.classList.remove('hidden');
             expiryField.classList.add('border-red-500');
           }
+        } catch (e) {
+          isValid = false;
+          expiryErrorEl.textContent = 'Invalid date format';
+          expiryErrorEl.classList.remove('hidden');
+          expiryField.classList.add('border-red-500');
         }
       }
       
-      // Email validation for step 3
-      if (step === 3) {
-        const emailField = document.querySelector('[name="business_email"]');
-        const emailErrorEl = document.getElementById('error-business_email');
-        
-        if (emailField && emailField.value && !isValidEmail(emailField.value)) {
-          isValid = false;
-          emailErrorEl.textContent = 'Please enter a valid email address';
-          emailErrorEl.classList.remove('hidden');
-          emailField.classList.add('border-red-500');
-        }
-        
-        // Phone number basic validation
-        const phoneField = document.querySelector('[name="business_phone"]');
-        const phoneErrorEl = document.getElementById('error-business_phone');
-        
-        if (phoneField && phoneField.value && !/^\+?[0-9\s\-\(\)]{8,20}$/.test(phoneField.value)) {
-          isValid = false;
-          phoneErrorEl.textContent = 'Please enter a valid phone number';
-          phoneErrorEl.classList.remove('hidden');
-          phoneField.classList.add('border-red-500');
-        }
+      // Email validation
+      const emailField = document.querySelector('[name="business_email"]');
+      const emailErrorEl = document.getElementById('error-business_email');
+      
+      if (emailField && emailField.value && !isValidEmail(emailField.value)) {
+        isValid = false;
+        emailErrorEl.textContent = 'Please enter a valid email address';
+        emailErrorEl.classList.remove('hidden');
+        emailField.classList.add('border-red-500');
       }
       
-      // Check beneficial owners in step 4
-      if (step === 4 && document.querySelector('.beneficial-owner')) {
+      // Phone number basic validation
+      const phoneField = document.querySelector('[name="business_phone"]');
+      const phoneErrorEl = document.getElementById('error-business_phone');
+      
+      if (phoneField && phoneField.value && !/^\+?[0-9\s\-\(\)]{8,20}$/.test(phoneField.value)) {
+        isValid = false;
+        phoneErrorEl.textContent = 'Please enter a valid phone number';
+        phoneErrorEl.classList.remove('hidden');
+        phoneField.classList.add('border-red-500');
+      }
+      
+      // Check beneficial owners
+      if (document.querySelector('.beneficial-owner')) {
         const nameField = document.getElementById('owner_name_1');
         if (nameField && !nameField.value.trim()) {
           isValid = false;
@@ -980,20 +824,18 @@
         }
       }
       
-      // Check declaration in step 5
-      if (step === 5) {
-        const declarationCheck = document.getElementById('declaration_accepted');
-        const consentCheck = document.getElementById('consent_accepted');
-        
-        if (declarationCheck && !declarationCheck.checked) {
-          isValid = false;
-          declarationCheck.classList.add('border-red-500');
-        }
-        
-        if (consentCheck && !consentCheck.checked) {
-          isValid = false;
-          consentCheck.classList.add('border-red-500');
-        }
+      // Check declaration checkboxes
+      const declarationCheck = document.getElementById('declaration_accepted');
+      const consentCheck = document.getElementById('consent_accepted');
+      
+      if (declarationCheck && !declarationCheck.checked) {
+        isValid = false;
+        declarationCheck.classList.add('border-red-500');
+      }
+      
+      if (consentCheck && !consentCheck.checked) {
+        isValid = false;
+        consentCheck.classList.add('border-red-500');
       }
       
       return isValid;
@@ -1015,43 +857,6 @@
           errorFields[0].focus();
         }, 500);
       }
-    }
-    
-    // After showing the step, focus the first error field if any
-    function showStep(step) {
-      // Hide all steps
-      document.querySelectorAll('[id^="step-"]').forEach(el => {
-        if (el.id.startsWith('step-') && el.id.length === 7) { // Only match actual steps, not step indicators
-          el.classList.add('hidden');
-        }
-      });
-      
-      // Show current step
-      document.getElementById(`step-${step}`).classList.remove('hidden');
-      
-      // Update buttons
-      if (step === 1) {
-        prevBtn.classList.add('hidden');
-      } else {
-        prevBtn.classList.remove('hidden');
-      }
-      
-      if (step === totalSteps) {
-        nextBtn.classList.add('hidden');
-        submitBtn.classList.remove('hidden');
-      } else {
-        nextBtn.classList.remove('hidden');
-        submitBtn.classList.add('hidden');
-      }
-      
-      // Update progress indicators
-      updateProgressBar();
-      
-      // Update current step in hidden field
-      currentStepInput.value = step;
-      
-      // Focus the first error field in this step if any
-      setTimeout(focusFirstErrorField, 100);
     }
     
     // Handle additional beneficial owners
@@ -1116,18 +921,7 @@
       });
     }
     
-    // Button event listeners
-    nextBtn.addEventListener('click', function() {
-      if (validateStep(currentStep)) {
-        currentStep++;
-        showStep(currentStep);
-      }
-    });
-    
-    prevBtn.addEventListener('click', function() {
-      currentStep--;
-      showStep(currentStep);
-    });
+
     
     // Collect beneficial owners data before form submission
     function collectBeneficialOwnersData() {
@@ -1173,20 +967,26 @@
       return ownersData.length > 0;
     }
     
-    // Update the form submission handlers
-    saveDraftBtn.addEventListener('click', function() {
+    // Save as draft function
+    function saveDraft() {
       isDraftInput.value = 'true';
       // Collect beneficial owners data before submission
       collectBeneficialOwnersData();
       // No validation needed for draft save
       form.submit();
-    });
+    }
+    
+    // Make saveDraft function globally available
+    window.saveDraft = saveDraft;
+    
+    // Update the form submission handlers
+    saveDraftBtn.addEventListener('click', saveDraft);
     
     submitBtn.addEventListener('click', function() {
       isDraftInput.value = 'false';
       // Collect beneficial owners data before submission
       collectBeneficialOwnersData();
-      if (validateStep(currentStep)) {
+      if (validateForm()) {
         form.submit();
       } else {
         // Show validation failed message
@@ -1204,6 +1004,9 @@
         setTimeout(() => {
           alertDiv.remove();
         }, 5000);
+        
+        // Focus on first error field
+        focusFirstErrorField();
       }
     });
     
@@ -1266,64 +1069,9 @@
       }
     });
     
-    // Add a visual indicator to steps that have errors
-    function markStepsWithErrors() {
-      // Check if there are error indicators visible in each step
-      for (let i = 1; i <= totalSteps; i++) {
-        const stepDiv = document.getElementById(`step-${i}`);
-        const hasErrors = stepDiv.querySelectorAll('.text-red-500:not(.hidden)').length > 0;
-        
-        // If errors exist in this step, add a visual indicator
-        const stepIndicator = document.getElementById(`step-${i}-indicator`);
-        if (hasErrors) {
-          // Add red border to the step indicator
-          stepIndicator.querySelector('div').classList.add('ring-2', 'ring-red-500');
-          
-          // If the step isn't visible, we should add an error icon to the step indicator
-          if (stepDiv.classList.contains('hidden')) {
-            const errorIcon = document.createElement('div');
-            errorIcon.className = 'absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center';
-            errorIcon.innerHTML = '!';
-            errorIcon.style.fontSize = '10px';
-            errorIcon.style.color = 'white';
-            
-            // Only add if it doesn't already exist
-            if (!stepIndicator.querySelector('.absolute')) {
-              stepIndicator.style.position = 'relative';
-              stepIndicator.appendChild(errorIcon);
-            }
-          }
-        }
-      }
-    }
-    
-    // Find the first step with errors and navigate to it on page load
-    function findFirstStepWithErrors() {
-      for (let i = 1; i <= totalSteps; i++) {
-        const stepDiv = document.getElementById(`step-${i}`);
-        const hasErrors = stepDiv.querySelectorAll('.text-red-500:not(.hidden)').length > 0;
-        
-        if (hasErrors) {
-          return i;
-        }
-      }
-      return null; // No steps with errors found
-    }
-    
     // Initialize form
-    // If there are errors, navigate to the first step with errors
-    const firstErrorStep = findFirstStepWithErrors();
-    if (firstErrorStep !== null) {
-      currentStep = firstErrorStep;
-    }
-    
-    showStep(currentStep);
-    
     // If we're editing a draft, populate the beneficial owners
     populateBeneficialOwners();
-    
-    // Mark steps with errors
-    markStepsWithErrors();
     
     // Document upload preview functionality
     function handleFilePreview(inputId, previewId) {

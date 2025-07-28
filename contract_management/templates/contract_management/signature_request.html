@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Signature Request - {{ contract.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .contract-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    .form-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+    }
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-secondary {
+        border: 2px solid #6c757d;
+        background: transparent;
+        color: #6c757d;
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+        background: #6c757d;
+        color: white;
+    }
+    .required {
+        color: #dc3545;
+    }
+    .help-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    .existing-signatures {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .signature-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .signature-item:last-child {
+        border-bottom: none;
+    }
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .status-signed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="form-container">
+        <!-- Contract Info Header -->
+        <div class="contract-info">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="h4 mb-2">Add Signature Request</h2>
+                    <p class="mb-0 opacity-75">{{ contract.title }}</p>
+                </div>
+                <div class="text-end">
+                    <div class="small opacity-75">Contract Status</div>
+                    <span class="badge bg-light text-dark">{{ contract.get_status_display }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Signatures -->
+        {% if existing_signatures %}
+        <div class="existing-signatures">
+            <h5 class="mb-3">
+                <i class="fas fa-signature me-2 text-primary"></i>Existing Signature Requests
+            </h5>
+            {% for signature in existing_signatures %}
+            <div class="signature-item">
+                <div>
+                    <div class="fw-bold">{{ signature.signer_name }}</div>
+                    <div class="small text-muted">{{ signature.signer_email }} - {{ signature.signer_role }}</div>
+                </div>
+                <span class="status-badge status-{{ signature.status }}">{{ signature.get_status_display }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Signature Request Form -->
+        <div class="form-card">
+            <form method="post" id="signatureForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.signer_name.id_for_label }}" class="form-label">
+                                {{ form.signer_name.label }}
+                                {% if form.signer_name.field.required %}<span class="required">*</span>{% endif %}
+                            </label>
+                            {{ form.signer_name }}
+                            {% if form.signer_name.help_text %}
+                            <div class="help-text">{{ form.signer_name.help_text }}</div>
+                            {% endif %}
+                            {% if form.signer_name.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.signer_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.signer_email.id_for_label }}" class="form-label">
+                                {{ form.signer_email.label }}
+                                {% if form.signer_email.field.required %}<span class="required">*</span>{% endif %}
+                            </label>
+                            {{ form.signer_email }}
+                            {% if form.signer_email.help_text %}
+                            <div class="help-text">{{ form.signer_email.help_text }}</div>
+                            {% endif %}
+                            {% if form.signer_email.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.signer_email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.signer_role.id_for_label }}" class="form-label">
+                                {{ form.signer_role.label }}
+                                {% if form.signer_role.field.required %}<span class="required">*</span>{% endif %}
+                            </label>
+                            {{ form.signer_role }}
+                            {% if form.signer_role.help_text %}
+                            <div class="help-text">{{ form.signer_role.help_text }}</div>
+                            {% endif %}
+                            {% if form.signer_role.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.signer_role.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.signature_order.id_for_label }}" class="form-label">
+                                {{ form.signature_order.label }}
+                                {% if form.signature_order.field.required %}<span class="required">*</span>{% endif %}
+                            </label>
+                            {{ form.signature_order }}
+                            {% if form.signature_order.help_text %}
+                            <div class="help-text">{{ form.signature_order.help_text }}</div>
+                            {% endif %}
+                            {% if form.signature_order.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.signature_order.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">
+                        {{ form.notes.label }}
+                        {% if form.notes.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+                    {{ form.notes }}
+                    {% if form.notes.help_text %}
+                    <div class="help-text">{{ form.notes.help_text }}</div>
+                    {% endif %}
+                    {% if form.notes.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.notes.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <a href="{% url 'contract_management:contract_detail' contract.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Cancel
+                    </a>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="action" value="save" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Signature Request
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Information Panel -->
+        <div class="mt-4">
+            <div class="alert alert-info">
+                <h6 class="alert-heading">
+                    <i class="fas fa-info-circle me-2"></i>Signature Request Information
+                </h6>
+                <ul class="mb-0 small">
+                    <li>The signer will receive an email notification with a link to sign the contract</li>
+                    <li>You can track the signature status in the contract details page</li>
+                    <li>Signature order determines the sequence in which signers must sign (lower numbers sign first)</li>
+                    <li>Multiple signers can have the same order number to sign simultaneously</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const form = document.getElementById('signatureForm');
+        const emailField = document.getElementById('{{ form.signer_email.id_for_label }}');
+        const nameField = document.getElementById('{{ form.signer_name.id_for_label }}');
+        
+        // Email validation
+        emailField.addEventListener('blur', function() {
+            const email = this.value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (email && !emailRegex.test(email)) {
+                this.classList.add('is-invalid');
+                showFieldError(this, 'Please enter a valid email address');
+            } else {
+                this.classList.remove('is-invalid');
+                hideFieldError(this);
+            }
+        });
+        
+        // Name validation
+        nameField.addEventListener('blur', function() {
+            const name = this.value.trim();
+            
+            if (name.length < 2) {
+                this.classList.add('is-invalid');
+                showFieldError(this, 'Name must be at least 2 characters long');
+            } else {
+                this.classList.remove('is-invalid');
+                hideFieldError(this);
+            }
+        });
+        
+        // Form submission validation
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    showFieldError(field, 'This field is required');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                    hideFieldError(field);
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
+        });
+        
+        function showFieldError(field, message) {
+            hideFieldError(field); // Remove existing error
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'text-danger small mt-1 field-error';
+            errorDiv.textContent = message;
+            
+            field.parentNode.appendChild(errorDiv);
+        }
+        
+        function hideFieldError(field) {
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+        }
+        
+        // Auto-suggest signature order
+        const orderField = document.getElementById('{{ form.signature_order.id_for_label }}');
+        if (orderField && !orderField.value) {
+            // Set default order based on existing signatures
+            const existingSignatures = {{ existing_signatures|length|default:0 }};
+            orderField.value = existingSignatures + 1;
+        }
+    });
+</script>
+{% endblock %}

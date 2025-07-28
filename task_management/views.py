@@ -147,6 +147,39 @@ def task_dashboard(request):
     # Get recent tasks (limit to 10)
     recent_tasks = Task.objects.select_related('client', 'assigned_to').order_by('-created_at')[:10]
     
+    # Get monthly task creation data
+    from django.db.models import Q
+    from datetime import datetime, timedelta
+    import calendar
+    
+    current_year = datetime.now().year
+    monthly_data = []
+    for month in range(1, 13):
+        month_tasks = Task.objects.filter(
+            created_at__year=current_year,
+            created_at__month=month
+        ).count()
+        monthly_data.append(month_tasks)
+    
+    # Get overdue and due date analysis
+    today = datetime.now().date()
+    overdue_tasks = Task.objects.filter(due_date__lt=today, status__in=['pending', 'in_progress']).count()
+    due_today_tasks = Task.objects.filter(due_date=today, status__in=['pending', 'in_progress']).count()
+    due_this_week_tasks = Task.objects.filter(
+        due_date__gte=today,
+        due_date__lte=today + timedelta(days=7),
+        status__in=['pending', 'in_progress']
+    ).count()
+    due_next_week_tasks = Task.objects.filter(
+        due_date__gt=today + timedelta(days=7),
+        due_date__lte=today + timedelta(days=14),
+        status__in=['pending', 'in_progress']
+    ).count()
+    future_tasks = Task.objects.filter(
+        due_date__gt=today + timedelta(days=14),
+        status__in=['pending', 'in_progress']
+    ).count()
+    
     # Add additional context for dashboard
     context.update({
         'total_tasks': sum(task_status_counts.values()),
@@ -164,6 +197,12 @@ def task_dashboard(request):
         'client_tasks_data': json.dumps([client.task_count for client in top_clients]),
         'lawyer_labels': json.dumps([lawyer.get_full_name() or lawyer.username for lawyer in top_lawyers]),
         'lawyer_tasks_data': json.dumps([lawyer.task_count for lawyer in top_lawyers]),
+        'monthly_task_data': json.dumps(monthly_data),
+        'overdue_tasks': overdue_tasks,
+        'due_today_tasks': due_today_tasks,
+        'due_this_week_tasks': due_this_week_tasks,
+        'due_next_week_tasks': due_next_week_tasks,
+        'future_tasks': future_tasks,
     })
     
     return render(request, 'task_management/task_dashboard.html', context)
