@@ -1,0 +1,109 @@
+# Django and Core Dependencies
+Django==5.1.7
+django-crispy-forms==2.4
+django-extensions==4.1
+django-filter==25.1
+django-mathfilters==1.0.0
+django-tailwind==4.0.1
+django-widget-tweaks==1.5.0
+djangorestframework==3.16.0
+
+# Database
+psycopg2==2.9.10
+psycopg2-binary==2.9.10
+mysql-connector-python==8.3.0
+
+# Web Server and ASGI
+asgiref==3.8.1
+channels==4.2.2
+whitenoise==6.9.0
+
+# Document Processing
+python-docx==1.2.0
+reportlab==4.4.2
+weasyprint==65.1
+lxml==6.0.0
+openpyxl==3.1.5
+
+# Image Processing
+pillow==11.2.0
+
+# Data Processing
+pandas==2.3.0
+numpy==2.3.0
+
+# Google APIs
+google-api-core==2.25.1
+google-api-python-client==2.174.0
+google-auth==2.40.3
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.2
+googleapis-common-protos==1.70.0
+
+# HTTP and Requests
+requests==2.32.4
+requests-oauthlib==2.0.0
+httplib2==0.22.0
+urllib3==2.5.0
+certifi==2025.1.31
+
+# Utilities
+python-dateutil==2.9.0.post0
+pytz==2025.2
+tzdata==2025.1
+charset-normalizer==3.4.2
+idna==3.10
+six==1.17.0
+click==8.2.0
+colorama==0.4.6
+blinker==1.9.0
+cachetools==5.5.2
+packaging==24.2
+
+# Security and Crypto
+cffi==1.17.1
+pycparser==2.22
+rsa==4.9.1
+pyasn1==0.6.1
+pyasn1-modules==0.4.2
+oauthlib==3.3.1
+
+# Template and Markup
+Jinja2==3.1.6
+MarkupSafe==3.0.2
+
+# PDF and Document Rendering
+tinycss2==1.4.0
+tinyhtml5==2.0.0
+webencodings==0.5.1
+cssselect2==0.8.0
+pydyf==0.11.0
+pyphen==0.17.2
+fonttools==4.58.2
+Brotli==1.1.0
+zopfli==0.2.3.post1
+
+# Development and Build Tools
+setuptools==75.8.2
+typing-extensions==4.13.2
+sqlparse==0.5.3
+et-xmlfile==2.0.0
+pyparsing==3.2.3
+proto-plus==1.26.1
+protobuf==6.31.1
+uritemplate==4.2.0
+
+# Flask (if needed for microservices)
+Flask==3.0.2
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.40
+greenlet==3.2.2
+Werkzeug==3.0.1
+itsdangerous==2.2.0
+
+# Virtual Environment (for reference)
+virtualenv==20.29.3
+distlib==0.3.9
+filelock==3.17.0
+platformdirs==4.3.6
+pipenv==2024.4.1
