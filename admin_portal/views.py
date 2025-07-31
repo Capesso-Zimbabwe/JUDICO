@@ -238,7 +238,20 @@ def toggle_client(request, user_id):
             user=user,
             client=client
         )
-        message = f"{user.get_full_name()} is now a client."
+        
+        # Create a default case for the new client
+        from client_management.models import Case
+        Case.objects.create(
+            client=client,
+            title=f"Initial Consultation - {client.name}",
+            description=f"Initial case consultation and legal assessment for {client.name}.",
+            case_type=client.case_type,
+            status='pending',
+            priority='medium',
+            created_by=request.user
+        )
+        
+        message = f"{user.get_full_name()} is now a client with an initial case created."
     
     return redirect('admin_portal:manage_users')
 
@@ -273,6 +286,18 @@ def create_user(request):
                 ClientProfile.objects.create(
                     user=user,
                     client=client
+                )
+                
+                # Create a default case for the new client
+                from client_management.models import Case
+                Case.objects.create(
+                    client=client,
+                    title=f"Initial Consultation - {client.name}",
+                    description=f"Initial case consultation and legal assessment for {client.name}.",
+                    case_type=client.case_type,
+                    status='pending',
+                    priority='medium',
+                    created_by=user
                 )
             
             return redirect('admin_portal:manage_users')

@@ -1,115 +1,478 @@
 {% extends 'client_management/base.html' %}
 
-{% block client_header %}
-<div class="d-flex justify-content-between align-items-center">
-    <h1 class="text-xs">Client List</h1>
-    <a href="{% url 'client_management:client_create' %}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add New Client
-    </a>
-</div>
-{% endblock %}
-
 {% block client_content %}
-<!-- Client Management Table -->
-<div class="bg-white rounded-lg shadow-lg overflow-hidden">
-    <div class="bg-gray-600 px-6 py-4">
-        <h6 class="text-white font-semibold text-xs m-0">All Clients</h6>
-    </div>
-    <div class="p-0">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200" id="clientsTable">
-                <thead class="bg-gray-50">
+
+    <!-- Client Management Table -->
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            {#            <h6 class="text-black font-bold text-xs m-0">All Clients</h6>#}
+            <form action="" class="flex-1 max-w-sm" id="search-form">
+                {% include "components/field.html" with hide_label=True field=search_form.search %}
+            </form>
+            <a hx-get="{% url 'client_management:client_create' %}"
+               hx-target="#new-modal-container"
+               hx-indicator="#new-modal-overlay"
+               hx-trigger="click"
+               data-modal-target="new-modal" data-modal-toggle="new-modal"
+               href="{% url 'client_management:client_create' %}" class="p-2 flex gap-1">
+                <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                     height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M5 12h14m-7 7V5"></path>
+                </svg>
+                <span class="font-bold">Add New Client</span>
+            </a>
+        </div>
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="clientsTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Client Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Contact Person</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Email</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Phone</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Assigned Lawyer</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider bg-white border-b border-gray-200">Actions</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Client Name
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Client Number
+                        </th>
+
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Email
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Phone
+                        </th>
+
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Lawyer
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Status
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Cases
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Actions
+                        </th>
                     </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
                     {% for client in clients %}
-                    <tr class="hover:bg-gray-50 transition-colors duration-200">
-                        <td class="px-6 py-2 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <span class="text-blue-600 font-medium text-sm">{{ client.name|first|upper }}</span>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-xs font-medium text-gray-900">
-                                        <a href="{% url 'client_management:client_detail' client.id %}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">{{ client.name }}</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{{ client.contact_person }}</td>
-                        <td class="px-6 py-2 whitespace-nowrap text-xs text-gray-500">{{ client.email }}</td>
-                        <td class="px-6 py-2 whitespace-nowrap text-xs text-gray-900">{{ client.phone }}</td>
-                         <td class="px-6 py-2 whitespace-nowrap text-xs text-gray-900">
-                            {% if client.assigned_lawyer %}
-                                <div class="flex items-center">
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        hx-target="#details-modal-container"
+                                        hx-trigger="click"
+                                        hx-get="{% url 'client_management:client_detail' client.id %}{% querystring %}"
+                                        hx-indicator="#details-modal-overlay"
+                                        onclick="detailsModal.show()"
+                                >
                                     <div class="flex-shrink-0 h-8 w-8">
-                                        <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                                            <span class="text-green-600 font-medium text-xs">{{ client.assigned_lawyer.get_full_name|first|upper }}</span>
+                                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-medium text-xs">{{ client.name|first|upper }}</span>
                                         </div>
                                     </div>
                                     <div class="ml-2">
-                                        <span class="text-xs font-medium text-gray-900">{{ client.assigned_lawyer.get_full_name }}</span>
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ client.name|truncatechars:20 }}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            {% else %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                    Not Assigned
+                                </button>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ client.code }}</td>
+
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">{{ client.email|truncatechars:25 }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ client.phone }}</td>
+
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                {% if client.assigned_lawyer %}
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-6 w-6">
+                                            <div class="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                                <span class="text-green-600 font-medium text-xs">{{ client.assigned_lawyer.get_full_name|first|upper }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-1">
+                                            <span class="text-xs font-medium text-gray-900">{{ client.assigned_lawyer.get_full_name|truncatechars:15 }}</span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Unassigned
                                 </span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-2 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if client.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
                                 {% if client.is_active %}
                                     Active
                                 {% else %}
                                     Inactive
                                 {% endif %}
                             </span>
-                        </td>
-                        <td class="px-6 py-2 whitespace-nowrap text-xs font-medium">
-                            <div class="flex space-x-2">
-                                <a href="{% url 'client_management:client_update' client.id %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
-                                    <i class="fas fa-edit mr-1"></i>
-                                    Edit
-                                </a>
-                                <a href="{% url 'client_management:client_delete' client.id %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
-                                    <i class="fas fa-trash mr-1"></i>
-                                    Delete
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
-                                <p class="text-xs font-medium">No clients found</p>
-                                <p class="text-xs">Get started by adding your first client.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                {% with client_cases=client.cases.all %}
+                                    {% if client_cases %}
+                                        <div class="relative">
+                                            <button onclick="openCasesModal('{{ client.code }}', '{{ client.name|escapejs }}', {{ client_cases|length }}); casesModal.show();" class="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 hover:text-gray-800 transition-all duration-200 shadow-sm hover:shadow-md border border-gray-300">
+                                                <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                {{ client_cases.count }} case{{ client_cases.count|pluralize }}
+                                            </button>
+                                            
+                                            <!-- Hidden data for modal -->
+                                            <div class="hidden client-cases-data" data-client-code="{{ client.code }}" data-client-name="{{ client.name }}">
+                                                {% regroup client_cases by case_type as case_types_grouped %}
+                                                <div class="case-types-data">
+                                                    {% for case_type_group in case_types_grouped %}
+                                                        <span data-case-type="{{ case_type_group.grouper }}" data-case-type-display="{{ case_type_group.list.0.get_case_type_display }}"></span>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="cases-data">
+                                                    {% for case in client_cases %}
+                                                        <div class="case-item" 
+                                                             data-code="{{ case.code }}"
+                                                             data-title="{{ case.title|escapejs }}"
+                                                             data-type="{{ case.get_case_type_display }}"
+                                                             data-status="{{ case.status }}"
+                                                             data-status-display="{{ case.get_status_display }}"
+                                                             data-priority="{{ case.priority }}"
+                                                             data-priority-display="{{ case.get_priority_display }}"
+                                                             data-url="{% url 'client_management:case_detail' case.pk %}">
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            No cases
+                                        </span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <button type="button"
+                                            hx-target="#details-modal-container"
+                                            hx-trigger="click"
+                                            hx-get="
 
-<!-- DataTables Script -->
-<script>
-    $(document).ready(function() {
-        $('#clientsTable').DataTable();
-    });
-</script>
+                                                    {% url 'client_management:client_detail' client.id %}{% querystring %}"
+                                            hx-indicator="#details-modal-overlay"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="View Client"
+                                            onclick="detailsModal.show()"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </button>
+                                    <button
+                                            hx-get="
+
+                                                    {% url 'client_management:client_update' client.id %}{% querystring %}"
+                                            hx-indicator="#update-modal-overlay"
+                                            hx-target="#update-modal-container"
+                                            hx-trigger="click"
+                                            type="button"
+                                            onclick="updateModal.show()"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Edit Client">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </button>
+                                    {#                                    <a href="{% url 'client_management:client_delete' client.id %}"#}
+                                    {#                                       class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-all duration-200 shadow-sm hover:shadow-md"#}
+                                    {#                                       title="Delete Client"#}
+                                    {#                                       onclick="return confirm('Are you sure you want to delete this client?')">#}
+                                    {#                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"#}
+                                    {#                                             xmlns="http://www.w3.org/2000/svg">#}
+                                    {#                                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>#}
+                                    {#                                        </svg>#}
+                                    {#                                    </a>#}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
+                                    <p class="text-xs font-medium">No clients found</p>
+                                    <p class="text-xs">Get started by adding your first client.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% include 'components/paginator.html' %}
+
+    </div>
+
+    <!-- Include Paginator Component -->
+
+    <!-- Flowbite Client Details Modal -->
+    {% include "client_management/new-modal.html" with modal_id="new-modal" %}
+    {% include "client_management/details-modal.html" with modal_id="details-modal" %}
+    {% include "client_management/update-modal.html" with modal_id="update-modal" %}
+    {% include "client_management/document-modal.html" with modal_id="document-modal" %}
+
+    {% include "client_management/cases-modal.html" with modal_id="cases-modal" %}
+    {% include "client_management/case_new_modal.html" with modal_id="case-new-modal" %}
+
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        const detailsModalElement = document.getElementById('details-modal');
+        const detailsModal = new Modal(detailsModalElement, modalOptions, {
+            id: 'details-modal',
+            override: true
+        });
+
+        const updateModalElement = document.getElementById('update-modal');
+        const updateModal = new Modal(updateModalElement, modalOptions, {
+            id: 'update-modal',
+            override: true
+        });
+
+        const documentModalElement = document.getElementById('document-modal');
+        const documentModal = new Modal(documentModalElement, modalOptions, {
+            id: 'document-modal',
+            override: true
+        });
+
+        const casesModalElement = document.getElementById('cases-modal');
+        const casesModal = new Modal(casesModalElement, modalOptions, {
+            id: 'cases-modal',
+            override: true
+        });
+
+        const caseNewModalElement = document.getElementById('case-new-modal');
+        const caseNewModal = new Modal(caseNewModalElement, modalOptions, {
+            id: 'case-new-modal',
+            override: true
+        });
+
+        {% if request.GET.client_id %}
+            htmx.ajax('GET', "{% url 'client_management:client_detail' request.GET.client_id %}", {
+                target: '#details-modal-container',
+                indicator: '#details-modal-overlay'
+            }).then(function (response) {
+                console.log("Here")
+                detailsModal.show()
+            })
+
+        {% endif %}
+
+        function openCasesModal(clientCode, clientName, caseCount) {
+            const clientData = document.querySelector(`[data-client-code="${clientCode}"]`);
+            
+            if (!clientData) return;
+            
+            // Update modal title and case count
+            const modalTitleElement = document.querySelector('#cases-modal h3');
+            if (modalTitleElement) {
+                modalTitleElement.textContent = `${clientName} Cases (${caseCount})`;
+            }
+            
+            // Update case count badge
+            const caseCountBadge = document.getElementById('caseCountBadge');
+            if (caseCountBadge) {
+                caseCountBadge.textContent = caseCount;
+            }
+            
+            // Store current client data for case creation
+            window.currentClientData = {
+                code: clientCode,
+                name: clientName,
+                id: clientData.getAttribute('data-client-id')
+            };
+            
+            // Populate case types
+            const caseTypesContainer = document.getElementById('modalCaseTypes');
+            const caseTypesData = clientData.querySelector('.case-types-data');
+            caseTypesContainer.innerHTML = '';
+            
+            if (caseTypesData && caseTypesData.children.length > 0) {
+                Array.from(caseTypesData.children).forEach(typeSpan => {
+                    const typeDisplay = typeSpan.getAttribute('data-case-type-display');
+                    const badge = document.createElement('span');
+                    badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200';
+                    badge.textContent = typeDisplay;
+                    caseTypesContainer.appendChild(badge);
+                });
+            } else {
+                caseTypesContainer.innerHTML = '<span class="text-gray-500 text-sm italic">No case types available</span>';
+            }
+            
+            // Populate individual cases
+            const casesContainer = document.getElementById('modalCasesList');
+            const casesData = clientData.querySelector('.cases-data');
+            casesContainer.innerHTML = '';
+            
+            if (casesData && casesData.children.length > 0) {
+                Array.from(casesData.children).forEach(caseItem => {
+                    const caseCard = createCaseCard(caseItem);
+                    casesContainer.appendChild(caseCard);
+                });
+            } else {
+                casesContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No cases found</div>';
+            }
+            
+            // Set view all cases link
+            const viewAllLink = document.getElementById('viewAllCasesLink');
+            viewAllLink.href = `/client/cases/?search=${clientCode}`;
+        }
+        
+        function createCaseCard(caseItem) {
+            const code = caseItem.getAttribute('data-code');
+            const title = caseItem.getAttribute('data-title');
+            const type = caseItem.getAttribute('data-type');
+            const status = caseItem.getAttribute('data-status');
+            const statusDisplay = caseItem.getAttribute('data-status-display');
+            const priority = caseItem.getAttribute('data-priority');
+            const priorityDisplay = caseItem.getAttribute('data-priority-display');
+            const url = caseItem.getAttribute('data-url');
+            
+            const card = document.createElement('a');
+            card.href = url;
+            card.className = 'block bg-gray-50 border border-gray-300 rounded-lg p-4 hover:bg-white hover:shadow-md hover:border-blue-400 transition-all duration-200 group';
+            
+            const statusColors = {
+                'active': 'bg-green-100 text-green-800 border-green-200',
+                'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                'completed': 'bg-blue-100 text-blue-800 border-blue-200',
+                'on_hold': 'bg-orange-100 text-orange-800 border-orange-200'
+            };
+            
+            const priorityColors = {
+                'urgent': 'bg-red-100 text-red-800 border-red-200',
+                'high': 'bg-orange-100 text-orange-800 border-orange-200',
+                'medium': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                'low': 'bg-gray-100 text-gray-800 border-gray-200'
+            };
+            
+            card.innerHTML = `
+                <div class="flex items-start justify-between">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h5 class="font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">${code}</h5>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${statusColors[status] || 'bg-gray-100 text-gray-800 border-gray-200'}">
+                                ${statusDisplay}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-2 line-clamp-2">${title}</p>
+                        <div class="flex items-center gap-3 text-xs text-gray-500">
+                            <span class="flex items-center">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                ${type}
+                            </span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${priorityColors[priority] || 'bg-gray-100 text-gray-800 border-gray-200'}">
+                                ${priorityDisplay}
+                            </span>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Function to open the add case modal
+        function openAddCaseModal() {
+            if (!window.currentClientData) {
+                alert('Please select a client first.');
+                return;
+            }
+            
+            // Close the cases modal
+            casesModal.hide();
+            
+            // Open the case creation modal
+            caseNewModal.show();
+            
+            // Pre-fill the client field if it exists
+            setTimeout(() => {
+                const clientSelect = document.querySelector('#case-new-modal select[name="client"]');
+                if (clientSelect && window.currentClientData.id) {
+                    clientSelect.value = window.currentClientData.id;
+                }
+                
+                // If there's a client name field, pre-fill it
+                const clientNameField = document.querySelector('#case-new-modal input[name="client_name"]');
+                if (clientNameField) {
+                    clientNameField.value = window.currentClientData.name;
+                }
+            }, 100);
+        }
+
+        // Handle successful case creation
+        document.addEventListener('htmx:afterSwap', function(event) {
+            if (event.target.id === 'case-new-modal-container') {
+                // Check if the response contains a success message or redirect
+                const response = event.detail.xhr.responseText;
+                if (response.includes('success') || event.detail.xhr.status === 200) {
+                    // Close the case creation modal
+                    caseNewModal.hide();
+                    
+                    // Refresh the cases modal if it's open
+                    if (window.currentClientData) {
+                        // Trigger a refresh of the cases modal
+                        const casesButton = document.querySelector(`[data-client-code="${window.currentClientData.code}"] .cases-btn`);
+                        if (casesButton) {
+                            casesButton.click();
+                        }
+                    }
+                    
+                    // Show success message
+                    showToast('Case created successfully!', 'success');
+                }
+            }
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-white ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            } transition-all duration-300 transform translate-x-full`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+    </script>
 {% endblock %}

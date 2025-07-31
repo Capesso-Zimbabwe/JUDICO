@@ -57,16 +57,18 @@ INSTALLED_APPS = [
     'lawyer_portal',
     'client_portal',
     'theme',
+    'import_export',
     'quotes',  # Add the quotes app
     'contract_management',  # Add the contract management app
-    
+    'sequences',
     # Third-party apps
     'rest_framework',
     'crispy_forms',
     'channels',
     'tailwind',
     'django_extensions',  # Add django_extensions for runscript command
-    'widget_tweaks'  # Add django-widget-tweaks
+    'widget_tweaks',  # Add django-widget-tweaks
+    'django_htmx'  # Add django-htmx
 ]
 
 # Update these settings
@@ -82,7 +84,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'django_htmx.middleware.HtmxMiddleware'
 
 ]
 
@@ -162,6 +164,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+STATIC_ROOT= BASE_DIR /'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'JUDICO_HUB' / 'static',
     BASE_DIR / 'theme'/ 'static'
@@ -173,3 +176,4 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+PAGINATE_BY= 10  # Default pagination setting

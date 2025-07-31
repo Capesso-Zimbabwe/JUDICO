@@ -1,23 +1,28 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- Navigation Bar -->
-<div class="bg-white border-b border-gray-200">
-    <div class="px-8 py-4">
-        <div class="flex space-x-8">
-            <a href="{% url 'compliance:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Dashboard</a>
-            <a href="{% url 'compliance:requirements' %}" class="{% if request.resolver_match.url_name == 'requirements' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Requirements</a>
-            <a href="{% url 'compliance:audits' %}" class="{% if request.resolver_match.url_name == 'audits' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Audits</a>
-            <a href="{% url 'compliance:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 border-b-2 border-transparent hover:border-blue-600 transition-colors{% endif %}">Reports</a>
-        </div>
-    </div>
+<!-- Navigation header with improved styling -->
+<div class="bg-white border-b border-gray-200 mb-6">
+    <nav class="flex space-x-2 px-6 py-3">
+        <a href="{% url 'compliance:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'kyc_app:kyc_dashboard' %}" class="{% if 'kyc' in request.resolver_match.url_name %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            KYC
+        </a>
+        <a href="{% url 'compliance:requirements' %}" class="{% if request.resolver_match.url_name == 'requirements' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Requirements
+        </a>
+        <a href="{% url 'compliance:audits' %}" class="{% if request.resolver_match.url_name == 'audits' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Audits
+        </a>
+        <a href="{% url 'compliance:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Reports
+        </a>
+    </nav>
 </div>
 
-<!-- Main Content -->
-<div class="bg-gray-50 min-h-screen">
-    <div class="p-8">
-        {% block compliance_content %}
-        {% endblock %}
-    </div>
+<div class="bg-white rounded-lg shadow p-6">
+    {% block compliance_content %}{% endblock %}
 </div>
 {% endblock %}

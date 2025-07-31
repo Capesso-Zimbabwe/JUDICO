@@ -1,0 +1,11 @@
+{% extends "components/modals/base-form-modal.html" %}
+
+{% block modal_title %}
+    Add New Case
+{% endblock %}
+
+{% block modal_content %}
+    <div id="case-new-modal-container">
+        {% include "client_management/case_form.html" %}
+    </div>
+{% endblock %}

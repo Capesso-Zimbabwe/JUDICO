@@ -1,0 +1,26 @@
+<form
+        novalidate="novalidate"
+        method="post"
+        hx-post="{% url 'client_management:case_upload_document' case.id %}{% querystring %}"
+        hx-target="#document-modal-container"
+        enctype="multipart/form-data"
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
+            <!-- Document Title -->
+            {% include 'components/field.html' with field=form.title field_widget_class="col-span-2" %}
+            <!-- Document Type -->
+            {% include 'components/field.html' with field=form.document_type %}
+            <!-- Document File -->
+            {% include 'components/field.html' with field=form.document field_widget_class="col-span-2" %}
+
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <div>
+            {% include 'components/submit-button.html' with button_text="Upload" loading_text="Uploading...." %}
+        </div>
+    </div>
+</form>

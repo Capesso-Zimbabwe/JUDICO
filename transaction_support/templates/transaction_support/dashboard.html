@@ -9,26 +9,22 @@
 {% endblock %}
 
 {% block content %}
-<!-- Add the navigation header with white background -->
-<div class="nav-bar -mt-3 -ml-3  w-[calc(100%+1.5rem)] bg-white border-b border-gray-200">
-    <div class="flex space-x-4 px-6 py-2">
-        <a href="{% url 'transaction_support:dashboard' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+<!-- Navigation header with improved styling -->
+<div class="bg-white border-b border-gray-200 mb-6">
+    <nav class="flex space-x-2 px-6 py-3">
+        <a href="{% url 'transaction_support:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Dashboard
         </a>
-        <a href="{% url 'transaction_support:transaction_list' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'transaction_list' %} active{% endif %}">
+        <a href="{% url 'transaction_support:transaction_list' %}" class="{% if request.resolver_match.url_name == 'transaction_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Transactions
         </a>
-        <a href="{% url 'transaction_support:monitoring' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'monitoring' %} active{% endif %}">
+        <a href="{% url 'transaction_support:monitoring' %}" class="{% if request.resolver_match.url_name == 'monitoring' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Monitoring
         </a>
-        <a href="{% url 'transaction_support:reports' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'reports' %} active{% endif %}">
+        <a href="{% url 'transaction_support:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Reports
         </a>
-    </div>
+    </nav>
 </div>
 
 <!-- Transaction Overview Cards -->

@@ -3,20 +3,22 @@
 {% block header_title %}Finance Management{% endblock %}
 
 {% block content %}
-<!-- Add the navigation header with the same style as the image -->
-<div class="nav-bar -mt-3 -ml-3 mb-4 w-[calc(100%+1.5rem)]">
-    <a href="{% url 'finance_management:dashboard' %}" class="nav-item{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
-        Dashboard
-    </a>
-    <a href="{% url 'finance_management:invoice_list' %}" class="nav-item{% if request.resolver_match.url_name == 'invoice_list' %} active{% endif %}">
-        Invoices
-    </a>
-    <a href="{% url 'finance_management:payment_list' %}" class="nav-item{% if request.resolver_match.url_name == 'payment_list' %} active{% endif %}">
-        Payments
-    </a>
-    <a href="{% url 'finance_management:expense_list' %}" class="nav-item{% if request.resolver_match.url_name == 'expense_list' %} active{% endif %}">
-        Expenses
-    </a>
+<!-- Navigation header with improved styling -->
+<div class="bg-white border-b border-gray-200 mb-6">
+    <nav class="flex space-x-2 px-6 py-3">
+        <a href="{% url 'finance_management:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'finance_management:invoice_list' %}" class="{% if request.resolver_match.url_name == 'invoice_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Invoices
+        </a>
+        <a href="{% url 'finance_management:payment_list' %}" class="{% if request.resolver_match.url_name == 'payment_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Payments
+        </a>
+        <a href="{% url 'finance_management:expense_list' %}" class="{% if request.resolver_match.url_name == 'expense_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Expenses
+        </a>
+    </nav>
 </div>
 
 <div class="bg-white rounded-lg shadow p-6">

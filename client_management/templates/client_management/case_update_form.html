@@ -1,0 +1,25 @@
+<form
+        novalidate="novalidate"
+        method="post"
+        {% if case.id %}hx-post="{% url 'client_management:case_add_update' case.id %}{% querystring %}"{% endif %}
+        hx-target="#update-modal-container"
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
+            <!-- Update Type -->
+            {% include 'components/field.html' with field=form.update_type %}
+            <!-- Update Title -->
+            {% include 'components/field.html' with field=form.title %}
+            <!-- Update Description -->
+            {% include 'components/field.html' with field=form.description field_widget_class="col-span-2" %}
+
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <div>
+            {% include 'components/submit-button.html' with button_text="Add Update" loading_text="Adding...." %}
+        </div>
+    </div>
+</form>

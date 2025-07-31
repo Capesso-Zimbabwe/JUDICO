@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.contrib import admin
 from JUDICO_HUB import settings
 # from django.contrib.admin. import
+from django.conf.urls.static import static
 urlpatterns = [
     path('', login_required(home), name='home'),
     path('auth/', include('authentication.urls')),
@@ -30,9 +31,6 @@ urlpatterns = [
 ]
 
 
-# if settings.DEBUG:
-#     urlpatterns += [
-#         # path('__debug__/', include('debug_toolbar.urls')),
-#         path(settings.MEDIA_URL, settings.MEDIA_ROOT),
-#         path(settings.STATIC_URL, settings.STATIC_ROOT)
-#     ]
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

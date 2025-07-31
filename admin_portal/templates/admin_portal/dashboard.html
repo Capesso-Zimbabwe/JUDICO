@@ -33,16 +33,14 @@
 
 <!-- Navigation Tabs - positioned directly under the main header -->
 <div class="bg-white border-b border-gray-200">
-    <div class="px-4">
-        <div class="flex space-x-8">
-            <a href="{% url 'admin_portal:admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">
-                Dashboard
-            </a>
-            <a href="{% url 'admin_portal:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">
-                Reports
-            </a>
-        </div>
-    </div>
+    <nav class="flex space-x-2 px-6 py-3">
+        <a href="{% url 'admin_portal:admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'admin_portal:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Reports
+        </a>
+    </nav>
 </div>
 
 <!-- Main Content -->

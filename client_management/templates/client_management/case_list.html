@@ -1,0 +1,260 @@
+{% extends 'client_management/base.html' %}
+
+{% block client_content %}
+
+    <!-- Case Management Table -->
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <form action="" class="flex-1 max-w-sm" id="search-form">
+                {% include "components/field.html" with hide_label=True field=filter_form.search %}
+            </form>
+            <div class="flex gap-2 items-center">
+                <select name="status" form="search-form" class="text-xs border border-gray-300 rounded px-2 py-1">
+                    {% for value, label in filter_form.status.field.choices %}
+                        <option value="{{ value }}" {% if filter_form.status.value == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <select name="priority" form="search-form" class="text-xs border border-gray-300 rounded px-2 py-1">
+                    {% for value, label in filter_form.priority.field.choices %}
+                        <option value="{{ value }}" {% if filter_form.priority.value == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <a hx-get="{% url 'client_management:case_create' %}"
+                   hx-target="#new-modal-container"
+                   hx-indicator="#new-modal-overlay"
+                   hx-trigger="click"
+                   data-modal-target="new-modal" data-modal-toggle="new-modal"
+                   href="{% url 'client_management:case_create' %}" class="p-2 flex gap-1">
+                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                         height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 12h14m-7 7V5"></path>
+                    </svg>
+                    <span class="font-bold">Add New Case</span>
+                </a>
+            </div>
+        </div>
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="casesTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Case Title
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Case Number
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Client
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Case Type
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Status
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Priority
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Progress
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Lawyer
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Actions
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    {% for case in cases %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        hx-target="#details-modal-container"
+                                        hx-trigger="click"
+                                        hx-get="{% url 'client_management:case_detail' case.id %}{% querystring %}"
+                                        hx-indicator="#details-modal-overlay"
+                                        onclick="detailsModal.show()"
+                                >
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                            <span class="text-purple-600 font-medium text-xs">{{ case.title|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ case.title|truncatechars:25 }}</span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ case.code }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-6 w-6">
+                                        <div class="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-medium text-xs">{{ case.client.name|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-1">
+                                        <span class="text-xs font-medium text-gray-900">{{ case.client.name|truncatechars:15 }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ case.get_case_type_display|truncatechars:12 }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                    {% if case.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif case.status == 'active' %}bg-green-100 text-green-800
+                                    {% elif case.status == 'on_hold' %}bg-orange-100 text-orange-800
+                                    {% elif case.status == 'completed' %}bg-blue-100 text-blue-800
+                                    {% elif case.status == 'closed' %}bg-gray-100 text-gray-800
+                                    {% elif case.status == 'cancelled' %}bg-red-100 text-red-800
+                                    {% endif %}">
+                                    {{ case.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                    {% if case.priority == 'low' %}bg-gray-100 text-gray-800
+                                    {% elif case.priority == 'medium' %}bg-yellow-100 text-yellow-800
+                                    {% elif case.priority == 'high' %}bg-orange-100 text-orange-800
+                                    {% elif case.priority == 'urgent' %}bg-red-100 text-red-800
+                                    {% endif %}">
+                                    {{ case.get_priority_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: {{ case.progress_percentage }}%"></div>
+                                    </div>
+                                    <span class="text-xs text-gray-600">{{ case.progress_percentage }}%</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                {% if case.assigned_lawyer %}
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-6 w-6">
+                                            <div class="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                                <span class="text-green-600 font-medium text-xs">{{ case.assigned_lawyer.get_full_name|first|upper }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-1">
+                                            <span class="text-xs font-medium text-gray-900">{{ case.assigned_lawyer.get_full_name|truncatechars:15 }}</span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        Unassigned
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <button type="button"
+                                            hx-target="#details-modal-container"
+                                            hx-trigger="click"
+                                            hx-get="{% url 'client_management:case_detail' case.id %}{% querystring %}"
+                                            hx-indicator="#details-modal-overlay"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="View Case"
+                                            onclick="detailsModal.show()"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </button>
+                                    <button
+                                            hx-get="{% url 'client_management:case_update' case.id %}{% querystring %}"
+                                            hx-indicator="#update-modal-overlay"
+                                            hx-target="#update-modal-container"
+                                            hx-trigger="click"
+                                            type="button"
+                                            onclick="updateModal.show()"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Edit Case">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </button>
+                                    <button
+                                            hx-get="{% url 'client_management:case_add_update' case.id %}"
+                                            hx-indicator="#document-modal-overlay"
+                                            hx-target="#document-modal-container"
+                                            hx-trigger="click"
+                                            type="button"
+                                            onclick="documentModal.show()"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Add Update">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-briefcase text-4xl text-gray-300 mb-4"></i>
+                                    <p class="text-xs font-medium">No cases found</p>
+                                    <p class="text-xs">Get started by adding your first case.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% include 'components/paginator.html' %}
+    </div>
+
+    <!-- Include Modals -->
+    {% include "client_management/case_new_modal.html" with modal_id="new-modal" %}
+    {% include "client_management/case_details_modal.html" with modal_id="details-modal" %}
+    {% include "client_management/case_update_modal.html" with modal_id="update-modal" %}
+    {% include "client_management/case_document_modal.html" with modal_id="document-modal" %}
+
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        const detailsModalElement = document.getElementById('details-modal');
+        const detailsModal = new Modal(detailsModalElement, modalOptions, {
+            id: 'details-modal',
+            override: true
+        });
+
+        const updateModalElement = document.getElementById('update-modal');
+        const updateModal = new Modal(updateModalElement, modalOptions, {
+            id: 'update-modal',
+            override: true
+        });
+
+        const documentModalElement = document.getElementById('document-modal');
+        const documentModal = new Modal(documentModalElement, modalOptions, {
+            id: 'document-modal',
+            override: true
+        });
+
+        const newModalElement = document.getElementById('new-modal');
+        const newModal = new Modal(newModalElement, modalOptions, {
+            id: 'new-modal',
+            override: true
+        });
+    </script>
+{% endblock %}

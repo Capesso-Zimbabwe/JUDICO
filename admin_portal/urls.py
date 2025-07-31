@@ -5,6 +5,7 @@ from . import views
 app_name = 'admin_portal'
 
 urlpatterns = [
+    path('', views.admin_dashboard, name='admin_dashboard'),  # Add root path
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('manage-lawyers/', views.manage_lawyers, name='manage_lawyers'),
     path('toggle-lawyer/<int:user_id>/', views.toggle_lawyer, name='toggle_lawyer'),

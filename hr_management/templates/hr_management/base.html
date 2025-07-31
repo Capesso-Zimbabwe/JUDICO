@@ -14,33 +14,27 @@
 
 {% block content %}
 <!-- Navigation header with improved styling -->
-<div class="nav-bar -mt-3 -ml-3 mb-4 w-[calc(100%+1.5rem)]">
-    <div class="flex space-x-4 px-6 py-2">
-        <a href="{% url 'hr_management:dashboard' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+<div class="bg-white border-b border-gray-200 mb-6">
+    <nav class="flex space-x-2 px-6 py-3">
+        <a href="{% url 'hr_management:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Dashboard
         </a>
-        <a href="{% url 'hr_management:employee_list' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'employee_list' %} active{% endif %}">
+        <a href="{% url 'hr_management:employee_list' %}" class="{% if request.resolver_match.url_name == 'employee_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Employees
         </a>
-        <a href="{% url 'hr_management:manage_users' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'manage_users' %} active{% endif %}">
+        <a href="{% url 'hr_management:manage_users' %}" class="{% if request.resolver_match.url_name == 'manage_users' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Manage Users
         </a>
-        <a href="{% url 'hr_management:manage_lawyers' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'manage_lawyers' %} active{% endif %}">
+        <a href="{% url 'hr_management:manage_lawyers' %}" class="{% if request.resolver_match.url_name == 'manage_lawyers' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Manage Lawyers
         </a>
-        <a href="{% url 'hr_management:leave_management' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'leave_management' %} active{% endif %}">
+        <a href="{% url 'hr_management:leave_management' %}" class="{% if request.resolver_match.url_name == 'leave_management' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Leave Management
         </a>
-        <a href="{% url 'hr_management:performance_reviews' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'performance_reviews' %} active{% endif %}">
+        <a href="{% url 'hr_management:performance_reviews' %}" class="{% if request.resolver_match.url_name == 'performance_reviews' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Performance Reviews
         </a>
-    </div>
+    </nav>
 </div>
 <div class="bg-white rounded-lg shadow p-6">
     {% block hr_content %}{% endblock %}

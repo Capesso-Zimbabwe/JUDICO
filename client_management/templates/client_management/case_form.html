@@ -1,0 +1,48 @@
+<form
+        novalidate="novalidate"
+        method="post"
+        {% if case %}
+        hx-post="{% url 'client_management:case_update' case.id %}{% querystring %}"
+        hx-target="#update-modal-container"
+        {% else %}
+        hx-post="{% url 'client_management:case_create' %}{% querystring %}"
+        hx-target="#case-new-modal-container"
+        {% endif %}
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
+            <!-- Case Title -->
+            {% include 'components/field.html' with field=form.title field_widget_class="col-span-2" %}
+
+            {% include 'components/field.html' with field=form.client %}
+            <!-- Case Type -->
+            {% include 'components/field.html' with field=form.case_type %}
+
+            {% include 'components/field.html' with field=form.status %}
+
+            <!-- Priority -->
+            {% include 'components/field.html' with field=form.priority %}
+
+            <!-- Description -->
+            {% include 'components/field.html' with field=form.description field_widget_class="col-span-2" %}
+
+            {% include 'components/field.html' with field=form.start_date %}
+            {% include 'components/field.html' with field=form.due_date %}
+
+            {% include 'components/field.html' with field=form.assigned_lawyer field_widget_class="col-span-2" %}
+
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <div>
+            {% if not case %}
+            {% include 'components/submit-button.html' with button_text="Create Case" loading_text="Creating...." %}
+            	{% else %}
+            {% include 'components/submit-button.html' with button_text="Update Case" loading_text="Updating...." %}
+
+            {% endif %}
+        </div>
+    </div>
+</form>

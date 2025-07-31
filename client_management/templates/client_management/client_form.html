@@ -1,128 +1,50 @@
-{% extends 'client_management/base.html' %}
-
-{% block header_title %}Client Management - {% if client %}Edit Client{% else %}Add Client{% endif %}{% endblock %}
-
-{% block client_content %}
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-900 flex items-center">
-            <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{% if client %}M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z{% else %}M12 6v6m0 0v6m0-6h6m-6 0H6{% endif %}"></path>
-            </svg>
-            {% if client %}Edit Client: {{ client.name }}{% else %}Add New Client{% endif %}
-        </h2>
-    </div>
-    <div class="p-6">
-    
-    <form method="post" action="{% if client %}{% url 'client_management:client_update' client.id %}{% else %}{% url 'client_management:client_create' %}{% endif %}" class="space-y-4">
-        {% csrf_token %}
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<form
+        novalidate="novalidate"
+        method="post"
+        {% if client %}
+        hx-post="{% url 'client_management:client_update' client.id %}{% querystring %}"
+        hx-target="#update-modal-container"
+        {% else %}
+        hx-post="{% url 'client_management:client_create' %}{% querystring %}"
+        hx-target="#new-modal-container"
+        {% endif %}
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
             <!-- Client Name -->
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Client Name</label>
-                <input type="text" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" 
-                       id="name" 
-                       name="name" 
-                       value="{{ client.name|default:'' }}" 
-                       placeholder="Enter client name"
-                       required>
-            </div>
-            
-            <!-- Contact Person -->
-            <div>
-                <label for="contact_person" class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
-                <input type="text" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" 
-                       id="contact_person" 
-                       name="contact_person" 
-                       value="{{ client.contact_person|default:'' }}" 
-                       placeholder="Enter contact person name"
-                       required>
-            </div>
-            
+            {% include 'components/field.html' with field=form.name field_widget_class="col-span-2" %}
+
+            {% include 'components/field.html' with field=form.contact_person %}
             <!-- Email -->
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                <input type="email" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" 
-                       id="email" 
-                       name="email" 
-                       value="{{ client.email|default:'' }}" 
-                       placeholder="Enter email address"
-                       required>
-            </div>
-            
+            {% include 'components/field.html' with field=form.case_type %}
+
+            {% include 'components/field.html' with field=form.email %}
+
             <!-- Phone -->
-            <div>
-                <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input type="text" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" 
-                       id="phone" 
-                       name="phone" 
-                       value="{{ client.phone|default:'' }}" 
-                       placeholder="Enter phone number"
-                       required>
-            </div>
-            
-            <!-- Address -->
-            <div class="col-span-2">
-                <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" 
-                          id="address" 
-                          name="address" 
-                          rows="3" 
-                          placeholder="Enter full address"
-                          required>{{ client.address|default:'' }}</textarea>
-            </div>
-            
-            <!-- Assigned Lawyer -->
-            <div>
-                <label for="assigned_lawyer" class="block text-sm font-medium text-gray-700 mb-2">Assigned Lawyer</label>
-                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" 
-                        id="assigned_lawyer" 
-                        name="assigned_lawyer">
-                    <option value="">-- Select Lawyer --</option>
-                    {% for lawyer in lawyers %}
-                    <option value="{{ lawyer.id }}" {% if client.assigned_lawyer.id == lawyer.id %}selected{% endif %}>{{ lawyer.get_full_name|default:lawyer.username }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <!-- Status (only for edit) -->
-            {% if client %}
-            <div>
-                <label for="is_active" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <div class="mt-2 flex items-center">
-                    <input type="checkbox" 
-                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" 
-                           id="is_active" 
-                           name="is_active" 
-                           {% if client.is_active %}checked{% endif %}>
-                    <label for="is_active" class="ml-3 block text-sm text-gray-700">Active Client</label>
-                </div>
-            </div>
+            {% include 'components/field.html' with field=form.phone %}
+
+            <!-- Case Type -->
+
+            {% include 'components/field.html' with field=form.address field_widget_class="col-span-2" %}
+
+            {#            {% include 'components/field.html' with field=form.registration_date %}#}
+            {% include 'components/field.html' with field=form.assigned_lawyer %}
+
+            {% include 'components/field.html' with field=form.is_active %}
+
+
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <div>
+            {% if not client %}
+            {% include 'components/submit-button.html' with button_text="Create Client" loading_text="Creating...." %}
+            	{% else %}
+            {% include 'components/submit-button.html' with button_text="Update Client" loading_text="Updating...." %}
+
             {% endif %}
         </div>
-        
-        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-            <a href="{% url 'client_management:client_list' %}" 
-               class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                Cancel
-            </a>
-            <button type="submit" 
-                    class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                {% if client %}Update Client{% else %}Save Client{% endif %}
-             </button>
-        </div>
-    </form>
     </div>
-</div>
-{% endblock %}
+</form>

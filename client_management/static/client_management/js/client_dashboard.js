@@ -2,15 +2,7 @@
 
 // Document ready function
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize DataTables for client tables
-    if (document.getElementById('clientsTable')) {
-        $('#clientsTable').DataTable({
-            responsive: true,
-            order: [[0, 'asc']],
-            pageLength: 10,
-            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]]
-        });
-    }
+    // Client tables are now handled with Django pagination
     
     // Handle document deletion via AJAX
     const deleteDocumentButtons = document.querySelectorAll('.delete-document');
