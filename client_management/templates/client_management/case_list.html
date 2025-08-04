@@ -72,13 +72,11 @@
                     {% for case in cases %}
                         <tr class="hover:bg-gray-50 transition-colors duration-200">
                             <td class="px-3 py-1 whitespace-nowrap">
-                                <button type="button"
-                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
-                                        hx-target="#details-modal-container"
+                                <button hx-get="{% url 'client_management:case_detail' case.id %}"
+                                        hx-target="#case-details-modal-container"
                                         hx-trigger="click"
-                                        hx-get="{% url 'client_management:case_detail' case.id %}{% querystring %}"
-                                        hx-indicator="#details-modal-overlay"
-                                        onclick="detailsModal.show()"
+                                        onclick="window.caseDetailsModal.show()"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 bg-transparent border-none cursor-pointer"
                                 >
                                     <div class="flex-shrink-0 h-8 w-8">
                                         <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
@@ -160,14 +158,12 @@
                             </td>
                             <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
                                 <div class="flex space-x-2">
-                                    <button type="button"
-                                            hx-target="#details-modal-container"
+                                    <button hx-get="{% url 'client_management:case_detail' case.id %}"
+                                            hx-target="#case-details-modal-container"
                                             hx-trigger="click"
-                                            hx-get="{% url 'client_management:case_detail' case.id %}{% querystring %}"
-                                            hx-indicator="#details-modal-overlay"
+                                            onclick="window.caseDetailsModal.show()"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                             title="View Case"
-                                            onclick="detailsModal.show()"
                                     >
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
                                              xmlns="http://www.w3.org/2000/svg">
@@ -180,7 +176,7 @@
                                             hx-target="#update-modal-container"
                                             hx-trigger="click"
                                             type="button"
-                                            onclick="updateModal.show()"
+                                            onclick="window.updateModal.show()"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                             title="Edit Case">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
@@ -194,7 +190,7 @@
                                             hx-target="#document-modal-container"
                                             hx-trigger="click"
                                             type="button"
-                                            onclick="documentModal.show()"
+                                            onclick="window.documentModal.show()"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                             title="Add Update">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
@@ -225,35 +221,45 @@
 
     <!-- Include Modals -->
     {% include "client_management/case_new_modal.html" with modal_id="new-modal" %}
-    {% include "client_management/case_details_modal.html" with modal_id="details-modal" %}
+
     {% include "client_management/case_update_modal.html" with modal_id="update-modal" %}
     {% include "client_management/case_document_modal.html" with modal_id="document-modal" %}
+    
+    <!-- Case Details Modal -->
+    {% include "client_management/case-details-modal.html" with modal_id="case-details-modal" %}
+    
+    <!-- Case Detail Modal Container -->
+    <div id="case-details-modal-container"></div>
+    
+    <!-- Update Modal Container -->
+    <div id="update-modal-container"></div>
 
 {% endblock %}
 
 {% block extra_js %}
     <script>
-        const detailsModalElement = document.getElementById('details-modal');
-        const detailsModal = new Modal(detailsModalElement, modalOptions, {
-            id: 'details-modal',
-            override: true
-        });
-
+        // Make modal variables global so they can be accessed by onclick handlers
         const updateModalElement = document.getElementById('update-modal');
-        const updateModal = new Modal(updateModalElement, modalOptions, {
+        window.updateModal = new Modal(updateModalElement, modalOptions, {
             id: 'update-modal',
             override: true
         });
 
         const documentModalElement = document.getElementById('document-modal');
-        const documentModal = new Modal(documentModalElement, modalOptions, {
+        window.documentModal = new Modal(documentModalElement, modalOptions, {
             id: 'document-modal',
             override: true
         });
 
         const newModalElement = document.getElementById('new-modal');
-        const newModal = new Modal(newModalElement, modalOptions, {
+        window.newModal = new Modal(newModalElement, modalOptions, {
             id: 'new-modal',
+            override: true
+        });
+        
+        const caseDetailsModalElement = document.getElementById('case-details-modal');
+        window.caseDetailsModal = new Modal(caseDetailsModalElement, modalOptions, {
+            id: 'case-details-modal',
             override: true
         });
     </script>

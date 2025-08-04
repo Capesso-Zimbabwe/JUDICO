@@ -26,6 +26,7 @@ urlpatterns = [
     path('cases/', views.CaseListView.as_view(), name='case_list'),
     path('cases/create/', views.CaseCreateView.as_view(), name='case_create'),
     path('cases/<int:pk>/', views.CaseDetailsView.as_view(), name='case_detail'),
+    path('cases/<int:pk>/modal/', views.CaseDetailModalView.as_view(), name='case_detail_modal'),
     path('cases/<int:pk>/update/', views.CaseUpdateView.as_view(), name='case_update'),
     path('cases/<int:case_id>/delete/', views.case_delete, name='case_delete'),
     path('cases/dashboard/', views.case_dashboard, name='case_dashboard'),
@@ -36,4 +37,13 @@ urlpatterns = [
     # Case Document URLs
     path('cases/<int:pk>/upload-document/', views.CaseDocumentCreateView.as_view(), name='case_upload_document'),
     path('case-documents/<int:document_id>/delete/', views.delete_case_document, name='delete_case_document'),
+    
+    # Court Diary URLs
+    path('court-diary/', views.court_diary, name='court_diary'),
+    
+    # Court Date Management URLs
+    path('cases/<int:pk>/update-court-date/', views.CourtDateUpdateView.as_view(), name='update_court_date'),
+    path('cases/<int:case_id>/add-court-date/', views.add_court_date, name='add_court_date'),
+    path('cases/<int:case_id>/postpone-court-date/', views.postpone_court_date, name='postpone_court_date'),
+    path('cases/<int:case_id>/remove-court-date/', views.remove_court_date, name='remove_court_date'),
 ]

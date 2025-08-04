@@ -1,0 +1,223 @@
+<!-- New Journal Entry Modal -->
+<div id="{{ modal_id }}" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Create New Journal Entry
+                </h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="{{ modal_id }}">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-6 space-y-6">
+                <form id="new-journal-entry-form" method="post" action="{% url 'finance_management:journal_entry_create' %}">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="entry-number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Entry Number</label>
+                            <input type="text" id="entry-number" name="entry_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                        </div>
+                        <div>
+                            <label for="date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date</label>
+                            <input type="date" id="date" name="date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+                            <textarea id="description" name="description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required></textarea>
+                        </div>
+                        <div>
+                            <label for="reference" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Reference</label>
+                            <input type="text" id="reference" name="reference" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                        </div>
+                        <div>
+                            <label for="status" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status</label>
+                            <select id="status" name="status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                                <option value="draft">Draft</option>
+                                <option value="posted">Posted</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Journal Entry Lines -->
+                    <div class="border-t pt-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-medium text-gray-900">Journal Entry Lines</h4>
+                            <button type="button" id="add-line-btn" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                + Add Line
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3">Account</th>
+                                        <th scope="col" class="px-4 py-3">Description</th>
+                                        <th scope="col" class="px-4 py-3">Debit</th>
+                                        <th scope="col" class="px-4 py-3">Credit</th>
+                                        <th scope="col" class="px-4 py-3">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="journal-lines-tbody">
+                                    <!-- Initial line -->
+                                    <tr class="journal-line">
+                                        <td class="px-4 py-3">
+                                            <select name="lines-0-account" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                                <option value="">Select Account</option>
+                                {% for account in accounts %}
+                                    <option value="{{ account.id }}">{{ account.code }} - {{ account.name }}</option>
+                                {% endfor %}
+                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" name="lines-0-description" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="number" name="lines-0-debit_amount" step="0.01" min="0" class="debit-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="number" name="lines-0-credit_amount" step="0.01" min="0" class="credit-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <button type="button" class="remove-line-btn text-red-600 hover:text-red-800 text-sm font-medium">
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Totals -->
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Total Debit</label>
+                                <p class="text-sm font-mono text-gray-900 dark:text-white" id="total-debit">$0.00</p>
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Total Credit</label>
+                                <p class="text-sm font-mono text-gray-900 dark:text-white" id="total-credit">$0.00</p>
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Difference</label>
+                                <p class="text-sm font-mono" id="difference">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- Modal footer -->
+            <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+                <button type="submit" form="new-journal-entry-form" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Create Journal Entry</button>
+                <button data-modal-hide="{{ modal_id }}" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // Journal Entry Lines Management - wrapped in IIFE to avoid global conflicts
+    let lineIndex = 1;
+    
+    // Store accounts data for JavaScript use
+    const accountsData = [
+        {% for account in accounts %}
+            { id: {{ account.id }}, code: '{{ account.code }}', name: '{{ account.name }}' },
+        {% endfor %}
+    ];
+
+    // Add new line
+    document.getElementById('add-line-btn').addEventListener('click', function() {
+        const tbody = document.getElementById('journal-lines-tbody');
+        const newRow = document.createElement('tr');
+        newRow.className = 'journal-line';
+        
+        let accountOptions = '<option value="">Select Account</option>';
+        accountsData.forEach(account => {
+            accountOptions += `<option value="${account.id}">${account.code} - ${account.name}</option>`;
+        });
+        
+        newRow.innerHTML = `
+            <td class="px-4 py-3">
+                <select name="lines-${lineIndex}-account" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                    ${accountOptions}
+                </select>
+            </td>
+            <td class="px-4 py-3">
+                <input type="text" name="lines-${lineIndex}-description" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+            </td>
+            <td class="px-4 py-3">
+                <input type="number" name="lines-${lineIndex}-debit_amount" step="0.01" min="0" class="debit-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+            </td>
+            <td class="px-4 py-3">
+                <input type="number" name="lines-${lineIndex}-credit_amount" step="0.01" min="0" class="credit-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+            </td>
+            <td class="px-4 py-3">
+                <button type="button" class="remove-line-btn text-red-600 hover:text-red-800 text-sm font-medium">
+                    Remove
+                </button>
+            </td>
+        `;
+        tbody.appendChild(newRow);
+        lineIndex++;
+        updateTotals();
+    });
+
+    // Remove line
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-line-btn')) {
+            const rows = document.querySelectorAll('.journal-line');
+            if (rows.length > 1) {
+                e.target.closest('tr').remove();
+                updateTotals();
+            }
+        }
+    });
+
+    // Update totals when amounts change
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('debit-input') || e.target.classList.contains('credit-input')) {
+            updateTotals();
+        }
+    });
+
+    function updateTotals() {
+        let totalDebit = 0;
+        let totalCredit = 0;
+        
+        document.querySelectorAll('.debit-input').forEach(input => {
+            totalDebit += parseFloat(input.value) || 0;
+        });
+        
+        document.querySelectorAll('.credit-input').forEach(input => {
+            totalCredit += parseFloat(input.value) || 0;
+        });
+        
+        const difference = totalDebit - totalCredit;
+        
+        document.getElementById('total-debit').textContent = '$' + totalDebit.toFixed(2);
+        document.getElementById('total-credit').textContent = '$' + totalCredit.toFixed(2);
+        
+        const diffElement = document.getElementById('difference');
+        diffElement.textContent = '$' + Math.abs(difference).toFixed(2);
+        
+        if (difference === 0) {
+            diffElement.className = 'text-sm font-mono text-green-600';
+        } else {
+            diffElement.className = 'text-sm font-mono text-red-600';
+        }
+    }
+
+    // Initialize totals
+    updateTotals();
+})();
+</script>

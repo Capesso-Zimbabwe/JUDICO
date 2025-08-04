@@ -1,38 +1,129 @@
 {% extends 'finance_management/base.html' %}
+{% load humanize %}
 
 {% block finance_content %}
-<div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-semibold text-gray-800">Payments</h2>
+<div class="bg-white rounded-lg shadow p-6">
+    <!-- Header with search and add button -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 class="text-2xl font-bold text-gray-900">Payments</h1>
+        
+        <!-- Search form -->
+        <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            <form method="GET" class="flex gap-2">
+                <input type="text" name="search" value="{{ request.GET.search }}" 
+                       placeholder="Search payments..." 
+                       class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+            
+            <!-- Add New Payment Button -->
+            <button hx-get="{% url 'finance_management:payment_create' %}" 
+                    hx-target="#paymentModal" 
+                    hx-swap="innerHTML"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm whitespace-nowrap">
+                <i class="fas fa-plus mr-2"></i>Add New Payment
+            </button>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for payment in payments %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.payment_date }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <a href="{% url 'finance_management:invoice_detail' payment.invoice.pk %}" class="text-blue-600 hover:text-blue-900">
+                            {{ payment.invoice.invoice_number }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.invoice.client.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.get_payment_method_display }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.reference_number }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">${{ payment.amount|floatformat:2|intcomma }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button hx-get="{% url 'finance_management:payment_detail' payment.pk %}" 
+                                hx-target="#paymentDetailModal" 
+                                hx-swap="innerHTML"
+                                class="text-blue-600 hover:text-blue-900 mr-3">View</button>
+                        <button hx-get="{% url 'finance_management:payment_update' payment.pk %}" 
+                                hx-target="#paymentModal" 
+                                hx-swap="innerHTML"
+                                class="text-green-600 hover:text-green-900 mr-3">Edit</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">No payments found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            {% for payment in payments %}
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.payment_date }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <a href="{% url 'finance_management:invoice_detail' payment.invoice.pk %}" class="text-blue-600 hover:text-blue-900">
-                        {{ payment.invoice.invoice_number }}
-                    </a>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.invoice.client.name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.get_payment_method_display }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.reference_number }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${{ payment.amount }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal fade" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <!-- Modal content will be loaded here via HTMX -->
 </div>
+
+<!-- Payment Detail Modal -->
+<div id="paymentDetailModal" class="modal fade" tabindex="-1" aria-labelledby="paymentDetailModalLabel" aria-hidden="true">
+    <!-- Modal content will be loaded here via HTMX -->
+</div>
+
+<script>
+    // Initialize modals
+    let paymentModal = null;
+    let paymentDetailModal = null;
+
+    document.addEventListener('htmx:afterSwap', function(event) {
+        if (event.target.id === 'paymentModal') {
+            setTimeout(() => {
+                const modalElement = document.getElementById('paymentModal');
+                if (modalElement && typeof modalOptions !== 'undefined') {
+                    paymentModal = new Modal(modalElement, modalOptions);
+                    paymentModal.show();
+                }
+            }, 50);
+        }
+        
+        if (event.target.id === 'paymentDetailModal') {
+            setTimeout(() => {
+                const modalElement = document.getElementById('paymentDetailModal');
+                if (modalElement && typeof modalOptions !== 'undefined') {
+                    paymentDetailModal = new Modal(modalElement, modalOptions);
+                    paymentDetailModal.show();
+                }
+            }, 50);
+        }
+    });
+
+    // Hide modals on successful form submission
+    document.addEventListener('htmx:beforeSwap', function(event) {
+        if (event.detail.xhr.status === 200 && event.detail.target.id === 'paymentModal') {
+            if (paymentModal) {
+                paymentModal.hide();
+            }
+            // Refresh the page to show updated data
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+    });
+</script>
 {% endblock %}

@@ -29,9 +29,16 @@
             {% include 'components/field.html' with field=form.description field_widget_class="col-span-2" %}
 
             {% include 'components/field.html' with field=form.start_date %}
-            {% include 'components/field.html' with field=form.due_date %}
+            {% include 'components/field.html' with field=form.expected_completion_date %}
 
-            {% include 'components/field.html' with field=form.assigned_lawyer field_widget_class="col-span-2" %}
+            {% include 'components/field.html' with field=form.court_date %}
+            {% include 'components/field.html' with field=form.court_location %}
+
+            {% include 'components/field.html' with field=form.case_value %}
+            {% include 'components/field.html' with field=form.is_billable %}
+
+            {% include 'components/field.html' with field=form.assigned_lawyer %}
+            {% include 'components/field.html' with field=form.lawyer %}
 
         </div>
     </div>

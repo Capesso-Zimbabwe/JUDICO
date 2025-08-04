@@ -124,3 +124,23 @@ class CaseDocumentForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'placeholder': 'Document Title'}),
             'document': forms.ClearableFileInput(attrs={'multiple': False}),
         }
+
+class CourtDateForm(forms.ModelForm):
+    class Meta:
+        model = Case
+        fields = ['court_date', 'court_location']
+        widgets = {
+            'court_date': forms.DateTimeInput(attrs={
+                'type': 'datetime-local',
+                'class': 'form-control',
+                'placeholder': 'Select court date and time'
+            }),
+            'court_location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter court location'
+            }),
+        }
+        labels = {
+            'court_date': 'Court Date & Time',
+            'court_location': 'Court Location',
+        }

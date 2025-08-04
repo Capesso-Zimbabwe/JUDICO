@@ -560,9 +560,20 @@
             });
         });
         
+        // Initialize Flowbite modals
+        if (typeof Modal !== 'undefined' && typeof modalOptions !== 'undefined') {
+            const detailsModalEl = document.getElementById('reviewDetailsModal');
+            const scheduleModalEl = document.getElementById('scheduleReviewModal');
+            
+            if (detailsModalEl) {
+                window.reviewDetailsModal = new Modal(detailsModalEl, modalOptions);
+            }
+            if (scheduleModalEl) {
+                window.scheduleReviewModal = new Modal(scheduleModalEl, modalOptions);
+            }
+        }
+        
         // Review Details Modal functionality
-        const detailsModal = document.getElementById('reviewDetailsModal');
-        const closeDetailsModalBtn = document.getElementById('closeReviewModal');
         const viewReviewBtns = document.querySelectorAll('.view-review');
         
         viewReviewBtns.forEach(btn => {
@@ -571,42 +582,23 @@
                 // Here you would fetch the review details using the ID
                 // and populate the modal with the data
                 
-                // For now, just show the modal
-                detailsModal.classList.remove('hidden');
+                // Show modal using Flowbite
+                if (window.reviewDetailsModal) {
+                    window.reviewDetailsModal.show();
+                }
             });
         });
         
-        closeDetailsModalBtn.addEventListener('click', function() {
-            detailsModal.classList.add('hidden');
-        });
-        
         // Schedule Review Modal functionality
-        const scheduleModal = document.getElementById('scheduleReviewModal');
         const scheduleReviewBtn = document.getElementById('scheduleReview');
-        const closeScheduleModalBtn = document.getElementById('closeScheduleModal');
-        const cancelScheduleBtn = document.getElementById('cancelScheduleBtn');
         
-        scheduleReviewBtn.addEventListener('click', function() {
-            scheduleModal.classList.remove('hidden');
-        });
-        
-        closeScheduleModalBtn.addEventListener('click', function() {
-            scheduleModal.classList.add('hidden');
-        });
-        
-        cancelScheduleBtn.addEventListener('click', function() {
-            scheduleModal.classList.add('hidden');
-        });
-        
-        // Close modals when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target === detailsModal) {
-                detailsModal.classList.add('hidden');
-            }
-            if (event.target === scheduleModal) {
-                scheduleModal.classList.add('hidden');
-            }
-        });
+        if (scheduleReviewBtn) {
+            scheduleReviewBtn.addEventListener('click', function() {
+                if (window.scheduleReviewModal) {
+                    window.scheduleReviewModal.show();
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

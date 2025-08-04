@@ -1,0 +1,50 @@
+<form
+        novalidate="novalidate"
+        method="post"
+        {% if account %}
+        hx-post="{% url 'finance_management:account_update' account.id %}{% querystring %}"
+        hx-target="#update-modal-container"
+        {% else %}
+        hx-post="{% url 'finance_management:account_create' %}{% querystring %}"
+        hx-target="#new-modal-container"
+        {% endif %}
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
+            <!-- Account Code -->
+            {% include 'components/field.html' with field=form.code %}
+            
+            <!-- Account Name -->
+            {% include 'components/field.html' with field=form.name %}
+            
+            <!-- Account Type -->
+            {% include 'components/field.html' with field=form.account_type %}
+            
+            <!-- Parent Account -->
+            {% include 'components/field.html' with field=form.parent_account %}
+            
+            <!-- Status -->
+            {% include 'components/field.html' with field=form.status %}
+            
+            <!-- Description -->
+            {% include 'components/field.html' with field=form.description field_widget_class="col-span-2" %}
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <button type="button"
+                {% if account %}
+                data-modal-hide="update-modal"
+                {% else %}
+                data-modal-hide="new-modal"
+                {% endif %}
+                class="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Cancel
+        </button>
+        <button type="submit"
+                class="px-4 py-2 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            {% if account %}Update Account{% else %}Create Account{% endif %}
+        </button>
+    </div>
+</form>

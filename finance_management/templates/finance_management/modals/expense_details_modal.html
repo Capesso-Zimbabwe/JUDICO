@@ -1,0 +1,70 @@
+<!-- Expense Details Modal -->
+<div id="{{ modal_id|default:'details-expense-modal' }}" tabindex="-1" aria-hidden="true" data-modal-backdrop="static" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-sm shadow-sm">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200">
+                <h3 class="text-base font-semibold text-gray-900">
+                    Expense Details
+                </h3>
+                <button type="button" class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="{{ modal_id|default:'details-expense-modal' }}">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-1 md:p-2 max-h-[80vh] overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
+                        <p id="detailExpenseTitle" class="text-xs text-gray-900 bg-gray-50 p-2">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Amount</label>
+                        <p id="detailExpenseAmount" class="text-xs text-gray-900 bg-gray-50 p-2 font-mono">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                        <p id="detailExpenseCategory" class="text-xs text-gray-900 bg-gray-50 p-2">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Date</label>
+                        <p id="detailExpenseDate" class="text-xs text-gray-900 bg-gray-50 p-2">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Created By</label>
+                        <p id="detailExpenseCreatedBy" class="text-xs text-gray-900 bg-gray-50 p-2">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                        <span id="detailExpenseStatus" class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800">-</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                    <p id="detailExpenseDescription" class="text-xs text-gray-900 bg-gray-50 p-2 min-h-[60px]">-</p>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-3">
+                <button type="button" 
+                        data-modal-hide="{{ modal_id|default:'details-expense-modal' }}" 
+                        class="inline-flex w-full justify-center px-3 py-2 text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 sm:w-auto">
+                    Close
+                </button>
+                <button type="button" 
+                        id="editExpenseFromModal"
+                        class="inline-flex items-center justify-center px-3 py-2 text-xs font-medium bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md sm:w-auto"
+                        title="Edit Expense">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="mr-1">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                    </svg>
+                    Edit Expense
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

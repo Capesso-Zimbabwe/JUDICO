@@ -66,7 +66,7 @@
                                         hx-trigger="click"
                                         hx-get="{% url 'client_management:client_detail' client.id %}{% querystring %}"
                                         hx-indicator="#details-modal-overlay"
-                                        onclick="detailsModal.show()"
+                                        onclick="window.detailsModal.show()"
                                 >
                                     <div class="flex-shrink-0 h-8 w-8">
                                         <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
@@ -116,7 +116,7 @@
                                 {% with client_cases=client.cases.all %}
                                     {% if client_cases %}
                                         <div class="relative">
-                                            <button onclick="openCasesModal('{{ client.code }}', '{{ client.name|escapejs }}', {{ client_cases|length }}); casesModal.show();" class="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 hover:text-gray-800 transition-all duration-200 shadow-sm hover:shadow-md border border-gray-300">
+                                            <button onclick="openCasesModal('{{ client.code }}', '{{ client.name|escapejs }}', {{ client_cases|length }}); window.casesModal.show();" class="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 hover:text-gray-800 transition-all duration-200 shadow-sm hover:shadow-md border border-gray-300">
                                                 <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                 </svg>
@@ -168,7 +168,7 @@
                                             hx-indicator="#details-modal-overlay"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                             title="View Client"
-                                            onclick="detailsModal.show()"
+                                            onclick="window.detailsModal.show()"
                                     >
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
                                              xmlns="http://www.w3.org/2000/svg">
@@ -183,7 +183,7 @@
                                             hx-target="#update-modal-container"
                                             hx-trigger="click"
                                             type="button"
-                                            onclick="updateModal.show()"
+                                            onclick="window.updateModal.show()"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                             title="Edit Client">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
@@ -238,31 +238,31 @@
 {% block extra_js %}
     <script>
         const detailsModalElement = document.getElementById('details-modal');
-        const detailsModal = new Modal(detailsModalElement, modalOptions, {
+        window.detailsModal = new Modal(detailsModalElement, modalOptions, {
             id: 'details-modal',
             override: true
         });
 
         const updateModalElement = document.getElementById('update-modal');
-        const updateModal = new Modal(updateModalElement, modalOptions, {
+        window.updateModal = new Modal(updateModalElement, modalOptions, {
             id: 'update-modal',
             override: true
         });
 
         const documentModalElement = document.getElementById('document-modal');
-        const documentModal = new Modal(documentModalElement, modalOptions, {
+        window.documentModal = new Modal(documentModalElement, modalOptions, {
             id: 'document-modal',
             override: true
         });
 
         const casesModalElement = document.getElementById('cases-modal');
-        const casesModal = new Modal(casesModalElement, modalOptions, {
+        window.casesModal = new Modal(casesModalElement, modalOptions, {
             id: 'cases-modal',
             override: true
         });
 
         const caseNewModalElement = document.getElementById('case-new-modal');
-        const caseNewModal = new Modal(caseNewModalElement, modalOptions, {
+        window.caseNewModal = new Modal(caseNewModalElement, modalOptions, {
             id: 'case-new-modal',
             override: true
         });
@@ -273,7 +273,7 @@
                 indicator: '#details-modal-overlay'
             }).then(function (response) {
                 console.log("Here")
-                detailsModal.show()
+                window.detailsModal.show()
             })
 
         {% endif %}
@@ -405,24 +405,30 @@
             }
             
             // Close the cases modal
-            casesModal.hide();
+            window.casesModal.hide();
             
-            // Open the case creation modal
-            caseNewModal.show();
-            
-            // Pre-fill the client field if it exists
-            setTimeout(() => {
-                const clientSelect = document.querySelector('#case-new-modal select[name="client"]');
-                if (clientSelect && window.currentClientData.id) {
-                    clientSelect.value = window.currentClientData.id;
-                }
+            // Load the form via HTMX and then show the modal
+            htmx.ajax('GET', '/client/cases/create/', {
+                target: '#case-new-modal-container',
+                swap: 'innerHTML'
+            }).then(() => {
+                // Open the case creation modal after form is loaded
+                window.caseNewModal.show();
                 
-                // If there's a client name field, pre-fill it
-                const clientNameField = document.querySelector('#case-new-modal input[name="client_name"]');
-                if (clientNameField) {
-                    clientNameField.value = window.currentClientData.name;
-                }
-            }, 100);
+                // Pre-fill the client field if it exists
+                setTimeout(() => {
+                    const clientSelect = document.querySelector('#case-new-modal select[name="client"]');
+                    if (clientSelect && window.currentClientData.id) {
+                        clientSelect.value = window.currentClientData.id;
+                    }
+                    
+                    // If there's a client name field, pre-fill it
+                    const clientNameField = document.querySelector('#case-new-modal input[name="client_name"]');
+                    if (clientNameField) {
+                        clientNameField.value = window.currentClientData.name;
+                    }
+                }, 100);
+            });
         }
 
         // Handle successful case creation
@@ -432,7 +438,7 @@
                 const response = event.detail.xhr.responseText;
                 if (response.includes('success') || event.detail.xhr.status === 200) {
                     // Close the case creation modal
-                    caseNewModal.hide();
+                    window.caseNewModal.hide();
                     
                     // Refresh the cases modal if it's open
                     if (window.currentClientData) {

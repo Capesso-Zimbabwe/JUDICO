@@ -1,0 +1,240 @@
+<!-- Transactions Modal -->
+<div id="{{ modal_id|default:'modal' }}" tabindex="-1" aria-hidden="true" data-modal-backdrop="static"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+
+    <div class="relative p-4 w-full max-w-4xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-sm shadow-sm">
+
+            <!-- Modal header -->
+            <div class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">
+                        Account Transactions
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        <span id="transactions-account-name">Cash Account</span> (<span id="transactions-account-code">1000</span>)
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Current Balance</p>
+                        <p class="text-lg font-semibold text-green-600" id="transactions-account-balance">$25,000.00</p>
+                    </div>
+                    <button type="button"
+                            class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+                            data-modal-hide="{{ modal_id|default:'modal' }}">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                             viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Modal body -->
+            <div id="{{ modal_id|default:'modal' }}-container" class="p-1 md:p-2 flex flex-col max-h-[80vh] overflow-hidden">
+                <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <!-- Filter and Search Section -->
+                <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200 mb-6">
+                    <form class="flex-1 max-w-sm">
+                        <input type="text" 
+                               class="block w-full px-3 py-2 border border-gray-300 rounded text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
+                               placeholder="Search transactions...">
+                    </form>
+                    
+                    <div class="flex gap-2 items-center">
+                        <select class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Types</option>
+                            <option value="debit">Debits</option>
+                            <option value="credit">Credits</option>
+                        </select>
+                        
+                        <select class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                        
+                        <input type="date" 
+                               class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-blue-600 dark:text-blue-400">Total Debits</div>
+                        <div class="text-xl font-bold text-blue-900 dark:text-blue-100">$12,500.00</div>
+                    </div>
+                    <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-green-600 dark:text-green-400">Total Credits</div>
+                        <div class="text-xl font-bold text-green-900 dark:text-green-100">$8,750.00</div>
+                    </div>
+                    <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-purple-600 dark:text-purple-400">Net Balance</div>
+                        <div class="text-xl font-bold text-purple-900 dark:text-purple-100">$3,750.00</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Transactions</div>
+                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">24</div>
+                    </div>
+                </div>
+
+                <!-- Transactions Table -->
+                <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                    <table class="w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                            <tr>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                    Date
+                                </th>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                    Description
+                                </th>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                    Reference
+                                </th>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                    Debit
+                                </th>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                    Credit
+                                </th>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                    Balance
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- Sample transactions -->
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
+                                    Jan 20, 2024
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                    Payment from Client ABC
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
+                                    INV-2024-001
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-green-600 font-mono">
+                                    $2,500.00
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
+                                    -
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
+                                    $25,000.00
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
+                                    Jan 18, 2024
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                    Office Supplies Purchase
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
+                                    EXP-2024-015
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
+                                    -
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-red-600 font-mono">
+                                    $150.00
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
+                                    $22,500.00
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
+                                    Jan 15, 2024
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                    Legal Consultation Fee
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
+                                    INV-2024-002
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-green-600 font-mono">
+                                    $1,800.00
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
+                                    -
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
+                                    $22,650.00
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
+                                    Jan 12, 2024
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                    Rent Payment
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
+                                    EXP-2024-012
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
+                                    -
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-red-600 font-mono">
+                                    $3,000.00
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
+                                    $20,850.00
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
+                                    Jan 10, 2024
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                    Client Retainer
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
+                                    RET-2024-003
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-green-600 font-mono">
+                                    $5,000.00
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
+                                    -
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
+                                    $23,850.00
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex items-center justify-between mt-6">
+                    <div class="text-xs text-gray-700">
+                        Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">24</span> transactions
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">Previous</button>
+                        <button class="text-xs bg-blue-900 text-white py-1.5 px-4 rounded-sm font-medium hover:bg-blue-700 transition-all duration-200">1</button>
+                        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">2</button>
+                        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">3</button>
+                        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">Next</button>
+                    </div>
+                </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+                    <button data-modal-hide="{{ modal_id|default:'modal' }}" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">Close</button>
+                    <button type="button" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-sm text-xs py-1.5 px-4 text-center">Export to CSV</button>
+                    <button type="button" class="text-xs bg-blue-900 text-white py-1.5 px-4 rounded-sm font-medium hover:bg-blue-700 transition-all duration-200 transform disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">Add Transaction</button>
+                </div>
+            </div>
+         </div>
+    </div>
+</div>

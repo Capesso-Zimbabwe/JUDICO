@@ -1,48 +1,43 @@
-{% extends 'finance_management/base.html' %}
-
-{% block finance_content %}
-<div class="bg-white rounded-lg shadow-lg p-6">
-    <h2 class="text-xs font-semibold text-gray-800 mb-6">{% if form.instance.pk %}Edit Expense{% else %}Record Expense{% endif %}</h2>
-
-    <form method="post" enctype="multipart/form-data" class="space-y-6">
-        {% csrf_token %}
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-xs font-medium text-gray-700">Title</label>
-                {{ form.title }}
-            </div>
+<form
+        novalidate="novalidate"
+        method="post"
+        enctype="multipart/form-data"
+        {% if expense %}
+        hx-post="{% url 'finance_management:expense_update' expense.id %}{% querystring %}"
+        hx-target="#updateExpenseModalContent"
+        {% else %}
+        hx-post="{% url 'finance_management:expense_create' %}{% querystring %}"
+        hx-target="#new-expense-modal-container"
+        {% endif %}
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
             
-            <div>
-                <label class="block text-xs font-medium text-gray-700">Amount</label>
-                {{ form.amount }}
-            </div>
+            <!-- Expense Title -->
+            {% include 'components/field.html' with field=form.title field_widget_class="col-span-2" %}
 
-            <div>
-                <label class="block text-xs font-medium text-gray-700">Category</label>
-                {{ form.category }}
-            </div>
+            {% include 'components/field.html' with field=form.amount %}
+            <!-- Category -->
+            {% include 'components/field.html' with field=form.category %}
 
-            <div>
-                <label class="block text-xs font-medium text-gray-700">Expense Date</label>
-                {{ form.expense_date }}
-            </div>
+            {% include 'components/field.html' with field=form.expense_date %}
+            <!-- Receipt -->
+            {% include 'components/field.html' with field=form.receipt %}
+
+            <!-- Description -->
+            {% include 'components/field.html' with field=form.description field_widget_class="col-span-2" %}
+
         </div>
-
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
         <div>
-            <label class="block text-xs font-medium text-gray-700">Description</label>
-            {{ form.description }}
+            {% if not expense %}
+            {% include 'components/submit-button.html' with button_text="Create Expense" loading_text="Creating...." %}
+            {% else %}
+            {% include 'components/submit-button.html' with button_text="Update Expense" loading_text="Updating...." %}
+            {% endif %}
         </div>
-
-        <div>
-            <label class="block text-xs font-medium text-gray-700">Receipt</label>
-            {{ form.receipt }}
-        </div>
-
-        <div class="flex justify-end space-x-4">
-            <a href="{% url 'finance_management:expense_list' %}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 text-xs">Cancel</a>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-xs">Save Expense</button>
-        </div>
-    </form>
-</div>
-{% endblock %}
+    </div>
+</form>

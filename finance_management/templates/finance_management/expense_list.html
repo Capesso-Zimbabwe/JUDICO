@@ -1,46 +1,402 @@
 {% extends 'finance_management/base.html' %}
+{% load humanize %}
+
+{% block title %}Expenses - Finance Management{% endblock %}
+
+{% block header_title %}Finance Management - Expenses{% endblock %}
 
 {% block finance_content %}
-<div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-semibold text-gray-800">Expenses</h2>
-    <a href="{% url 'finance_management:expense_create' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-        <i class="fas fa-plus mr-2"></i>Record Expense
-    </a>
-</div>
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <!-- Filters Section -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <form action="" class="flex-1 max-w-sm" id="search-form">
+                {% include "components/field.html" with hide_label=True field=search_form.search %}
+            </form>
+            
+            <div class="flex gap-2 items-center">
+                <select name="category" form="search-form" onchange="filterExpenses(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1" id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <option value="OFFICE_SUPPLIES">Office Supplies</option>
+                    <option value="UTILITIES">Utilities</option>
+                    <option value="RENT">Rent</option>
+                    <option value="TRAVEL">Travel</option>
+                    <option value="PROFESSIONAL_FEES">Professional Fees</option>
+                    <option value="MARKETING">Marketing</option>
+                    <option value="OTHER">Other</option>
+                </select>
+                
+                <select name="status" form="search-form" onchange="filterExpenses()" class="text-xs border border-gray-300 rounded px-2 py-1" id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                </select>
+                
+                <button type="button"
+                        class="p-2 flex gap-1"
+                        onclick="openNewExpenseModal()">
+                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                         height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 12h14m-7 7V5"></path>
+                    </svg>
+                    <span class="font-bold">Record Expense</span>
+                </button>
+            </div>
+        </div>
 
-<div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            {% for expense in expenses %}
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ expense.expense_date }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ expense.title }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ expense.get_category_display }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ expense.created_by.get_full_name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                        {% if expense.approved_by %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                        {% if expense.approved_by %}Approved{% else %}Pending{% endif %}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${{ expense.amount }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <a href="{% url 'finance_management:expense_detail' expense.pk %}" class="text-blue-600 hover:text-blue-900">View</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="expensesTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Date
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Expense Details
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Category
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Amount
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Status
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="expensesTableBody">
+                    {% for expense in expenses %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200" 
+                            data-expense-category="{{ expense.category }}" 
+                            data-expense-status="{% if expense.approved_by %}approved{% else %}pending{% endif %}"
+                            data-expense-title="{{ expense.title|lower }}"
+                            data-expense-description="{{ expense.description|lower }}">
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ expense.expense_date|date:"M d, Y" }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        onclick="viewExpenseDetails('{{ expense.id }}')">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                            <span class="text-orange-600 font-medium text-xs">{{ expense.title|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ expense.title|truncatechars:30 }}</span>
+                                        </div>
+                                        {% if expense.description %}
+                                        <div class="text-xs text-gray-500">
+                                            <span>{{ expense.description|truncatechars:40 }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                    {{ expense.get_category_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">${{ expense.amount|floatformat:2 }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if expense.approved_by %}bg-green-100 text-green-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {% if expense.approved_by %}Approved{% else %}Pending{% endif %}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <!-- View Details -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="View Expense"
+                                            onclick="viewExpenseDetails('{{ expense.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Edit -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Edit Expense"
+                                            onclick="editExpense('{{ expense.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Approve/Reject -->
+                                    {% if not expense.approved_by %}
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Approve Expense"
+                                            onclick="approveExpense('{{ expense.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                                        </svg>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="fas fa-receipt text-4xl text-gray-400 mb-4"></i>
+                                    <h3 class="text-xs font-medium text-gray-900 mb-1">No expenses found</h3>
+                                    <p class="text-xs text-gray-500">Get started by recording your first expense.</p>
+                                    <button type="button"
+                                            class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                                            onclick="openNewExpenseModal()">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        Record Your First Expense
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        {% include 'components/paginator.html' %}
+    </div>
+
+    <!-- Modals -->
+    <div id="new-expense-modal-container">
+        {% include "finance_management/new_expense_modal.html" with modal_id="new-expense-modal" %}
+    </div>
+    {% include "finance_management/modals/expense_details_modal.html" with modal_id="details-expense-modal" %}
+    <div id="update-expense-modal-container">
+        {% include "finance_management/modals/update_expense_modal.html" with modal_id="update-expense-modal" %}
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Global modal functions (must be outside DOMContentLoaded for onclick access)
+        function viewExpenseDetails(expenseId) {
+            // Fetch expense details from API
+            fetch(`/finance/api/expenses/${expenseId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate details modal with fetched data
+                    document.getElementById('detailExpenseTitle').textContent = data.title;
+                    document.getElementById('detailExpenseDescription').textContent = data.description || 'No description';
+                    document.getElementById('detailExpenseAmount').textContent = '$' + parseFloat(data.amount).toFixed(2);
+                    document.getElementById('detailExpenseCategory').textContent = data.category_display;
+                    document.getElementById('detailExpenseDate').textContent = data.expense_date;
+                    document.getElementById('detailExpenseCreatedBy').textContent = data.created_by;
+                    document.getElementById('detailExpenseStatus').textContent = data.approved_by ? 'Approved' : 'Pending';
+                    
+                    // Set status badge color
+                    const statusBadge = document.getElementById('detailExpenseStatus');
+                    if (data.approved_by) {
+                        statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
+                    } else {
+                        statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
+                    }
+                    
+                    // Store expense ID for edit button
+                    const editButton = document.getElementById('editExpenseFromModal');
+                    if (editButton) {
+                        editButton.onclick = function() {
+                            editExpense(expenseId);
+                        };
+                    }
+                    
+                    // Show the modal after populating data
+                    if (window.detailsExpenseModal) {
+                        window.detailsExpenseModal.show();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching expense details:', error);
+                });
+        }
+
+        function editExpense(expenseId) {
+             // Close details modal
+             if (window.detailsExpenseModal) {
+                 window.detailsExpenseModal.hide();
+             }
+             
+             // Show the modal first
+             if (window.updateExpenseModal) {
+                 window.updateExpenseModal.show();
+             }
+             
+             // Get the modal body content element (the actual form container inside the modal)
+             const modalBodyContent = document.getElementById('updateExpenseModalContent');
+             
+             if (!modalBodyContent) {
+                 console.error('Modal body content element not found');
+                 alert('Error: Modal content element not found. Please refresh the page and try again.');
+                 return;
+             }
+             
+             // Show loading state
+             modalBodyContent.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div><p class="mt-2 text-gray-600">Loading expense data...</p></div>';
+             
+             // Fetch only the form content, not the entire modal
+             fetch(`/finance/expenses/${expenseId}/edit/`, {
+                 headers: {
+                     'HX-Request': 'true'
+                 }
+             })
+                 .then(response => response.text())
+                 .then(html => {
+                     // Load only the form content into the modal body container
+                     modalBodyContent.innerHTML = html;
+                 })
+                 .catch(error => {
+                     console.error('Error loading expense form:', error);
+                     // Show a loading error message
+                     modalBodyContent.innerHTML = '<div class="text-center py-8"><p class="text-red-600">Error loading expense data. Please try again.</p></div>';
+                 });
+         }
+
+        function approveExpense(expenseId) {
+            if (confirm('Are you sure you want to approve this expense?')) {
+                fetch(`/finance/expenses/${expenseId}/approve/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Close modal and reload page
+                        if (window.detailsExpenseModal) {
+                            window.detailsExpenseModal.hide();
+                        }
+                        location.reload();
+                    } else {
+                        console.error('Error approving expense');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        function openNewExpenseModal() {
+             // Show the modal using Flowbite
+             if (window.newExpenseModal) {
+                 window.newExpenseModal.show();
+             }
+         }
+
+        // Initialize all functionality when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            const searchInput = document.getElementById('id_search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    filterTable();
+                });
+            }
+
+            // Filter functionality
+            const categoryFilter = document.getElementById('categoryFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', filterTable);
+            }
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterTable);
+            }
+
+            function filterTable() {
+                const searchTerm = document.getElementById('id_search').value.toLowerCase();
+                const categoryFilter = document.getElementById('categoryFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                const rows = document.querySelectorAll('#expensesTableBody tr');
+
+                rows.forEach(row => {
+                    const title = row.getAttribute('data-expense-title') || '';
+                    const description = row.getAttribute('data-expense-description') || '';
+                    const category = row.getAttribute('data-expense-category') || '';
+                    const status = row.getAttribute('data-expense-status') || '';
+
+                    const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
+                    const matchesCategory = !categoryFilter || category === categoryFilter;
+                    const matchesStatus = !statusFilter || status === statusFilter;
+
+                    if (matchesSearch && matchesCategory && matchesStatus) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            // Initialize Flowbite modals
+            const newExpenseModalElement = document.getElementById('new-expense-modal');
+            if (newExpenseModalElement) {
+                window.newExpenseModal = new Modal(newExpenseModalElement, modalOptions, {
+                    id: 'new-expense-modal',
+                    override: true
+                });
+            }
+            
+            const detailsExpenseModalElement = document.getElementById('details-expense-modal');
+            if (detailsExpenseModalElement) {
+                window.detailsExpenseModal = new Modal(detailsExpenseModalElement, modalOptions, {
+                    id: 'details-expense-modal',
+                    override: true
+                });
+            }
+            
+            // Initialize Update Expense Modal
+            const updateExpenseModalElement = document.getElementById('update-expense-modal');
+            if (updateExpenseModalElement) {
+                window.updateExpenseModal = new Modal(updateExpenseModalElement, modalOptions, {
+                    id: 'update-expense-modal',
+                    override: true
+                });
+            }
+        });
+
+        // Handle HTMX events for modal management
+        document.addEventListener('htmx:beforeSwap', function(event) {
+            // Check if this is a successful form submission (status 200) and targets a modal container
+            if (event.detail.xhr.status === 200) {
+                if (event.detail.target.id === 'new-expense-modal-container') {
+                    // Close the new expense modal
+                    if (window.newExpenseModal) {
+                        window.newExpenseModal.hide();
+                    }
+                    // Refresh the page to show the new expense in the table
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else if (event.detail.target.id === 'updateExpenseModalContent') {
+                    // Close the update expense modal
+                    if (window.updateExpenseModal) {
+                        window.updateExpenseModal.hide();
+                    }
+                    // Refresh the page to show the updated expense in the table
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                }
+            }
+        });
+    </script>
 {% endblock %}

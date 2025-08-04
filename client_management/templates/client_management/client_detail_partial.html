@@ -87,7 +87,7 @@
                 </svg>
                 Client Documents
             </h3>
-            <button type="button" onclick="documentModal.show(); detailsModal.hide();"
+            <button type="button" onclick="window.documentModal.show(); window.detailsModal.hide();"
                     hx-get="{% url 'client_management:upload_document' client.id %}"
                     hx-target="#document-modal-container"
                     hx-trigger="click"
@@ -304,7 +304,7 @@
 </div>
 <div class="flex justify-end space-x-2 px-2 py-2 pt-3 bg-gray-50 border-t border-gray-200">
     <div>
-        <button type="button" onclick="detailsModal.hide(); updateModal.show()"
+        <button type="button" onclick="window.detailsModal.hide(); window.updateModal.show()"
                 data-modal-show="update-modal"
                 hx-get="{% url 'client_management:client_update' client.id %}{% querystring %}"
                 hx-indicator="#update-modal-overlay"
