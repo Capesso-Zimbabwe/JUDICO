@@ -1,0 +1,49 @@
+<!-- Invoice Details Modal -->
+<div id="{{ modal_id|default:'invoice-details-modal' }}" tabindex="-1" aria-hidden="true" data-modal-backdrop="static" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-sm shadow-sm">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200">
+                <h3 class="text-base font-semibold text-gray-900">
+                    Invoice Details
+                </h3>
+                <button type="button" class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="{{ modal_id|default:'invoice-details-modal' }}">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
+                        <p id="modal-invoice-number" class="text-sm text-gray-900 font-mono">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Client</label>
+                        <p id="modal-client-name" class="text-sm text-gray-900">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <p id="modal-status" class="text-sm text-gray-900">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+                        <p id="modal-total" class="text-sm text-gray-900 font-mono">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Issue Date</label>
+                        <p id="modal-issue-date" class="text-sm text-gray-900">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                        <p id="modal-due-date" class="text-sm text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

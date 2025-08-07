@@ -4,74 +4,180 @@
 
 {% block governance_content %}
 
-
-<!-- Policies Content -->
-<div class="p-8">
-    <div class="mb-6 flex justify-between items-center">
-        <h1 class="text-2xl font-semibold text-gray-900">Policies</h1>
-        <a href="{% url 'governance:create_policy' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-            Add New Policy
-        </a>
+    <!-- Policies Management Table -->
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <form action="" class="flex-1 max-w-sm" id="search-form">
+                <div class="relative">
+                    <input type="text" name="search" placeholder="Search policies..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </form>
+            <div class="flex items-center gap-2">
+                <button type="button" 
+                        onclick="document.getElementById('upload-input').click()" 
+                        class="p-2 flex gap-1 text-gray-600 hover:text-gray-800 transition-colors duration-200">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
+                    </svg>
+                    <span class="font-bold">Upload Policy</span>
+                </button>
+                <a href="{% url 'governance:create_policy' %}" class="p-2 flex gap-1">
+                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                         height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 12h14m-7 7V5"></path>
+                    </svg>
+                    <span class="font-bold">Add New Policy</span>
+                </a>
+            </div>
+            <!-- Hidden file input -->
+            <input type="file" id="upload-input" accept=".pdf,.doc,.docx" style="display: none;" onchange="handleFileUpload(this)">
+        </div>
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="policiesTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Policy Name
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Category
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Last Updated
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Status
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Actions
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    {% for policy in policies %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        onclick="window.location.href='{% url 'governance:view_policy' policy.id %}'"
+                                >
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-medium text-xs">{{ policy.title|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ policy.title|truncatechars:20 }}</span>
+                                        </div>
+                                        {% if policy.description %}
+                                        <div class="text-xs text-gray-500">{{ policy.description|truncatechars:30 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">{{ policy.get_category_display }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">{{ policy.updated_at|date:"M d, Y" }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                {% if policy.status == 'active' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {{ policy.get_status_display }}
+                                </span>
+                                {% elif policy.status == 'draft' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    {{ policy.get_status_display }}
+                                </span>
+                                {% elif policy.status == 'inactive' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ policy.get_status_display }}
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    {{ policy.get_status_display }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <button type="button"
+                                            onclick="window.location.href='{% url 'governance:view_policy' policy.id %}'"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="View Policy"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </button>
+                                    <button type="button"
+                                            onclick="window.location.href='{% url 'governance:edit_policy' policy.id %}'"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Edit Policy">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </button>
+                                    <button type="button"
+                                            onclick="if(confirm('Are you sure you want to delete this policy?')) window.location.href='{% url 'governance:delete_policy' policy.id %}'"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Delete Policy">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-3 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                No policies found. <a href="{% url 'governance:create_policy' %}" class="text-blue-600 hover:text-blue-900">Create your first policy</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <!-- Policies List -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Policy Name</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for policy in policies %}
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">
-                            <a href="{% url 'governance:view_policy' policy.id %}" class="hover:text-blue-600">{{ policy.title }}</a>
-                        </div>
-                        {% if policy.description %}
-                        <div class="text-sm text-gray-500">{{ policy.description|truncatechars:50 }}</div>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-500">{{ policy.get_category_display }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-500">{{ policy.updated_at|date:"M d, Y" }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        {% if policy.status == 'active' %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ policy.get_status_display }}</span>
-                        {% elif policy.status == 'draft' %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ policy.get_status_display }}</span>
-                        {% elif policy.status == 'inactive' %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{{ policy.get_status_display }}</span>
-                        {% else %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ policy.get_status_display }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="{% url 'governance:view_policy' policy.id %}" class="text-green-600 hover:text-green-900 mr-3">View</a>
-                        <a href="{% url 'governance:edit_policy' policy.id %}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                        <a href="{% url 'governance:delete_policy' policy.id %}" class="text-red-600 hover:text-red-900">Delete</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                        No policies found. <a href="{% url 'governance:create_policy' %}" class="text-blue-600 hover:text-blue-900">Create your first policy</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+<script>
+function handleFileUpload(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const fileName = file.name;
+        const fileSize = (file.size / 1024 / 1024).toFixed(2); // Convert to MB
+        
+        // Basic file validation
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please select a valid file type (PDF, DOC, DOCX)');
+            input.value = '';
+            return;
+        }
+        
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            alert('File size must be less than 10MB');
+            input.value = '';
+            return;
+        }
+        
+        // Show confirmation
+        if (confirm(`Upload "${fileName}" (${fileSize} MB)?`)) {
+            // Here you would typically send the file to the server
+            // For now, we'll just show a success message
+            alert('File upload functionality will be implemented in the backend.');
+        }
+        
+        // Reset the input
+        input.value = '';
+    }
+}
+</script>
+
 {% endblock %}

@@ -152,3 +152,94 @@ class JournalEntryLine(models.Model):
     
     def __str__(self):
         return f'{self.journal_entry.entry_number} - {self.account.code}'
+
+class PettyCash(models.Model):
+    TRANSACTION_TYPE_CHOICES = [
+        ('DISBURSEMENT', 'Disbursement'),
+        ('REPLENISHMENT', 'Replenishment'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+    
+    transaction_number = models.CharField(max_length=50, unique=True)
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES)
+    description = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_date = models.DateField(default=timezone.now)
+    recipient = models.CharField(max_length=255, blank=True)
+    purpose = models.TextField(blank=True)
+    receipt = models.FileField(upload_to='petty_cash/receipts/', blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_petty_cash')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submitted_petty_cash')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-transaction_date', '-created_at']
+        verbose_name_plural = 'Petty Cash Transactions'
+    
+    def __str__(self):
+        return f'{self.transaction_number} - {self.description} - ${self.amount}'
+
+class Report(models.Model):
+    REPORT_TYPE_CHOICES = [
+        ('petty_cash', 'Petty Cash Report'),
+        ('expense', 'Expense Report'),
+        ('income', 'Income Report'),
+        ('account_summary', 'Account Summary'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+    
+    FORMAT_CHOICES = [
+        ('pdf', 'PDF'),
+        ('excel', 'Excel'),
+        ('csv', 'CSV'),
+    ]
+    
+    name = models.CharField(max_length=255)
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPE_CHOICES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    format = models.CharField(max_length=10, choices=FORMAT_CHOICES, default='pdf')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    file_path = models.CharField(max_length=500, blank=True)
+    file_size = models.BigIntegerField(null=True, blank=True)  # in bytes
+    description = models.TextField(blank=True)
+    filters = models.JSONField(default=dict, blank=True)  # Store additional filters
+    generated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='finance_generated_reports')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = 'Reports'
+    
+    def __str__(self):
+        return f'{self.name} - {self.get_report_type_display()}'
+    
+    @property
+    def date_range(self):
+        return f"{self.start_date.strftime('%b %d, %Y')} - {self.end_date.strftime('%b %d, %Y')}"
+    
+    @property
+    def file_size_formatted(self):
+        if not self.file_size:
+            return 'N/A'
+        
+        # Convert bytes to human readable format
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if self.file_size < 1024.0:
+                return f"{self.file_size:.1f} {unit}"
+            self.file_size /= 1024.0
+        return f"{self.file_size:.1f} TB"

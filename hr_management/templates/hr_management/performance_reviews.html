@@ -1,604 +1,163 @@
 {% extends 'hr_management/base.html' %}
 
-{% block title %}Performance Reviews{% endblock %}
-
-{% load static %}
-
-{% block extra_js %}
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#reviewsTable').DataTable({
-            "pageLength": 10,
-            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-            "order": [[ 5, "desc" ]],
-            "language": {
-                "emptyTable": "<div class='flex flex-col items-center justify-center py-6'><svg xmlns='http://www.w3.org/2000/svg' class='h-12 w-12 text-gray-300 mb-3' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' /></svg><p class='text-gray-500 mb-1'>No performance reviews found</p><p class='text-gray-400 text-sm'>Schedule a new review to get started</p></div>"
-            }
-        });
-    });
-</script>
-{% endblock %}
-
 {% block hr_content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-xl font-bold text-gray-800">Performance Reviews</h1>
-    <button id="scheduleReview" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm transition-colors duration-200 flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Schedule New Review
-    </button>
-</div>
 
-<!-- Review Stats -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="hr-card bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div class="flex items-center">
-            <div class="rounded-full bg-blue-100 p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    <!-- Performance Reviews Management Table -->
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <form action="" method="get" class="flex-1 max-w-sm" id="search-form">
+                <div class="relative">
+                    <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search reviews..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </form>
+            <button type="button" data-modal-target="review-new-modal" data-modal-toggle="review-new-modal"
+                    hx-get="{% url 'hr_management:create_review_modal' %}" hx-target="#review-new-modal-container"
+                    class="p-2 flex gap-1">
+                <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                     height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M5 12h14m-7 7V5"></path>
                 </svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Total Reviews</p>
-                <p class="text-xl font-bold">{{ total_reviews|default:"0" }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="hr-card bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div class="flex items-center">
-            <div class="rounded-full bg-green-100 p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Completed</p>
-                <p class="text-xl font-bold">{{ completed_reviews|default:"0" }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="hr-card bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div class="flex items-center">
-            <div class="rounded-full bg-yellow-100 p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Scheduled</p>
-                <p class="text-xl font-bold">{{ scheduled_reviews|default:"0" }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="hr-card bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div class="flex items-center">
-            <div class="rounded-full bg-red-100 p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Overdue</p>
-                <p class="text-xl font-bold">{{ overdue_reviews|default:"0" }}</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Review Status Filter -->
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6">
-    <h3 class="text-sm font-medium text-gray-700 mb-3">Filter by Status</h3>
-    <div class="flex flex-wrap gap-2">
-        <button class="review-status-filter active px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors duration-200">
-            All
-        </button>
-        <button class="review-status-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            Completed
-        </button>
-        <button class="review-status-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            In Progress
-        </button>
-        <button class="review-status-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            Scheduled
-        </button>
-        <button class="review-status-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            Overdue
-        </button>
-    </div>
-</div>
-
-<!-- Performance Analytics -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <!-- Review Status Distribution -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-        <h3 class="text-sm font-medium text-gray-700 mb-3">Review Status Distribution</h3>
-        <div class="h-64">
-            <canvas id="reviewStatusChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Department Performance Averages -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-        <h3 class="text-sm font-medium text-gray-700 mb-3">Department Performance Averages</h3>
-        <div class="h-64">
-            <canvas id="departmentPerformanceChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<!-- Performance Reviews Table -->
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-    <div class="p-4 border-b border-gray-100">
-        <h3 class="text-sm font-medium text-gray-700">Performance Reviews</h3>
-    </div>
-    <div class="overflow-x-auto">
-        <table id="reviewsTable" class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Review Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reviewer</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Review Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for review in reviews %}
-                <tr class="hover:bg-gray-50 transition-colors duration-150">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                {% if review.employee.profile_picture %}
-                                <img class="h-10 w-10 rounded-full object-cover" src="{{ review.employee.profile_picture.url }}" alt="">
-                                {% else %}
-                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                                    {{ review.employee.first_name|first }}{{ review.employee.last_name|first }}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">{{ review.employee.first_name }} {{ review.employee.last_name }}</div>
-                                <div class="text-xs text-gray-500">{{ review.employee.position }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {{ review.employee.department }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ review.review_type }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</div>
-                        <div class="text-xs text-gray-500">{{ review.reviewer.position }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        {% if review.rating %}
-                        <div class="flex items-center">
-                            <span class="text-sm font-medium mr-2">{{ review.rating }}/5</span>
-                            <div class="flex">
-                                {% for i in "12345"|make_list %}
-                                {% if forloop.counter <= review.rating %}
-                                <svg class="h-4 w-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                </svg>
-                                {% else %}
-                                <svg class="h-4 w-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                </svg>
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% else %}
-                        <span class="text-xs text-gray-500">Not rated yet</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ review.review_date|date:"M d, Y" }}</div>
-                        {% if review.status == 'overdue' %}
-                        <div class="text-xs text-red-500">Overdue by {{ review.days_overdue }} days</div>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        {% if review.status == 'completed' %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Completed
-                        </span>
-                        {% elif review.status == 'in_progress' %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            In Progress
-                        </span>
-                        {% elif review.status == 'scheduled' %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                            Scheduled
-                        </span>
-                        {% else %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Overdue
-                        </span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            {% if review.status != 'completed' %}
-                            <button class="text-blue-600 hover:text-blue-900 conduct-review" title="Conduct Review" data-id="{{ review.id }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
-                            {% endif %}
-                            <button class="text-indigo-600 hover:text-indigo-900 view-review" title="View Details" data-id="{{ review.id }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <!-- Empty state is handled by DataTables language.emptyTable -->
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Review Details Modal -->
-<div id="reviewDetailsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Performance Review Details</h3>
-            <button id="closeReviewModal" class="text-gray-400 hover:text-gray-500">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <span class="font-bold">Add New Review</span>
             </button>
         </div>
-        <div class="space-y-4">
-            <!-- Employee Info -->
-            <div class="flex items-center p-4 bg-gray-50 rounded-lg">
-                <div class="flex-shrink-0 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium text-lg" id="modal-employee-initials">JD</div>
-                <div class="ml-4">
-                    <h4 class="text-base font-medium text-gray-900" id="modal-employee-name">John Doe</h4>
-                    <p class="text-sm text-gray-500" id="modal-employee-department">Legal Department</p>
-                    <p class="text-sm text-gray-500" id="modal-employee-position">Senior Attorney</p>
-                </div>
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="reviewsTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Employee
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Department
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Review Type
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Reviewer
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Rating
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Review Date
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Status
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Actions
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    {% for review in reviews %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                         <td class="px-3 py-1 whitespace-nowrap">
+                             <button type="button"
+                                     class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                             >
+                                 <div class="flex-shrink-0 h-8 w-8">
+                                     <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                         <span class="text-blue-600 font-medium text-xs">{{ review.employee.first_name.0 }}{{ review.employee.last_name.0 }}</span>
+                                     </div>
+                                 </div>
+                                 <div class="ml-2">
+                                     <div class="text-xs font-medium text-gray-900">
+                                         <span>{{ review.employee.full_name }}</span>
+                                     </div>
+                                 </div>
+                             </button>
+                         </td>
+                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ review.employee.department.name|default:"N/A" }}</td>
+                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">Performance Review</td>
+                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</td>
+                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                             <div class="flex items-center">
+                                 {% for i in "12345" %}
+                                     {% if forloop.counter <= review.overall_rating %}
+                                         <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                         </svg>
+                                     {% else %}
+                                         <svg class="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 20 20">
+                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                         </svg>
+                                     {% endif %}
+                                 {% endfor %}
+                             </div>
+                         </td>
+                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ review.review_date }}</td>
+                         <td class="px-3 py-1 whitespace-nowrap">
+                             {% if review.status == 'completed' %}
+                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                     Completed
+                                 </span>
+                             {% elif review.status == 'in_progress' %}
+                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                     In Progress
+                                 </span>
+                             {% elif review.status == 'scheduled' %}
+                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                     Scheduled
+                                 </span>
+                             {% elif review.status == 'overdue' %}
+                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                     Overdue
+                                 </span>
+                             {% endif %}
+                         </td>
+                         <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                             <div class="flex space-x-2">
+                                 <button type="button"
+                                         class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                         title="View Review"
+                                 >
+                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                          xmlns="http://www.w3.org/2000/svg">
+                                         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                     </svg>
+                                 </button>
+                                 <button
+                                         type="button"
+                                         class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                         title="Edit Review">
+                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                          xmlns="http://www.w3.org/2000/svg">
+                                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                     </svg>
+                                 </button>
+                             </div>
+                         </td>
+                     </tr>
+                     {% empty %}
+                         <tr>
+                             <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                 <div class="flex flex-col items-center">
+                                     <i class="fas fa-clipboard-list text-4xl text-gray-300 mb-4"></i>
+                                     <p class="text-xs font-medium">No performance reviews found</p>
+                                     <p class="text-xs">Get started by scheduling your first review.</p>
+                                 </div>
+                             </td>
+                         </tr>
+                     {% endfor %}
+                     </tbody>
+                </table>
             </div>
             
-            <!-- Review Details -->
-            <div class="border-t border-gray-200 pt-4">
-                <dl class="grid grid-cols-2 gap-x-4 gap-y-4">
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Review Type</dt>
-                        <dd class="mt-1 text-sm text-gray-900" id="modal-review-type">Annual Review</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Status</dt>
-                        <dd class="mt-1" id="modal-status-container">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800" id="modal-status">Completed</span>
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Review Date</dt>
-                        <dd class="mt-1 text-sm text-gray-900" id="modal-review-date">June 15, 2023</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Reviewer</dt>
-                        <dd class="mt-1 text-sm text-gray-900" id="modal-reviewer">Jane Smith (HR Manager)</dd>
-                    </div>
-                    <div class="col-span-2">
-                        <dt class="text-sm font-medium text-gray-500">Overall Rating</dt>
-                        <dd class="mt-1">
-                            <div class="flex items-center">
-                                <span class="text-sm font-medium mr-2" id="modal-rating">4.5/5</span>
-                                <div class="flex" id="modal-stars">
-                                    <svg class="h-4 w-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                    </svg>
-                                    <!-- Repeat for all stars -->
-                                </div>
-                            </div>
-                        </dd>
-                    </div>
-                </dl>
-            </div>
-            
-            <!-- Performance Categories -->
-            <div class="border-t border-gray-200 pt-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-3">Performance Categories</h4>
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-medium text-gray-700">Job Knowledge</span>
-                            <span class="text-xs font-medium">4.5/5</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 90%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-medium text-gray-700">Quality of Work</span>
-                            <span class="text-xs font-medium">4/5</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 80%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-medium text-gray-700">Communication</span>
-                            <span class="text-xs font-medium">5/5</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 100%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-medium text-gray-700">Teamwork</span>
-                            <span class="text-xs font-medium">4/5</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 80%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-medium text-gray-700">Initiative</span>
-                            <span class="text-xs font-medium">4.5/5</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 90%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Comments -->
-            <div class="border-t border-gray-200 pt-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">Reviewer Comments</h4>
-                <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-700">
-                    <p>John has consistently demonstrated excellent job knowledge and communication skills. His ability to work with clients and team members is outstanding. Areas for improvement include delegation and time management.</p>
-                </div>
-            </div>
-            
-            <!-- Goals -->
-            <div class="border-t border-gray-200 pt-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">Goals for Next Period</h4>
-                <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                    <li>Complete advanced certification in contract law</li>
-                    <li>Improve delegation skills by mentoring junior staff</li>
-                    <li>Develop better time management strategies</li>
-                </ul>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200" id="modal-action-buttons">
-                <button type="button" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" id="modal-print-btn">
-                    Print Report
-                </button>
-                <button type="button" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700" id="modal-close-btn">
-                    Close
-                </button>
-            </div>
+            {% include 'components/paginator.html' %}
         </div>
-    </div>
-</div>
 
-<!-- Schedule Review Modal -->
-<div id="scheduleReviewModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Schedule New Review</h3>
-            <button id="closeScheduleModal" class="text-gray-400 hover:text-gray-500">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <form class="space-y-4">
-            <div>
-                <label for="employeeSelect" class="block text-sm font-medium text-gray-700">Employee</label>
-                <select id="employeeSelect" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                    <option value="">Select an employee</option>
-                    <!-- Employee options would be populated here -->
-                </select>
-            </div>
-            <div>
-                <label for="reviewType" class="block text-sm font-medium text-gray-700">Review Type</label>
-                <select id="reviewType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                    <option value="annual">Annual Review</option>
-                    <option value="probation">Probation Review</option>
-                    <option value="performance">Performance Improvement</option>
-                    <option value="promotion">Promotion Assessment</option>
-                </select>
-            </div>
-            <div>
-                <label for="reviewerSelect" class="block text-sm font-medium text-gray-700">Reviewer</label>
-                <select id="reviewerSelect" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                    <option value="">Select a reviewer</option>
-                    <!-- Reviewer options would be populated here -->
-                </select>
-            </div>
-            <div>
-                <label for="reviewDate" class="block text-sm font-medium text-gray-700">Review Date</label>
-                <input type="date" id="reviewDate" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            </div>
-            <div>
-                <label for="reviewNotes" class="block text-sm font-medium text-gray-700">Notes</label>
-                <textarea id="reviewNotes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Any additional notes or instructions"></textarea>
-            </div>
-            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                <button type="button" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" id="cancelScheduleBtn">
-                    Cancel
-                </button>
-                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                    Schedule Review
-                </button>
-            </div>
-        </form>
     </div>
-</div>
 
-<!-- Chart.js Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Review Status Distribution Chart
-        const reviewStatusCtx = document.getElementById('reviewStatusChart').getContext('2d');
-        const reviewStatusChart = new Chart(reviewStatusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Completed', 'In Progress', 'Scheduled', 'Overdue'],
-                datasets: [{
-                    data: [18, 7, 12, 4],
-                    backgroundColor: ['#34D399', '#60A5FA', '#FBBF24', '#F87171'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Department Performance Chart
-        const departmentPerformanceCtx = document.getElementById('departmentPerformanceChart').getContext('2d');
-        const departmentPerformanceChart = new Chart(departmentPerformanceCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Legal', 'Finance', 'IT', 'Admin', 'Marketing'],
-                datasets: [{
-                    label: 'Average Rating',
-                    data: [4.2, 3.8, 4.5, 4.0, 3.9],
-                    backgroundColor: ['#3B82F6', '#34D399', '#F87171', '#FBBF24', '#8B5CF6'],
-                    borderWidth: 0,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 5,
-                        ticks: {
-                            stepSize: 1,
-                            font: {
-                                size: 12
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Average Rating (out of 5)',
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-        
-        // Review Status Filter functionality
-        const filterButtons = document.querySelectorAll('.review-status-filter');
-        const table = $('#reviewsTable').DataTable();
-        
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                filterButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-100', 'text-blue-800'));
-                filterButtons.forEach(btn => btn.classList.add('bg-gray-100', 'text-gray-800'));
-                
-                // Add active class to clicked button
-                this.classList.add('active', 'bg-blue-100', 'text-blue-800');
-                this.classList.remove('bg-gray-100', 'text-gray-800');
-                
-                // Get filter value
-                const filterValue = this.textContent.trim();
-                
-                // Apply filter
-                if (filterValue === 'All') {
-                    table.column(6).search('').draw();
-                } else {
-                    table.column(6).search(filterValue).draw();
-                }
-            });
-        });
-        
-        // Initialize Flowbite modals
-        if (typeof Modal !== 'undefined' && typeof modalOptions !== 'undefined') {
-            const detailsModalEl = document.getElementById('reviewDetailsModal');
-            const scheduleModalEl = document.getElementById('scheduleReviewModal');
-            
-            if (detailsModalEl) {
-                window.reviewDetailsModal = new Modal(detailsModalEl, modalOptions);
-            }
-            if (scheduleModalEl) {
-                window.scheduleReviewModal = new Modal(scheduleModalEl, modalOptions);
-            }
-        }
-        
-        // Review Details Modal functionality
-        const viewReviewBtns = document.querySelectorAll('.view-review');
-        
-        viewReviewBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const reviewId = this.getAttribute('data-id');
-                // Here you would fetch the review details using the ID
-                // and populate the modal with the data
-                
-                // Show modal using Flowbite
-                if (window.reviewDetailsModal) {
-                    window.reviewDetailsModal.show();
-                }
-            });
-        });
-        
-        // Schedule Review Modal functionality
-        const scheduleReviewBtn = document.getElementById('scheduleReview');
-        
-        if (scheduleReviewBtn) {
-            scheduleReviewBtn.addEventListener('click', function() {
-                if (window.scheduleReviewModal) {
-                    window.scheduleReviewModal.show();
-                }
-            });
-        }
-    });
-</script>
+    <!-- Include the review modal -->
+    {% include 'hr_management/review_new_modal.html' %}
+
 {% endblock %}

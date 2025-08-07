@@ -1,30 +1,8 @@
-{% extends 'base.html' %}
+{% extends 'compliance/base.html' %}
 
 {% block title %}Compliance - Reports{% endblock %}
 
-{% block content %}
-<!-- Navigation Bar -->
-<div class="nav-bar -mt-3 -ml-3 mb-4 w-[calc(100%+1.5rem)] bg-white border-b border-gray-200">
-    <div class="flex space-x-4 px-6 py-2">
-        <a href="{% url 'compliance:dashboard' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
-            Dashboard
-        </a>
-        <a href="{% url 'compliance:requirements' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'requirements' %} active{% endif %}">
-            Requirements
-        </a>
-        <a href="{% url 'compliance:audits' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'audits' %} active{% endif %}">
-            Audits
-        </a>
-        <a href="{% url 'compliance:reports' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'reports' %} active{% endif %}">
-            Reports
-        </a>
-    </div>
-</div>
-
+{% block compliance_content %}
 <!-- Reports Header -->
 <div class="p-8 bg-white shadow rounded-lg">
     <div class="flex justify-between items-center mb-6">

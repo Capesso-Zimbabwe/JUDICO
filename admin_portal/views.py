@@ -172,15 +172,35 @@ def manage_lawyers(request):
 @login_required
 @user_passes_test(is_staff)
 def manage_users(request):
-    users = User.objects.filter(is_superuser=False)
+    from django.core.paginator import Paginator
+    from django.db.models import Q
+    
+    users = User.objects.filter(is_superuser=False).order_by('-date_joined')
+    
+    # Search functionality
+    search_query = request.GET.get('search')
+    if search_query:
+        users = users.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+    
+    # Pagination
+    paginator = Paginator(users, 10)  # Show 10 users per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
     # Get list of client user IDs - users who have ClientProfile records
     client_users = [profile.user.id for profile in ClientProfile.objects.all()]
     
     context = {
-        'users': users,
+        'page_obj': page_obj,
+        'users': page_obj,  # For backward compatibility
         'lawyer_users': [lawyer.user.id for lawyer in LawyerProfile.objects.all()],
         'client_users': client_users,
+        'search_query': search_query,
     }
     
     return render(request, 'admin_portal/manage_users.html', context)

@@ -1,0 +1,340 @@
+{% extends 'finance_management/base.html' %}
+
+{% block title %}Petty Cash - Finance Management{% endblock %}
+
+{% block header_title %}Finance Management - Petty Cash{% endblock %}
+
+{% block finance_content %}
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+
+        <!-- Filters Section -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <form action="" class="flex-1 max-w-sm" id="search-form">
+                {% include "components/field.html" with hide_label=True field=search_form.search %}
+            </form>
+            
+            <div class="flex gap-2 items-center">
+                <select name="status" form="search-form" onchange="document.getElementById('search-form').submit()" class="text-xs border border-gray-300 rounded-none px-2 py-1">
+                    <option value="">All Status</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+                
+                <a hx-get="{% url 'finance_management:petty_cash_create' %}"
+                   hx-target="#new-modal-container"
+                   hx-indicator="#new-modal-overlay"
+                   hx-trigger="click"
+                   href="{% url 'finance_management:petty_cash_create' %}" class="p-2 flex gap-1">
+                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                         height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 12h14m-7 7V5"></path>
+                    </svg>
+                    <span class="font-bold">Record Transaction</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="pettyCashTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Transaction #
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Description
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Type
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Amount
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Date
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Status
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="pettyCashTableBody">
+                    {% for transaction in petty_cash_transactions %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ transaction.transaction_number }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        onclick="viewPettyCash('{{ transaction.id }}')">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full 
+                                            {% if transaction.transaction_type == 'DISBURSEMENT' %}bg-red-100{% else %}bg-green-100{% endif %} 
+                                            flex items-center justify-center">
+                                            <span class="
+                                                {% if transaction.transaction_type == 'DISBURSEMENT' %}text-red-600{% else %}text-green-600{% endif %} 
+                                                font-medium text-xs">{{ transaction.description|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ transaction.description|truncatechars:25 }}</span>
+                                        </div>
+                                        {% if transaction.recipient %}
+                                            <div class="text-xs text-gray-500">
+                                                {{ transaction.recipient|truncatechars:20 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if transaction.transaction_type == 'DISBURSEMENT' %}bg-red-100 text-red-800
+                                    {% else %}bg-green-100 text-green-800{% endif %}">
+                                    {{ transaction.get_transaction_type_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">${{ transaction.amount|floatformat:2 }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">{{ transaction.transaction_date|date:"M d, Y" }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if transaction.status == 'APPROVED' %}bg-green-100 text-green-800
+                                    {% elif transaction.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ transaction.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <!-- View Details -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="View Transaction"
+                                            data-modal-target="details-modal" 
+                                            data-modal-toggle="details-modal"
+                                            onclick="viewPettyCashDetails('{{ transaction.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Edit -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Edit Transaction"
+                                            data-modal-target="update-modal" 
+                                            data-modal-toggle="update-modal"
+                                            onclick="editPettyCash('{{ transaction.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Approve (if pending) -->
+                                    {% if transaction.status == 'PENDING' %}
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Approve Transaction"
+                                            onclick="approvePettyCash('{{ transaction.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                                        </svg>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="fas fa-wallet text-4xl text-gray-400 mb-4"></i>
+                                    <h3 class="text-xs font-medium text-gray-900 mb-1">No petty cash transactions found</h3>
+                                    <p class="text-xs text-gray-500">Get started by recording your first transaction.</p>
+                                    <a hx-get="{% url 'finance_management:petty_cash_create' %}"
+                       hx-target="#new-modal-container"
+                       hx-indicator="#new-modal-overlay"
+                       hx-trigger="click"
+                       href="{% url 'finance_management:petty_cash_create' %}"
+                       class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        Record Your First Transaction
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% include "components/paginator.html" %}
+
+    <!-- Modals -->
+    {% include "finance_management/modals/new_petty_cash_modal_wrapper.html" with modal_id="new-modal" %}
+    {% include "finance_management/modals/petty_cash_details_modal.html" with modal_id="details-modal" %}
+    {% include "finance_management/modals/update_petty_cash_modal.html" with modal_id="update-modal" %}
+
+    <!-- Modal containers -->
+    <div id="new-modal-container"></div>
+    <div id="new-modal-overlay" class="htmx-indicator fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        function viewPettyCash(id) {
+            // Fetch petty cash details and show in modal
+            fetch(`/finance/api/petty-cash/${id}/`)
+                .then(response => response.json())
+                .then(data => {
+                    viewPettyCashDetails(id);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function viewPettyCashDetails(id) {
+            // Fetch and display petty cash details in modal
+            fetch(`/finance/api/petty-cash/${id}/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate modal with data
+                    document.getElementById('detail-transaction-number').textContent = data.transaction_number;
+                    document.getElementById('detail-description').textContent = data.description;
+                    document.getElementById('detail-type').textContent = data.transaction_type;
+                    document.getElementById('detail-amount').textContent = '$' + data.amount;
+                    document.getElementById('detail-date').textContent = data.transaction_date;
+                    document.getElementById('detail-recipient').textContent = data.recipient || 'N/A';
+                    document.getElementById('detail-purpose').textContent = data.purpose || 'N/A';
+                    document.getElementById('detail-status').textContent = data.status;
+                    document.getElementById('detail-created-by').textContent = data.created_by;
+                    document.getElementById('detail-approved-by').textContent = data.approved_by || 'N/A';
+                    
+                    // Show receipt link if available
+                    const receiptLink = document.getElementById('detail-receipt-link');
+                    if (data.receipt_url) {
+                        receiptLink.href = data.receipt_url;
+                        receiptLink.style.display = 'inline-flex';
+                    } else {
+                        receiptLink.style.display = 'none';
+                    }
+                    
+                    // Show modal using Flowbite
+                    if (window.detailsPettyCashModal) {
+                        window.detailsPettyCashModal.show();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function editPettyCash(id) {
+            // Load edit form via HTMX
+            htmx.ajax('GET', `/finance/petty-cash/${id}/update/`, {
+                target: '#update-modal-container',
+                swap: 'innerHTML'
+            }).then(() => {
+                // Show modal after content is loaded using Flowbite
+                if (window.updatePettyCashModal) {
+                    window.updatePettyCashModal.show();
+                }
+            });
+        }
+
+        function approvePettyCash(id) {
+            if (confirm('Are you sure you want to approve this transaction?')) {
+                fetch(`/finance/api/petty-cash/${id}/approve/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); // Refresh page to show updated status
+                    } else {
+                        alert('Error approving transaction: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error approving transaction');
+                });
+            }
+        }
+
+        // Filter functionality
+        function filterTransactions(type) {
+            const rows = document.querySelectorAll('#pettyCashTableBody tr');
+            rows.forEach(row => {
+                if (type === '' || row.dataset.transactionType === type) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize Flowbite modals (modalOptions is defined in base template)
+        if (typeof Modal !== 'undefined' && typeof modalOptions !== 'undefined') {
+            const detailsModalElement = document.getElementById('details-modal');
+            const updateModalElement = document.getElementById('update-modal');
+            const newModalElement = document.getElementById('new-modal');
+            
+            if (detailsModalElement) {
+                window.detailsPettyCashModal = new Modal(detailsModalElement, modalOptions, {
+                    id: 'details-modal',
+                    override: true
+                });
+            }
+            if (updateModalElement) {
+                window.updatePettyCashModal = new Modal(updateModalElement, modalOptions, {
+                    id: 'update-modal',
+                    override: true
+                });
+            }
+            if (newModalElement) {
+                window.newPettyCashModal = new Modal(newModalElement, modalOptions, {
+                    id: 'new-modal',
+                    override: true
+                });
+            }
+        }
+
+        // Show new modal after HTMX content is loaded
+        document.addEventListener('htmx:afterSwap', function(event) {
+            if (event.detail.target.id === 'new-modal-container' && window.newPettyCashModal) {
+                window.newPettyCashModal.show();
+            }
+        });
+
+        // Hide modal after successful form submission
+        document.addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.xhr.status === 302 && event.detail.target.id === 'new-modal-container' && window.newPettyCashModal) {
+                window.newPettyCashModal.hide();
+                // Refresh the page content via HTMX instead of full reload
+                htmx.ajax('GET', window.location.pathname, {
+                    target: 'body',
+                    swap: 'outerHTML'
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

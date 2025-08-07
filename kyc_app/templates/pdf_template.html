@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DILISense AML Screening Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2563eb;
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .search-info {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .search-info h2 {
+            margin-top: 0;
+            color: #1e40af;
+            font-size: 18px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #6b7280;
+        }
+        .results-section {
+            margin-bottom: 30px;
+        }
+        .results-header {
+            background-color: #1e40af;
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            margin: 0;
+            font-size: 18px;
+        }
+        .results-summary {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-top: none;
+            padding: 15px;
+            border-radius: 0 0 8px 8px;
+        }
+        .record {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .record-header {
+            background-color: #f9fafb;
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .record-title {
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        .record-source {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .record-content {
+            padding: 15px;
+        }
+        .record-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+        .detail-value {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .source-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .source-sanction {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .source-pep {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .source-criminal {
+            background-color: #fde2e7;
+            color: #be185d;
+        }
+        .source-other {
+            background-color: #e0e7ff;
+            color: #3730a3;
+        }
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            background-color: #f9fafb;
+            border-radius: 8px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            .record {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DILISense AML Screening Report</h1>
+        <p>Anti-Money Laundering & Sanctions Screening</p>
+        <p>Generated on {{ screening_time }}</p>
+    </div>
+
+    <div class="search-info">
+        <h2>Search Parameters</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Search Query:</span>
+                <span class="info-value">{{ query }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Source Type:</span>
+                <span class="info-value">{{ source_type }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Total Records Found:</span>
+                <span class="info-value">{{ results.total_hits|default:0 }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Report Generated:</span>
+                <span class="info-value">{{ screening_time }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="results-section">
+        <h2 class="results-header">Screening Results</h2>
+        <div class="results-summary">
+            <p><strong>Summary:</strong> 
+            {% if results.total_hits > 0 %}
+                Found {{ results.total_hits }} record{{ results.total_hits|pluralize }} matching "{{ query }}" in {{ source_type }} sources.
+            {% else %}
+                No records found matching "{{ query }}" in {{ source_type }} sources.
+            {% endif %}
+            </p>
+        </div>
+
+        {% if results.found_records %}
+            {% for record in results.found_records %}
+            <div class="record">
+                <div class="record-header">
+                    <div class="record-title">{{ record.name|default:"Unknown Name" }}</div>
+                    <div class="record-source">
+                        <span class="source-badge {% if record.source_type == 'SANCTION' %}source-sanction{% elif record.source_type == 'PEP' %}source-pep{% elif record.source_type == 'CRIMINAL' %}source-criminal{% else %}source-other{% endif %}">
+                            {{ record.source_type|default:"Unknown" }}
+                        </span>
+                        {% if record.source_name %}
+                        | {{ record.source_name }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="record-content">
+                    <div class="record-details">
+                        {% if record.date_of_birth %}
+                        <div class="detail-item">
+                            <span class="detail-label">Date of Birth:</span>
+                            <span class="detail-value">{{ record.date_of_birth }}</span>
+                        </div>
+                        {% endif %}
+                        {% if record.nationality %}
+                        <div class="detail-item">
+                            <span class="detail-label">Nationality:</span>
+                            <span class="detail-value">{{ record.nationality }}</span>
+                        </div>
+                        {% endif %}
+                        {% if record.country %}
+                        <div class="detail-item">
+                            <span class="detail-label">Country:</span>
+                            <span class="detail-value">{{ record.country }}</span>
+                        </div>
+                        {% endif %}
+                        {% if record.position %}
+                        <div class="detail-item">
+                            <span class="detail-label">Position:</span>
+                            <span class="detail-value">{{ record.position }}</span>
+                        </div>
+                        {% endif %}
+                        {% if record.match_score %}
+                        <div class="detail-item">
+                            <span class="detail-label">Match Score:</span>
+                            <span class="detail-value">{{ record.match_score }}%</span>
+                        </div>
+                        {% endif %}
+                        {% if record.entity_id %}
+                        <div class="detail-item">
+                            <span class="detail-label">Entity ID:</span>
+                            <span class="detail-value">{{ record.entity_id }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if record.description %}
+                    <div class="detail-item">
+                        <span class="detail-label">Description:</span>
+                        <span class="detail-value">{{ record.description }}</span>
+                    </div>
+                    {% endif %}
+                    {% if record.aliases %}
+                    <div class="detail-item">
+                        <span class="detail-label">Known Aliases:</span>
+                        <span class="detail-value">{{ record.aliases|join:", " }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-results">
+                <h3>No Records Found</h3>
+                <p>No matching records were found for the search query "{{ query }}" in {{ source_type }} sources.</p>
+                <p>This could indicate that the individual is not present in the screened databases.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <p>This report was generated using DILISense AML screening services.</p>
+        <p>Report generated on {{ screening_time }} | Confidential Document</p>
+    </div>
+</body>
+</html>

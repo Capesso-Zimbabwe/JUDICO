@@ -1,0 +1,151 @@
+<form
+    novalidate="novalidate"
+    method="post"
+    hx-post="{% url 'finance_management:report_create' %}"
+    hx-target="#new-report-modal-container"
+    class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
+            
+            <!-- Report Type -->
+            <div>
+                <label for="id_report_type" class="block mb-2 text-sm font-medium text-gray-900">Report Type</label>
+                <select id="id_report_type" name="report_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                    <option value="">Select Report Type</option>
+                    <option value="petty_cash">Petty Cash Report</option>
+                    <option value="expense">Expense Report</option>
+                    <option value="income">Income Report</option>
+                    <option value="account_summary">Account Summary</option>
+                </select>
+            </div>
+            
+            <!-- Report Name -->
+            <div>
+                <label for="id_name" class="block mb-2 text-sm font-medium text-gray-900">Report Name</label>
+                <input type="text" id="id_name" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Enter report name" required>
+            </div>
+            
+            <!-- Start Date -->
+            <div>
+                <label for="id_start_date" class="block mb-2 text-sm font-medium text-gray-900">Start Date</label>
+                <input type="date" id="id_start_date" name="start_date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+            </div>
+            
+            <!-- End Date -->
+            <div>
+                <label for="id_end_date" class="block mb-2 text-sm font-medium text-gray-900">End Date</label>
+                <input type="date" id="id_end_date" name="end_date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+            </div>
+            
+            <!-- Format -->
+            <div>
+                <label for="id_format" class="block mb-2 text-sm font-medium text-gray-900">Format</label>
+                <select id="id_format" name="format" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                    <option value="csv">CSV</option>
+                </select>
+            </div>
+            
+            <!-- Description -->
+            <div class="col-span-2">
+                <label for="id_description" class="block mb-2 text-sm font-medium text-gray-900">Description (Optional)</label>
+                <textarea id="id_description" name="description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Report description..."></textarea>
+            </div>
+                        
+            <!-- Conditional filters -->
+            <div id="petty-cash-filters" class="hidden col-span-2 space-y-4">
+                <h4 class="text-sm font-medium text-gray-900">Petty Cash Filters</h4>
+                <div>
+                     <label for="id_petty_cash_status" class="block mb-2 text-sm font-medium text-gray-900">Transaction Status</label>
+                     <select id="id_petty_cash_status" name="petty_cash_status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                         <option value="">All Status</option>
+                         <option value="PENDING">Pending</option>
+                         <option value="APPROVED">Approved</option>
+                         <option value="REJECTED">Rejected</option>
+                     </select>
+                 </div>
+            </div>
+            
+            <div id="expense-filters" class="hidden col-span-2 space-y-4">
+                <h4 class="text-sm font-medium text-gray-900">Expense Filters</h4>
+                <div>
+                     <label for="id_expense_category" class="block mb-2 text-sm font-medium text-gray-900">Expense Category</label>
+                     <select id="id_expense_category" name="expense_category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                         <option value="">All Categories</option>
+                         <option value="OFFICE_SUPPLIES">Office Supplies</option>
+                         <option value="UTILITIES">Utilities</option>
+                         <option value="RENT">Rent</option>
+                         <option value="TRAVEL">Travel</option>
+                         <option value="PROFESSIONAL_FEES">Professional Fees</option>
+                         <option value="MARKETING">Marketing</option>
+                         <option value="OTHER">Other</option>
+                     </select>
+                 </div>
+            </div>
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <div>
+            {% include 'components/submit-button.html' with button_text="Generate Report" loading_text="Generating...." %}
+        </div>
+    </div>
+</form>
+
+<script>
+// Show/hide additional filters based on report type
+document.addEventListener('DOMContentLoaded', function() {
+    const reportTypeSelect = document.getElementById('id_report_type');
+    if (reportTypeSelect) {
+        reportTypeSelect.addEventListener('change', function() {
+            const reportType = this.value;
+            const pettyCashFilters = document.getElementById('petty-cash-filters');
+            const expenseFilters = document.getElementById('expense-filters');
+            
+            // Hide all filters first
+            if (pettyCashFilters) pettyCashFilters.classList.add('hidden');
+            if (expenseFilters) expenseFilters.classList.add('hidden');
+            
+            // Show relevant filters
+            if (reportType === 'petty_cash' && pettyCashFilters) {
+                pettyCashFilters.classList.remove('hidden');
+            } else if (reportType === 'expense' && expenseFilters) {
+                expenseFilters.classList.remove('hidden');
+            }
+        });
+        
+        // Auto-generate report name based on type and date
+        reportTypeSelect.addEventListener('change', updateReportName);
+    }
+    
+    const startDateInput = document.getElementById('id_start_date');
+    const endDateInput = document.getElementById('id_end_date');
+    
+    if (startDateInput) startDateInput.addEventListener('change', updateReportName);
+    if (endDateInput) endDateInput.addEventListener('change', updateReportName);
+});
+
+function updateReportName() {
+    const reportType = document.getElementById('id_report_type')?.value;
+    const startDate = document.getElementById('id_start_date')?.value;
+    const endDate = document.getElementById('id_end_date')?.value;
+    const reportNameField = document.getElementById('id_name');
+    
+    if (reportType && startDate && endDate && reportNameField) {
+        const typeNames = {
+            'petty_cash': 'Petty Cash',
+            'expense': 'Expense',
+            'income': 'Income',
+            'account_summary': 'Account Summary'
+        };
+        
+        const typeName = typeNames[reportType] || reportType;
+        const formattedStartDate = new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const formattedEndDate = new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        reportNameField.value = `${typeName} Report - ${formattedStartDate} to ${formattedEndDate}`;
+    }
+}
+</script>

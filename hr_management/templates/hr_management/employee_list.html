@@ -1,216 +1,204 @@
 {% extends 'hr_management/base.html' %}
 
-{% block title %}Employee List{% endblock %}
+{% block hr_content %}
 
-{% load static %}
+    <!-- Employee Management Table -->
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <form action="" method="get" class="flex-1 max-w-sm" id="search-form">
+                <div class="relative">
+                    <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search employees..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </form>
+                <a hx-get="{% url 'hr_management:employee_create' %}"
+                   hx-target="#new-modal-container"
+                   hx-indicator="#new-modal-overlay"
+                   hx-trigger="click"
+                   data-modal-target="new-modal" data-modal-toggle="new-modal"
+                   href="{% url 'hr_management:employee_create' %}" class="p-2 flex gap-1">
+                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                         height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 12h14m-7 7V5"></path>
+                    </svg>
+                    <span class="font-bold">Add Employee</span>
+                </a>
+        </div>
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="employeesTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Employee Name
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Employee ID
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Email
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Phone
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Department
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Position
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Status
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Actions
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    {% for employee in employees %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <div class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        {% if employee.profile_picture %}
+                                            <img class="h-8 w-8 rounded-full object-cover" src="{{ employee.profile_picture.url }}" alt="">
+                                        {% else %}
+                                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <span class="text-blue-600 font-medium text-xs">{{ employee.first_name|first|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ employee.first_name }} {{ employee.last_name|truncatechars:20 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ employee.id|stringformat:"04d" }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">{{ employee.email|truncatechars:25 }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ employee.phone|default:"-" }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                 {% if employee.department %}
+                                 <div class="flex items-center">
+                                     <div class="flex-shrink-0 h-6 w-6">
+                                         <div class="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                             <span class="text-green-600 font-medium text-xs">{{ employee.department.name|first|upper }}</span>
+                                         </div>
+                                     </div>
+                                     <div class="ml-1">
+                                         <span class="text-xs font-medium text-gray-900">{{ employee.department.name|truncatechars:15 }}</span>
+                                     </div>
+                                 </div>
+                                 {% else %}
+                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                     Unassigned
+                                 </span>
+                                 {% endif %}
+                             </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ employee.position|truncatechars:20 }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if employee.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if employee.is_active %}
+                                    Active
+                                {% else %}
+                                    Inactive
+                                {% endif %}
+                            </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'hr_management:employee_update' employee.id %}"
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                       title="View Employee">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </a>
+                                    <button 
+                        hx-get="{% url 'hr_management:employee_update' employee.id %}"
+                        hx-target="#update-modal-container"
+                        hx-trigger="click"
+                        data-modal-target="update-modal" data-modal-toggle="update-modal"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                        title="Edit Employee">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                        </svg>
+                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
+                                    <p class="text-xs font-medium">No employees found</p>
+                                    <p class="text-xs">Get started by adding your first employee.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% include 'components/paginator.html' %}
+        </div>
+    </div>
 
-{% block extra_js %}
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#employeeTable').DataTable({
-            "pageLength": 10,
-            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-            "order": [[ 0, "asc" ]],
-            "language": {
-                "emptyTable": "<div class='flex flex-col items-center justify-center py-6'><svg xmlns='http://www.w3.org/2000/svg' class='h-12 w-12 text-gray-300 mb-3' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' /></svg><p class='text-gray-500 mb-1'>No employees found</p><p class='text-gray-400 text-sm'>Add a new employee to get started</p></div>"
-            }
-        });
-    });
-</script>
 {% endblock %}
 
-{% block hr_content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-xl font-bold text-gray-800">Employee Management</h1>
-    <a href="{% url 'hr_management:employee_create' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm transition-colors duration-200 flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Add New Employee
-    </a>
-</div>
-
-<!-- Employee Stats -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="hr-card bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div class="flex items-center">
-            <div class="rounded-full bg-blue-100 p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Total Employees</p>
-                <p class="text-xl font-bold">{{ total_employees|default:"0" }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="hr-card bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div class="flex items-center">
-            <div class="rounded-full bg-green-100 p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Active Employees</p>
-                <p class="text-xl font-bold">{{ active_employees|default:"0" }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="hr-card bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div class="flex items-center">
-            <div class="rounded-full bg-red-100 p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Inactive Employees</p>
-                <p class="text-xl font-bold">{{ inactive_employees|default:"0" }}</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Department Filter -->
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6">
-    <h3 class="text-sm font-medium text-gray-700 mb-3">Filter by Department</h3>
-    <div class="flex flex-wrap gap-2">
-        <button class="department-filter active px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors duration-200">
-            All
-        </button>
-        <button class="department-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            Legal
-        </button>
-        <button class="department-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            Finance
-        </button>
-        <button class="department-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            Administration
-        </button>
-        <button class="department-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            IT
-        </button>
-        <button class="department-filter px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors duration-200">
-            HR
-        </button>
-    </div>
-</div>
-
-<!-- Employee Table -->
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-    <div class="p-4 border-b border-gray-100">
-        <h3 class="text-sm font-medium text-gray-700">Employee Directory</h3>
-    </div>
-    <div class="overflow-x-auto">
-        <table id="employeeTable" class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for employee in employees %}
-                <tr class="hover:bg-gray-50 transition-colors duration-150">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                {% if employee.profile_picture %}
-                                <img class="h-10 w-10 rounded-full object-cover" src="{{ employee.profile_picture.url }}" alt="">
-                                {% else %}
-                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                                    {{ employee.first_name|first }}{{ employee.last_name|first }}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">{{ employee.first_name }} {{ employee.last_name }}</div>
-                                <div class="text-xs text-gray-500">Joined {{ employee.hire_date|date:"M Y" }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {{ employee.department }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ employee.position }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ employee.email }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ employee.phone }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        {% if employee.is_active %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Active
-                        </span>
-                        {% else %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Inactive
-                        </span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <a href="{% url 'hr_management:employee_update' employee.id %}" class="text-blue-600 hover:text-blue-900">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </a>
-                            <a href="{% url 'hr_management:employee_delete' employee.id %}" class="text-red-600 hover:text-red-900">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <!-- Empty state is handled by DataTables language.emptyTable -->
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Department Filter Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterButtons = document.querySelectorAll('.department-filter');
-        const table = $('#employeeTable').DataTable();
+{% block extra_js %}
+    <script>
         
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                filterButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-100', 'text-blue-800'));
-                filterButtons.forEach(btn => btn.classList.add('bg-gray-100', 'text-gray-800'));
-                
-                // Add active class to clicked button
-                this.classList.add('active', 'bg-blue-100', 'text-blue-800');
-                this.classList.remove('bg-gray-100', 'text-gray-800');
-                
-                // Filter the table
-                const department = this.textContent.trim();
-                if (department === 'All') {
-                    table.column(1).search('').draw();
-                } else {
-                    table.column(1).search(department).draw();
-                }
-            });
-        });
-    });
-</script>
+        // Initialize modals after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const newModalElement = document.getElementById('new-modal');
+            if (newModalElement) {
+                window.newModal = new Modal(newModalElement, modalOptions, {
+                    id: 'new-modal',
+                    override: true
+                });
+            }
+
+            const updateModalElement = document.getElementById('update-modal');
+            if (updateModalElement) {
+                window.updateModal = new Modal(updateModalElement, modalOptions, {
+                    id: 'update-modal',
+                    override: true
+                });
+            }
+            
+            // Debug HTMX events
+             document.body.addEventListener('htmx:beforeRequest', function(evt) {
+                 console.log('HTMX Before Request:', evt.detail);
+             });
+             
+             document.body.addEventListener('htmx:afterRequest', function(evt) {
+                 console.log('HTMX After Request:', evt.detail);
+             });
+             
+             document.body.addEventListener('htmx:responseError', function(evt) {
+                 console.log('HTMX Response Error:', evt.detail);
+             });
+         });
+    </script>
+
+    <!-- Include Modal Components -->
+    {% include "hr_management/new-modal.html" with modal_id="new-modal" %}
+    {% include "hr_management/update-modal.html" with modal_id="update-modal" %}
+
+    <!-- Modal containers -->
+    <div id="new-modal-container"></div>
+    <div id="update-modal-container"></div>
+    <div id="new-modal-overlay" class="htmx-indicator fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+    </div>
+
 {% endblock %}

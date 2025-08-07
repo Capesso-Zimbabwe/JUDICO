@@ -1,0 +1,47 @@
+<!-- Modal body -->
+<div class="p-6 space-y-6">
+    <form id="newLeaveRequestForm" method="post" novalidate="novalidate"
+          hx-post="{% url 'hr_management:leave_create_modal' %}{% querystring %}"
+          hx-target="#leave-new-modal-container">
+        {% csrf_token %}
+        {% include 'components/non-field-errors.html' %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="{{ form.employee.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Employee</label>
+                <select id="{{ form.employee.id_for_label }}" name="{{ form.employee.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                    <option value="">Select Employee</option>
+                    {% for choice in form.employee.field.queryset %}
+                        <option value="{{ choice.pk }}" {% if form.employee.value == choice.pk|stringformat:'s' %}selected{% endif %}>{{ choice.first_name }} {{ choice.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="{{ form.leave_type.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Leave Type</label>
+                <select id="{{ form.leave_type.id_for_label }}" name="{{ form.leave_type.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                    <option value="">Select Leave Type</option>
+                    {% for choice in form.leave_type.field.queryset %}
+                        <option value="{{ choice.pk }}" {% if form.leave_type.value == choice.pk|stringformat:'s' %}selected{% endif %}>{{ choice.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="{{ form.start_date.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Start Date</label>
+                <input type="date" id="{{ form.start_date.id_for_label }}" name="{{ form.start_date.name }}" value="{{ form.start_date.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+            </div>
+            <div>
+                <label for="{{ form.end_date.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">End Date</label>
+                <input type="date" id="{{ form.end_date.id_for_label }}" name="{{ form.end_date.name }}" value="{{ form.end_date.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+            </div>
+            <div class="md:col-span-2">
+                <label for="{{ form.reason.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Reason</label>
+                <textarea id="{{ form.reason.id_for_label }}" name="{{ form.reason.name }}" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter reason for leave request..." required>{{ form.reason.value|default:'' }}</textarea>
+            </div>
+        </div>
+        
+        <!-- Modal footer inside form -->
+        <div class="flex items-center pt-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+            <button type="submit" class="w-full text-xs bg-blue-900 text-white py-2 px-3 font-medium hover:bg-blue-700 transition-all duration-200 shadow-sm disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed submit-btn rounded-none">Create Leave Request</button>
+            <button data-modal-hide="leave-new-modal" type="button" class="w-full text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 py-2 px-3 font-medium transition-all duration-200 rounded-none">Cancel</button>
+        </div>
+    </form>
+</div>

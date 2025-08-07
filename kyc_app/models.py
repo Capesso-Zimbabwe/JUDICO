@@ -393,6 +393,37 @@ class DilisenseConfig(models.Model):
     class Meta:
         db_table='API Configurations'
 
+    def __str__(self):
+        return f"DILISense Config - {self.created_at.strftime('%Y-%m-%d')}"
+
+
+class CapessoConfig(models.Model):
+    """
+    Model to store Capesso API configuration settings.
+    It stores the API key and other configuration details securely in the database.
+    """
+    api_key = models.CharField(
+        max_length=255,
+        help_text="Private API key for accessing the Capesso API"
+    )
+    base_url = models.URLField(
+        default='https://api.capesso.com',
+        help_text="Base URL for the Capesso API"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this configuration is active"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Capesso Configuration"
+        verbose_name_plural = "Capesso Configurations"
+
+    def __str__(self):
+        return f"Capesso Config - {self.created_at.strftime('%Y-%m-%d')} ({'Active' if self.is_active else 'Inactive'})"
+
     ##############################################################################
 
 

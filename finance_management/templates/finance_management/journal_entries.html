@@ -5,6 +5,7 @@
 {% block header_title %}Finance Management - Journal Entries{% endblock %}
 
 {% block finance_content %}
+    {% csrf_token %}
     <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full main-content">
 
         <!-- Filters Section -->
@@ -22,10 +23,10 @@
                 </select>
                 
                 <a hx-get="{% url 'finance_management:journal_entry_create' %}"
-                   hx-target="#new-modal-container"
-                   hx-indicator="#new-modal-overlay"
+                   hx-target="#new-journal-entry-modal-container"
+                   hx-indicator="#loading-indicator"
                    hx-trigger="click"
-                   data-modal-target="new-modal" data-modal-toggle="new-modal"
+                   data-modal-target="new-journal-entry-modal" data-modal-toggle="new-journal-entry-modal"
                    href="{% url 'finance_management:journal_entry_create' %}" class="p-2 flex gap-1">
                     <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                          height="24" fill="none" viewBox="0 0 24 24">
@@ -34,6 +35,14 @@
                     </svg>
                     <span class="font-bold">Add Journal Entry</span>
                 </a>
+                
+                <!-- Loading Indicator -->
+                <div id="loading-indicator" class="htmx-indicator ml-2">
+                    <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
             </div>
         </div>
 
@@ -74,9 +83,7 @@
                             <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">JE-{{ entry.entry_number }}</td>
                             <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">{{ entry.date|date:"M d, Y" }}</td>
                             <td class="px-3 py-1 whitespace-nowrap">
-                                <button type="button"
-                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
-                                        onclick="viewJournalEntry('{{ entry.id }}')">
+                                <div class="text-blue-600 flex items-center">
                                     <div class="flex-shrink-0 h-8 w-8">
                                         <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
                                             <span class="text-indigo-600 font-medium text-xs">{{ entry.description|first|upper }}</span>
@@ -87,7 +94,7 @@
                                             <span>{{ entry.description|truncatechars:30 }}</span>
                                         </div>
                                     </div>
-                                </button>
+                                </div>
                             </td>
                             <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">{{ entry.reference|default:"-" }}</td>
                             <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">${{ entry.total_debit|floatformat:2 }}</td>
@@ -106,9 +113,9 @@
                                     <button type="button"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                             title="View Journal Entry"
-                                            data-modal-target="details-modal" 
-                                            data-modal-toggle="details-modal"
-                                            onclick="viewJournalEntryDetails('{{ entry.id }}')">
+                                            data-modal-target="journal-details-modal" 
+                                            data-modal-toggle="journal-details-modal"
+                                            onclick="viewJournalDetails({{ entry.id }})">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
                                         </svg>
@@ -117,24 +124,22 @@
                                     <button type="button"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                             title="Edit Journal Entry"
-                                            data-modal-target="update-modal" 
-                                            data-modal-toggle="update-modal"
-                                            onclick="editJournalEntry('{{ entry.id }}')">
+                                            data-modal-target="journal-edit-modal" 
+                                            data-modal-toggle="journal-edit-modal"
+                                            onclick="editJournalEntry({{ entry.id }})">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
                                         </svg>
                                     </button>
-                                    <!-- Lines -->
-                                    <button type="button"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                            title="View Entry Lines"
-                                            data-modal-target="lines-modal" 
-                                            data-modal-toggle="lines-modal"
-                                            onclick="viewJournalEntryLines('{{ entry.id }}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path>
-                                        </svg>
-                                    </button>
+                                    <!-- Delete -->
+                                     <button type="button"
+                                             class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                             title="Delete Journal Entry"
+                                             onclick="confirmDelete({{ entry.id }}, '{{ entry.entry_number }}')">
+                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                             <path d="M3 6v18h18v-18h-18zm5 14c0 .552-.448 1-1 1s-1-.448-1-1v-10c0-.552.448-1 1-1s1 .448 1 1v10zm5 0c0 .552-.448 1-1 1s-1-.448-1-1v-10c0-.552.448-1 1-1s1 .448 1 1v10zm5 0c0 .552-.448 1-1 1s-1-.448-1-1v-10c0-.552.448-1 1-1s1 .448 1 1v10zm4-18v2h-20v-2h5.711c.9 0 1.631-1.099 1.631-2h5.315c0 .901.73 2 1.631 2h5.712z"></path>
+                                         </svg>
+                                     </button>
                                 </div>
                             </td>
                         </tr>
@@ -146,12 +151,12 @@
                                     <h3 class="text-xs font-medium text-gray-900 mb-1">No journal entries found</h3>
                                     <p class="text-xs text-gray-500">Get started by creating your first journal entry.</p>
                                     <a hx-get="{% url 'finance_management:journal_entry_create' %}"
-                                       hx-target="#new-modal-container"
-                                       hx-indicator="#new-modal-overlay"
+                                       hx-target="#new-journal-entry-modal-container"
+                                       hx-indicator="#loading-indicator"
                                        hx-trigger="click"
-                                       data-modal-target="new-modal" data-modal-toggle="new-modal"
+                                       data-modal-target="new-journal-entry-modal" data-modal-toggle="new-journal-entry-modal"
                                        href="{% url 'finance_management:journal_entry_create' %}"
-                                       class="mt-4 inline-flex items-center text-xs bg-blue-900 text-white py-1.5 px-4 rounded-sm font-medium hover:bg-blue-700 transition-all duration-200 transform disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                       class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                         </svg>
@@ -170,335 +175,168 @@
     <!-- Pagination -->
     {% include "components/paginator.html" %}
 
-    <!-- Modals -->
-    {% include "finance_management/modals/new_journal_entry_modal.html" with modal_id="new-modal" %}
-    {% include "finance_management/modals/journal_entry_details_modal.html" with modal_id="details-modal" %}
-    {% include "finance_management/modals/update_journal_entry_modal.html" with modal_id="update-modal" %}
-    {% include "finance_management/modals/journal_entry_lines_modal.html" with modal_id="lines-modal" %}
-
-    <!-- Modal containers -->
-    <div id="new-modal-container"></div>
-    <div id="new-modal-overlay" class="htmx-indicator fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-    </div>
+    <!-- Modal Includes -->
+    {% include "finance_management/new_journal_entry_modal.html" with modal_id="new-journal-entry-modal" %}
+    {% include "finance_management/modals/journal_entry_details_modal.html" with modal_id="journal-details-modal" %}
+    {% include "finance_management/modals/journal_entry_edit_modal.html" with modal_id="journal-edit-modal" %}
+    
+    <!-- Modal Container -->
+    <div id="new-journal-entry-modal-container"></div>
+    <div id="journal-edit-modal-container"></div>
 
 {% endblock %}
 
 {% block extra_js %}
-    <script>
-        // Import Flowbite Modal class
-        const { Modal, Instances: FlowbiteInstances } = window.Flowbite || { Modal: class {}, Instances: { getInstance: () => null } };
-        // Prevent body scroll issues when modals are opened/closed
-        function preventBodyScrollIssues() {
-            // Remove any lingering modal-related classes from body
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-            
-            // Reset any transform or positioning issues on main content
-            const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                mainContent.style.transform = '';
-                mainContent.style.position = '';
-                mainContent.style.marginLeft = '';
-                mainContent.style.marginRight = '';
-            }
-        }
-
-        // JavaScript functions for journal entry operations
-        function viewJournalEntryDetails(journalEntryId) {
-            // Fetch journal entry details via API
-            fetch(`/finance/journal-entries/${journalEntryId}/api/`)
-                .then(response => response.json())
-                .then(data => {
-                    // Populate modal with data
-                    document.getElementById('details-entry-number').textContent = data.entry_number;
-                    document.getElementById('details-date').textContent = data.date;
-                    document.getElementById('details-description').textContent = data.description;
-                    document.getElementById('details-reference').textContent = data.reference || '-';
-                    document.getElementById('details-status').textContent = data.status;
-                    document.getElementById('details-total-debit').textContent = '$' + parseFloat(data.total_debit || 0).toFixed(2);
-                    document.getElementById('details-total-credit').textContent = '$' + parseFloat(data.total_credit || 0).toFixed(2);
-                    document.getElementById('details-balanced').textContent = data.is_balanced ? 'Yes' : 'No';
-                    document.getElementById('details-created-by').textContent = data.created_by;
-                    document.getElementById('details-created-at').textContent = new Date(data.created_at).toLocaleString();
-                    
-                    // Show modal using Flowbite
-                    if (window.detailsJournalModal) {
-                        window.detailsJournalModal.show();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching journal entry details:', error);
-                    alert('Error loading journal entry details');
-                });
-         
-         // Fix for HTMX modal close
-         document.body.addEventListener('htmx:afterRequest', function(evt) {
-             // Reset layout after any HTMX request that might affect modals
-             setTimeout(preventBodyScrollIssues, 100);
-         });
-        }
-
-        function editJournalEntry(journalEntryId) {
-            // Fetch journal entry details for editing
-            fetch(`/finance/journal-entries/${journalEntryId}/api/`)
-                .then(response => response.json())
-                .then(data => {
-                    // Populate update form with data
-                    document.getElementById('update-entry-number').value = data.entry_number;
-                    document.getElementById('update-date').value = data.date;
-                    document.getElementById('update-description').value = data.description;
-                    document.getElementById('update-reference').value = data.reference || '';
-                    document.getElementById('update-status').value = data.status;
-                    
-                    // Populate journal entry lines
-                    const tbody = document.getElementById('update-journal-lines-tbody');
-                    tbody.innerHTML = '';
-                    
-                    data.lines.forEach((line, index) => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td class="px-4 py-3">
-                                <select name="lines-${index}-account" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
-                                    <option value="${line.account_id}">${line.account_code} - ${line.account_name}</option>
-                                </select>
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="text" name="lines-${index}-description" value="${line.description || ''}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="number" name="lines-${index}-debit_amount" value="${line.debit_amount || ''}" step="0.01" min="0" class="update-debit-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="number" name="lines-${index}-credit_amount" value="${line.credit_amount || ''}" step="0.01" min="0" class="update-credit-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            </td>
-                            <td class="px-4 py-3">
-                                <button type="button" class="update-remove-line-btn text-red-600 hover:text-red-800 text-sm font-medium">
-                                    Remove
-                                </button>
-                            </td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                    
-                    updateUpdateTotals();
-                    
-                    // Show modal using Flowbite
-                    if (window.updateJournalModal) {
-                        window.updateJournalModal.show();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching journal entry for editing:', error);
-                    alert('Error loading journal entry for editing');
-                });
-        }
-
-        function viewJournalEntryLines(journalEntryId) {
-            // Fetch journal entry lines via API
-            fetch(`/finance/journal-entries/${journalEntryId}/api/`)
-                .then(response => response.json())
-                .then(data => {
-                    // Populate header info
-                    document.getElementById('lines-entry-number').textContent = data.entry_number;
-                    document.getElementById('lines-date').textContent = data.date;
-                    document.getElementById('lines-status').textContent = data.status;
-                    document.getElementById('lines-description').textContent = data.description;
-                    
-                    // Populate lines table
-                    const tbody = document.getElementById('journal-lines-table-body');
-                    tbody.innerHTML = '';
-                    
-                    let totalDebit = 0;
-                    let totalCredit = 0;
-                    
-                    data.lines.forEach(line => {
-                        const row = document.createElement('tr');
-                        row.className = 'bg-white border-b hover:bg-gray-50';
-                        row.innerHTML = `
-                            <td class="px-6 py-4 font-mono text-sm">${line.account_code}</td>
-                            <td class="px-6 py-4">${line.account_name}</td>
-                            <td class="px-6 py-4">${line.description || '-'}</td>
-                            <td class="px-6 py-4 text-right font-mono">$${parseFloat(line.debit_amount || 0).toFixed(2)}</td>
-                            <td class="px-6 py-4 text-right font-mono">$${parseFloat(line.credit_amount || 0).toFixed(2)}</td>
-                        `;
-                        tbody.appendChild(row);
-                        
-                        totalDebit += parseFloat(line.debit_amount || 0);
-                        totalCredit += parseFloat(line.credit_amount || 0);
-                    });
-                    
-                    // Update totals
-                    document.getElementById('lines-total-debit').textContent = '$' + totalDebit.toFixed(2);
-                    document.getElementById('lines-total-credit').textContent = '$' + totalCredit.toFixed(2);
-                    
-                    const difference = totalDebit - totalCredit;
-                    const balanceStatus = document.getElementById('lines-balance-status');
-                    const differenceElement = document.getElementById('lines-difference');
-                    
-                    if (difference === 0) {
-                        balanceStatus.textContent = 'Balanced';
-                        balanceStatus.className = 'text-sm font-bold text-green-600';
-                        differenceElement.textContent = '$0.00';
-                        differenceElement.className = 'text-sm font-mono text-green-600';
-                    } else {
-                        balanceStatus.textContent = 'Unbalanced';
-                        balanceStatus.className = 'text-sm font-bold text-red-600';
-                        differenceElement.textContent = '$' + Math.abs(difference).toFixed(2);
-                        differenceElement.className = 'text-sm font-mono text-red-600';
-                    }
-                    
-                    // Show modal using Flowbite
-                    if (window.linesJournalModal) {
-                        window.linesJournalModal.show();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching journal entry lines:', error);
-                    alert('Error loading journal entry lines');
-                });
-        }
-
-        function viewJournalEntry(journalEntryId) {
-            // Redirect to journal entry detail page
-            window.location.href = `/finance/journal-entries/${journalEntryId}/`;
-        }
-
-        // Update modal totals calculation functions
-        function updateUpdateTotals() {
-            let totalDebit = 0;
-            let totalCredit = 0;
-            
-            document.querySelectorAll('.update-debit-input').forEach(input => {
-                totalDebit += parseFloat(input.value) || 0;
-            });
-            
-            document.querySelectorAll('.update-credit-input').forEach(input => {
-                totalCredit += parseFloat(input.value) || 0;
-            });
-            
-            const difference = totalDebit - totalCredit;
-            
-            document.getElementById('update-total-debit').textContent = '$' + totalDebit.toFixed(2);
-            document.getElementById('update-total-credit').textContent = '$' + totalCredit.toFixed(2);
-            
-            const diffElement = document.getElementById('update-difference');
-            diffElement.textContent = '$' + Math.abs(difference).toFixed(2);
-            
-            if (difference === 0) {
-                diffElement.className = 'text-sm font-mono text-green-600';
-            } else {
-                diffElement.className = 'text-sm font-mono text-red-600';
-            }
-        }
-
-        // Event listeners for update modal
-        document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('update-debit-input') || e.target.classList.contains('update-credit-input')) {
-                updateUpdateTotals();
-            }
-        });
-
-        // Initialize Flowbite modals when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOMContentLoaded event fired');
-            
-            // Wait for Flowbite to be fully loaded
-            setTimeout(function() {
-                console.log('Available globals:', {
-                    Modal: typeof Modal,
-                    Flowbite: typeof window.Flowbite,
-                    FlowbiteKeys: window.Flowbite ? Object.keys(window.Flowbite) : 'N/A'
-                });
-                
-                // Use simple modal show/hide functions instead of Flowbite instances
-                window.showModal = function(modalId) {
-                    const modal = document.getElementById(modalId);
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        modal.setAttribute('aria-hidden', 'false');
-                        document.body.style.overflow = 'hidden';
-                        console.log('Showing modal:', modalId);
-                    }
-                };
-                
-                window.hideModal = function(modalId) {
-                    const modal = document.getElementById(modalId);
-                    if (modal) {
-                        modal.classList.add('hidden');
-                        modal.setAttribute('aria-hidden', 'true');
-                        document.body.style.overflow = '';
-                        console.log('Hiding modal:', modalId);
-                    }
-                };
-                
-                // Create modal objects with show/hide methods
-                window.newJournalModal = {
-                    show: () => window.showModal('new-modal'),
-                    hide: () => window.hideModal('new-modal')
-                };
-                
-                window.detailsJournalModal = {
-                    show: () => window.showModal('details-modal'),
-                    hide: () => window.hideModal('details-modal')
-                };
-                
-                window.updateJournalModal = {
-                    show: () => window.showModal('update-modal'),
-                    hide: () => window.hideModal('update-modal')
-                };
-                
-                window.linesJournalModal = {
-                    show: () => window.showModal('lines-modal'),
-                    hide: () => window.hideModal('lines-modal')
-                };
-                
-                console.log('Custom modal handlers initialized');
-                
-                // Add click handlers for modal close buttons
-                document.querySelectorAll('[data-modal-hide]').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const modalId = this.getAttribute('data-modal-hide');
-                        window.hideModal(modalId);
-                    });
-                });
-                
-            }, 200);
-            
-            // Handle HTMX modal loading
-            document.addEventListener('htmx:afterSwap', function(e) {
-                // If the swap target is a modal container, show the modal
-                if (e.target.id === 'new-modal-container') {
-                    if (window.newJournalModal) {
-                        window.newJournalModal.show();
-                    }
-                }
-            });
-        });
-    </script>
+<script>
+    // Initialize modals
+    const newJournalEntryModalElement = document.getElementById('new-journal-entry-modal');
+    if (newJournalEntryModalElement) {
+        window.newJournalEntryModal = new Modal(newJournalEntryModalElement);
+    }
     
-    <style>
-        /* Additional CSS to prevent modal-related layout issues */
-        .modal-open {
-            overflow: hidden !important;
+    // Handle successful form submission
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.xhr.status === 204 && event.detail.xhr.getResponseHeader('HX-Redirect')) {
+            // Close modal and redirect
+            window.newJournalEntryModal.hide();
+            window.location.href = event.detail.xhr.getResponseHeader('HX-Redirect');
         }
-        
-        /* Ensure main content area maintains proper layout */
-        .main-content {
-            position: relative;
-            z-index: 1;
-            transition: none !important;
+    });
+    
+    // Delete confirmation function
+    function confirmDelete(entryId, entryNumber) {
+        const entryNumberText = entryNumber ? `JE-${entryNumber}` : `Entry #${entryId}`;
+        if (confirm(`Are you sure you want to delete Journal Entry "${entryNumberText}"? This action cannot be undone.`)) {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/finance/api/journal-entries/${entryId}/delete/`;
+            
+            // Add CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+            
+            // Add HTMX attributes
+            form.setAttribute('hx-post', `/finance/api/journal-entries/${entryId}/delete/`);
+            form.setAttribute('hx-confirm', 'false'); // We already confirmed
+            
+            document.body.appendChild(form);
+            
+            // Use HTMX to submit the form
+            htmx.process(form);
+            htmx.trigger(form, 'submit');
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(form);
+            }, 100);
         }
-        
-        /* Fix for any transform issues */
-        body:not(.modal-open) {
-            transform: none !important;
-        }
-        
-        /* Ensure modals don't affect main content positioning */
-        .fixed.inset-0.z-50 {
-            position: fixed !important;
-        }
-    </style>
-{% endblock %}
+    }
+    
+    // Make confirmDelete function globally available
+    window.confirmDelete = confirmDelete;
+    
+    // View journal details function
+     function viewJournalDetails(entryId) {
+         // Fetch journal entry details from API
+         fetch(`/finance/api/journal-entries/${entryId}/`)
+             .then(response => response.json())
+             .then(data => {
+                 // Populate details modal with fetched data
+                 document.getElementById('detailEntryNumber').textContent = data.entry_number || '-';
+                 document.getElementById('detailEntryDate').textContent = data.date || '-';
+                 document.getElementById('detailEntryDescription').textContent = data.description || '-';
+                 document.getElementById('detailTotalDebit').textContent = '$' + parseFloat(data.total_debit || 0).toFixed(2);
+                 document.getElementById('detailTotalCredit').textContent = '$' + parseFloat(data.total_credit || 0).toFixed(2);
+                 
+                 // Populate journal entry lines
+                 const linesContainer = document.getElementById('detailJournalLines');
+                 linesContainer.innerHTML = '';
+                 
+                 if (data.lines && data.lines.length > 0) {
+                     data.lines.forEach(line => {
+                         const row = document.createElement('tr');
+                         row.innerHTML = `
+                             <td class="px-3 py-2 text-sm text-gray-900">${line.account_name || '-'}</td>
+                             <td class="px-3 py-2 text-sm text-gray-900">${line.description || '-'}</td>
+                             <td class="px-3 py-2 text-sm text-gray-900 text-right">${line.debit_amount ? '$' + parseFloat(line.debit_amount).toFixed(2) : '-'}</td>
+                             <td class="px-3 py-2 text-sm text-gray-900 text-right">${line.credit_amount ? '$' + parseFloat(line.credit_amount).toFixed(2) : '-'}</td>
+                         `;
+                         linesContainer.appendChild(row);
+                     });
+                 } else {
+                     const row = document.createElement('tr');
+                     row.innerHTML = '<td colspan="4" class="px-3 py-2 text-sm text-gray-500 text-center">No journal entry lines found</td>';
+                     linesContainer.appendChild(row);
+                 }
+                 
+                 // Update edit button in modal
+                 const editBtn = document.getElementById('editJournalBtn');
+                 if (editBtn) {
+                     editBtn.onclick = () => {
+                         // Close details modal and open edit modal
+                         if (window.journalDetailsModal) {
+                             window.journalDetailsModal.hide();
+                         }
+                         editJournalEntry(entryId);
+                     };
+                 }
+             })
+             .catch(error => {
+                 console.error('Error fetching journal entry details:', error);
+                 // Show error message
+                 document.getElementById('detailEntryNumber').textContent = 'Error loading data';
+             });
+     }
+     
+     // Edit journal entry function
+     function editJournalEntry(entryId) {
+         // Load edit form via HTMX
+         const editModalContainer = document.getElementById('journal-edit-modal-container');
+         if (editModalContainer) {
+             // Use HTMX to load the edit form
+             htmx.ajax('GET', `/finance/journal-entries/${entryId}/update/`, {
+                 target: '#journal-edit-modal-container',
+                 swap: 'innerHTML'
+             }).then(() => {
+                 // Show the edit modal after content is loaded
+                 if (window.journalEditModal) {
+                     window.journalEditModal.show();
+                 }
+             });
+         } else {
+             // Fallback to direct navigation
+             window.location.href = `/finance/journal-entries/${entryId}/update/`;
+         }
+     }
+     
+     // Make functions globally available
+     window.viewJournalDetails = viewJournalDetails;
+     window.editJournalEntry = editJournalEntry;
+     
+     // Initialize modals when DOM is ready
+     document.addEventListener('DOMContentLoaded', function() {
+         // Initialize Flowbite modals
+         const modalOptions = {
+             placement: 'bottom-right',
+             backdrop: 'dynamic',
+             backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+             closable: true
+         };
+         
+         const journalDetailsModalEl = document.getElementById('journal-details-modal');
+         const journalEditModalEl = document.getElementById('journal-edit-modal');
+         
+         if (journalDetailsModalEl) {
+             window.journalDetailsModal = new Modal(journalDetailsModalEl, modalOptions);
+         }
+         if (journalEditModalEl) {
+             window.journalEditModal = new Modal(journalEditModalEl, modalOptions);
+         }
+     });
+ </script>
+ {% endblock %}

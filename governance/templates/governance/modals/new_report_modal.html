@@ -1,0 +1,90 @@
+<!-- New Report Modal -->
+<div id="{{ modal_id }}" tabindex="-1" aria-hidden="true" data-modal-backdrop="static"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-sm shadow-sm">
+
+            <!-- Modal header -->
+            <div class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200">
+                <h3 class="text-base font-semibold text-gray-900">
+                    Generate New Report
+                </h3>
+
+                <button type="button"
+                        class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+                        data-modal-hide="{{ modal_id }}">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+
+            <!-- Modal body -->
+            <div id="{{ modal_id }}-container" class="p-1 md:p-2 max-h-[80vh] overflow-y-auto">
+                <!-- Content will be loaded here via HTMX -->
+            </div>
+            {% include 'components/modals/loading.html' %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide additional filters based on report type
+document.addEventListener('DOMContentLoaded', function() {
+    const reportTypeSelect = document.getElementById('id_report_type');
+    if (reportTypeSelect) {
+        reportTypeSelect.addEventListener('change', function() {
+            const reportType = this.value;
+            const complianceFilters = document.getElementById('compliance-filters');
+            const auditFilters = document.getElementById('audit-filters');
+            
+            // Hide all filters first
+            if (complianceFilters) complianceFilters.classList.add('hidden');
+            if (auditFilters) auditFilters.classList.add('hidden');
+            
+            // Show relevant filters
+            if (reportType === 'compliance' && complianceFilters) {
+                complianceFilters.classList.remove('hidden');
+            } else if (reportType === 'audit' && auditFilters) {
+                auditFilters.classList.remove('hidden');
+            }
+        });
+        
+        // Auto-generate report name based on type and date
+        reportTypeSelect.addEventListener('change', updateReportName);
+    }
+    
+    const startDateInput = document.getElementById('id_start_date');
+    const endDateInput = document.getElementById('id_end_date');
+    
+    if (startDateInput) startDateInput.addEventListener('change', updateReportName);
+    if (endDateInput) endDateInput.addEventListener('change', updateReportName);
+});
+
+function updateReportName() {
+    const reportType = document.getElementById('id_report_type')?.value;
+    const startDate = document.getElementById('id_start_date')?.value;
+    const endDate = document.getElementById('id_end_date')?.value;
+    const reportNameField = document.getElementById('id_name');
+    
+    if (reportType && startDate && endDate && reportNameField) {
+        const typeNames = {
+            'compliance': 'Compliance',
+            'audit': 'Audit',
+            'policy': 'Policy',
+            'governance_summary': 'Governance Summary'
+        };
+        
+        const typeName = typeNames[reportType] || reportType;
+        const formattedStartDate = new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const formattedEndDate = new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        reportNameField.value = `${typeName} Report - ${formattedStartDate} to ${formattedEndDate}`;
+    }
+}
+</script>

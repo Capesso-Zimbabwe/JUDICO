@@ -1,0 +1,179 @@
+<form hx-post="{% url 'hr_management:create_review_modal' %}" hx-target="#review-new-modal-container" hx-swap="innerHTML"
+      class="space-y-4 p-4">
+    {% csrf_token %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Employee -->
+        <div>
+            <label for="{{ form.employee.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Employee <span class="text-red-500">*</span>
+            </label>
+            {{ form.employee }}
+            {% if form.employee.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.employee.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Reviewer -->
+        <div>
+            <label for="{{ form.reviewer.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Reviewer <span class="text-red-500">*</span>
+            </label>
+            {{ form.reviewer }}
+            {% if form.reviewer.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.reviewer.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Review Date -->
+        <div>
+            <label for="{{ form.review_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Review Date <span class="text-red-500">*</span>
+            </label>
+            {{ form.review_date }}
+            {% if form.review_date.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.review_date.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Review Period Start -->
+        <div>
+            <label for="{{ form.review_period_start.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Period Start <span class="text-red-500">*</span>
+            </label>
+            {{ form.review_period_start }}
+            {% if form.review_period_start.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.review_period_start.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Review Period End -->
+        <div>
+            <label for="{{ form.review_period_end.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Period End <span class="text-red-500">*</span>
+            </label>
+            {{ form.review_period_end }}
+            {% if form.review_period_end.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.review_period_end.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Overall Rating -->
+    <div>
+        <label for="{{ form.overall_rating.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            Overall Rating <span class="text-red-500">*</span>
+        </label>
+        {{ form.overall_rating }}
+        {% if form.overall_rating.errors %}
+            <div class="text-red-500 text-xs mt-1">
+                {% for error in form.overall_rating.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Strengths -->
+    <div>
+        <label for="{{ form.strengths.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            Strengths
+        </label>
+        {{ form.strengths }}
+        {% if form.strengths.errors %}
+            <div class="text-red-500 text-xs mt-1">
+                {% for error in form.strengths.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Areas for Improvement -->
+    <div>
+        <label for="{{ form.areas_for_improvement.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            Areas for Improvement
+        </label>
+        {{ form.areas_for_improvement }}
+        {% if form.areas_for_improvement.errors %}
+            <div class="text-red-500 text-xs mt-1">
+                {% for error in form.areas_for_improvement.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Goals -->
+    <div>
+        <label for="{{ form.goals.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            Goals
+        </label>
+        {{ form.goals }}
+        {% if form.goals.errors %}
+            <div class="text-red-500 text-xs mt-1">
+                {% for error in form.goals.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Comments -->
+    <div>
+        <label for="{{ form.comments.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            Comments
+        </label>
+        {{ form.comments }}
+        {% if form.comments.errors %}
+            <div class="text-red-500 text-xs mt-1">
+                {% for error in form.comments.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Non-field errors -->
+    {% if form.non_field_errors %}
+        <div class="text-red-500 text-sm">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Form Actions -->
+    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+        <button type="button" data-modal-hide="review-new-modal"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Cancel
+        </button>
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Create Review
+        </button>
+    </div>
+</form>

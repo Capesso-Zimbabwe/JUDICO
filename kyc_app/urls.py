@@ -26,7 +26,8 @@ urlpatterns = [
     path('delete-draft/<int:profile_id>/', views.delete_kyc_draft, name='delete_kyc_draft'),
     
     # KYC Workflow Dashboard
-    path('workflow-dashboard/', views.kyc_workflow_dashboard, name='kyc_workflow_dashboard'),
+    path('workflow/', views.kyc_workflow_dashboard, name='kyc_workflow_dashboard'),
+    path('workflow-dashboard/', views.kyc_workflow_dashboard, name='kyc_workflow_dashboard_legacy'),
     
     # KYC Review URLs
     path('review-kyc-profile/<int:profile_id>/', views.review_kyc_profile, name='review_kyc_profile'),
@@ -64,8 +65,11 @@ urlpatterns = [
     # KYC Reports URLs
     path('aml-report-kyc/', generate_aml_kyc_report, name='aml_report_kyc'),
     
+    # Individual Check Page
+    path('check_individual/', check_individual, name='check_individual'),
+    
     # Dilisense API URLs
-    path('api/check-individual/', check_individual, name='check_individual'),
+    path('api/check-individual/', check_individual, name='api_check_individual'),
     path('api/download-report/', download_individual_report, name='download_report'),
     path('api/dilisense/check-entity/', api_check_entity, name='api_check_entity'),
     path('api/dilisense/generate-entity-report/', api_generate_entity_report, name='api_generate_entity_report'),
@@ -83,4 +87,7 @@ urlpatterns = [
     
     # Debug view for field lengths
     path('debug/field-lengths/', views.debug_field_lengths, name='debug_field_lengths'),
+    
+    # Configurations
+    path('configurations/', views.kyc_configurations, name='kyc_configurations'),
 ]

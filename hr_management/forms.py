@@ -18,7 +18,7 @@ class EmployeeForm(forms.ModelForm):
     
     class Meta:
         model = Employee
-        fields = ['user', 'first_name', 'last_name', 'email', 'phone', 'date_of_birth', 
+        fields = ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 
                  'profile_picture', 'address', 'department', 'position', 
                  'hire_date', 'salary', 'is_active']
         widgets = {
@@ -27,6 +27,20 @@ class EmployeeForm(forms.ModelForm):
         }
 
 class LeaveRequestForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add styling to all fields
+        for field_name, field in self.fields.items():
+            if field_name == 'reason':
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                    'rows': 3
+                })
+            else:
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                })
+    
     class Meta:
         model = LeaveRequest
         fields = ['employee', 'leave_type', 'start_date', 'end_date', 'reason']
@@ -37,6 +51,24 @@ class LeaveRequestForm(forms.ModelForm):
         }
 
 class PerformanceReviewForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add styling to all fields
+        for field_name, field in self.fields.items():
+            if field_name in ['strengths', 'areas_for_improvement', 'goals', 'comments']:
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                    'rows': 3
+                })
+            elif field_name == 'overall_rating':
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                })
+            else:
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                })
+    
     class Meta:
         model = PerformanceReview
         fields = ['employee', 'reviewer', 'review_date', 'review_period_start', 

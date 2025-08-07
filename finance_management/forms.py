@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Invoice, InvoiceItem, Payment, Expense, Account, JournalEntry, JournalEntryLine
+from .models import Invoice, InvoiceItem, Payment, Expense, Account, JournalEntry, JournalEntryLine, PettyCash, Report
 
 class AccountFilterForm(forms.Form):
     search = forms.CharField(widget=forms.TextInput(
@@ -44,6 +44,14 @@ class PaymentForm(forms.ModelForm):
             'notes': forms.Textarea(attrs={'rows': 3}),
         }
 
+class InvoiceFilterForm(forms.Form):
+    search = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'type': 'search',
+            'placeholder': 'Search invoices...',
+            'onchange': 'document.getElementById("search-form").submit();',
+        }), required=False)
+
 class ExpenseFilterForm(forms.Form):
     search = forms.CharField(widget=forms.TextInput(
         attrs={
@@ -80,8 +88,11 @@ class JournalEntryForm(forms.ModelForm):
         model = JournalEntry
         fields = ['entry_number', 'date', 'description', 'reference', 'status']
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
+            'entry_number': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
+            'reference': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
+            'status': forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
         }
 
 class JournalEntryLineForm(forms.ModelForm):
@@ -89,8 +100,10 @@ class JournalEntryLineForm(forms.ModelForm):
         model = JournalEntryLine
         fields = ['account', 'description', 'debit', 'credit']
         widgets = {
-            'debit': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
-            'credit': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'account': forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
+            'description': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
+            'debit': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
+            'credit': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-airtable-blue focus:border-airtable-blue text-sm'}),
         }
 
 # Formset for journal entry lines
@@ -103,3 +116,80 @@ JournalEntryLineFormSet = inlineformset_factory(
     validate_min=True,
     can_delete=True
 )
+
+class PettyCashFilterForm(forms.Form):
+    search = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'type': 'search',
+            'placeholder': 'Search petty cash...',
+            'onchange': 'document.getElementById("search-form").submit();',
+        }), required=False)
+    status = forms.ChoiceField(
+        choices=[('', 'All Status')] + PettyCash.STATUS_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'onchange': 'document.getElementById("search-form").submit();'})
+    )
+
+class PettyCashForm(forms.ModelForm):
+    class Meta:
+        model = PettyCash
+        fields = ['transaction_number', 'transaction_type', 'description', 'amount', 
+                 'transaction_date', 'recipient', 'purpose', 'receipt', 'status']
+        widgets = {
+            'transaction_date': forms.DateInput(attrs={'type': 'date'}),
+            'purpose': forms.Textarea(attrs={'rows': 3}),
+            'amount': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Auto-generate transaction number if creating new record
+        if not self.instance.pk:
+            import datetime
+            today = datetime.date.today()
+            count = PettyCash.objects.filter(transaction_date=today).count() + 1
+            self.fields['transaction_number'].initial = f'PC-{today.strftime("%Y%m%d")}-{count:03d}'
+
+class ReportFilterForm(forms.Form):
+    search = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'type': 'search',
+            'placeholder': 'Search reports...',
+            'onchange': 'document.getElementById("search-form").submit();',
+        }), required=False)
+    report_type = forms.ChoiceField(
+        choices=[('', 'All Types')] + Report.REPORT_TYPE_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'onchange': 'document.getElementById("search-form").submit();'})
+    )
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['name', 'report_type', 'start_date', 'end_date', 'format', 'description']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+    
+    # Additional filter fields that will be shown conditionally
+    petty_cash_status = forms.ChoiceField(
+        choices=[('', 'All Status')] + PettyCash.STATUS_CHOICES,
+        required=False,
+        label='Transaction Status'
+    )
+    
+    expense_category = forms.ChoiceField(
+        choices=[('', 'All Categories')] + Expense.CATEGORY_CHOICES,
+        required=False,
+        label='Expense Category'
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Auto-generate report name if creating new record
+        if not self.instance.pk:
+            import datetime
+            today = datetime.date.today()
+            self.fields['name'].initial = f'Report {today.strftime("%Y-%m-%d")}'

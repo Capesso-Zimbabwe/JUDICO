@@ -4,7 +4,7 @@
         enctype="multipart/form-data"
         {% if expense %}
         hx-post="{% url 'finance_management:expense_update' expense.id %}{% querystring %}"
-        hx-target="#updateExpenseModalContent"
+        hx-target="#update-expense-modal-container"
         {% else %}
         hx-post="{% url 'finance_management:expense_create' %}{% querystring %}"
         hx-target="#new-expense-modal-container"

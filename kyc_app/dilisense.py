@@ -5,7 +5,7 @@ from .models import DilisenseConfig
 def get_dilisense_config():
     config = DilisenseConfig.objects.first()
     if not config:
-        raise Exception("Capesso configuration not found. Please set up your API key in the admin.")
+        raise Exception("DILISense configuration not found. Please set up your API key in the admin.")
     return config
 ###########################################################################################################
 
@@ -42,7 +42,7 @@ def check_individual(request):
     config = DilisenseConfig.objects.first()
     if not config:
         return render(request, 'check_individual.html', {
-            'error': "Capesso API key not configured. Please set up CapessoConfig in admin."
+            'error': "DILISense API key not configured. Please set up DILISense configuration."
         })
     
     # 3) Prepare DILISense request (names= query)
@@ -65,7 +65,7 @@ def check_individual(request):
         # 5) If there's an error or no 'found_records' in the data, handle it
         if 'found_records' not in results:
             return render(request, 'check_individual.html', {
-                'error': "Invalid response from Capesso.",
+                'error': "Invalid response from DILISense.",
                 'results': None
             })
         
@@ -108,7 +108,7 @@ def check_individual(request):
     except requests.RequestException as e:
         # Handle network/HTTP errors
         return render(request, 'check_individual.html', {
-            'error': f"Error communicating with Capesso: {str(e)}"
+            'error': f"Error communicating with DILISense: {str(e)}"
         })
 
 
@@ -147,7 +147,7 @@ def download_individual_report(request):
 
     # Return as downloadable file
     response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="Capesso_AML_report.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="DILISense_AML_report.pdf"'
     return response
 
 

@@ -3364,3 +3364,118 @@ def combined_reports(request):
     }
     
     return render(request, 'kyc_app/combined_reports.html', context)
+
+@login_required
+@staff_member_required
+def kyc_configurations(request):
+    """
+    View to manage KYC configurations including Capesso API settings.
+    """
+    from .models import CapessoConfig, DilisenseConfig
+    
+    # Get existing configurations
+    capesso_config = CapessoConfig.objects.filter(is_active=True).first()
+    dilisense_config = DilisenseConfig.objects.first()
+    
+    # Test API key validity for status indicators
+    dilisense_api_valid = False
+    if dilisense_config and dilisense_config.api_key:
+        try:
+            import requests
+            response = requests.get(
+                "https://api.dilisense.com/v1/listSources",
+                headers={'x-api-key': dilisense_config.api_key},
+                timeout=10
+            )
+            dilisense_api_valid = response.status_code == 200
+        except requests.RequestException:
+            dilisense_api_valid = False
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'save_capesso':
+            api_key = request.POST.get('capesso_api_key', '').strip()
+            base_url = request.POST.get('capesso_base_url', '').strip()
+            
+            if api_key:
+                if capesso_config:
+                    # Update existing configuration
+                    capesso_config.api_key = api_key
+                    capesso_config.base_url = base_url or 'https://api.capesso.com'
+                    capesso_config.save()
+                    messages.success(request, 'Capesso configuration updated successfully!')
+                else:
+                    # Create new configuration
+                    CapessoConfig.objects.create(
+                        api_key=api_key,
+                        base_url=base_url or 'https://api.capesso.com',
+                        is_active=True
+                    )
+                    messages.success(request, 'Capesso configuration created successfully!')
+            else:
+                messages.error(request, 'API key is required.')
+        
+        elif action == 'save_dilisense':
+            api_key = request.POST.get('dilisense_api_key', '').strip()
+            
+            if api_key:
+                if dilisense_config:
+                    # Update existing configuration
+                    dilisense_config.api_key = api_key
+                    dilisense_config.save()
+                    messages.success(request, 'DILISense configuration updated successfully!')
+                else:
+                    # Create new configuration
+                    DilisenseConfig.objects.create(api_key=api_key)
+                    messages.success(request, 'DILISense configuration created successfully!')
+            else:
+                messages.error(request, 'API key is required.')
+        
+        elif action == 'test_capesso':
+            if capesso_config and capesso_config.api_key:
+                # Test the Capesso API connection
+                try:
+                    import requests
+                    response = requests.get(
+                        f"{capesso_config.base_url}/health",
+                        headers={'Authorization': f'Bearer {capesso_config.api_key}'},
+                        timeout=10
+                    )
+                    if response.status_code == 200:
+                        messages.success(request, 'Capesso API connection successful!')
+                    else:
+                        messages.warning(request, f'Capesso API responded with status: {response.status_code}')
+                except requests.RequestException as e:
+                    messages.error(request, f'Failed to connect to Capesso API: {str(e)}')
+            else:
+                messages.error(request, 'Please configure Capesso API key first.')
+        
+        elif action == 'test_dilisense':
+            if dilisense_config and dilisense_config.api_key:
+                # Test the DILISense API connection
+                try:
+                    import requests
+                    response = requests.get(
+                        "https://api.dilisense.com/v1/listSources",
+                        headers={'x-api-key': dilisense_config.api_key},
+                        timeout=10
+                    )
+                    if response.status_code == 200:
+                        messages.success(request, 'DILISense API connection successful!')
+                    else:
+                        messages.warning(request, f'DILISense API responded with status: {response.status_code}')
+                except requests.RequestException as e:
+                    messages.error(request, f'Failed to connect to DILISense API: {str(e)}')
+            else:
+                messages.error(request, 'Please configure DILISense API key first.')
+        
+        return redirect('kyc_app:kyc_configurations')
+    
+    context = {
+        'capesso_config': capesso_config,
+        'dilisense_config': dilisense_config,
+        'dilisense_api_valid': dilisense_api_valid,
+    }
+    
+    return render(request, 'kyc_app/configurations.html', context)

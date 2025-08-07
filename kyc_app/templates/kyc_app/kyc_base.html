@@ -7,50 +7,59 @@
 {% endblock %}
 
 {% block content %}
-<!-- Navigation Bar -->
-<div class="bg-white border-b border-gray-200">
-    <div class="px-8 py-4">
-        <div class="flex space-x-8">
-            <a href="{% url 'kyc_app:kyc_dashboard' %}" class="{% if request.resolver_match.url_name == 'kyc_dashboard' or request.resolver_match.url_name == 'kyc_root' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Dashboard</a>
-            <a href="{% url 'kyc_app:kyc_workflow_dashboard' %}" class="{% if request.resolver_match.url_name == 'kyc_workflow_dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Work Flow</a>
-            <a href="{% url 'kyc_app:kyc_reports_list' %}" class="{% if request.resolver_match.url_name == 'kyc_reports_list' or request.resolver_match.url_name == 'reports_dashboard' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Reports</a>
-            <a href="{% url 'kyc_app:check_individual' %}" class="{% if request.resolver_match.url_name == 'check_individual' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Individual Check</a>
-            <a href="{% url 'kyc_app:browse_documents' %}" class="{% if request.resolver_match.url_name == 'browse_documents' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Documents</a>
-            <a href="{% url 'kyc_app:register_kyc_profile' %}" class="{% if request.resolver_match.url_name == 'register_kyc_business' or request.resolver_match.url_name == 'register_kyc_profile' %}text-blue-600 font-medium py-3 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Registration</a>
-            <a href="#" class="text-gray-500 hover:text-blue-600 font-medium py-3 px-1 hover:border-b-2 hover:border-blue-600 transition-colors">Settings</a>
-        </div>
-    </div>
+<!-- Compliance-style Navigation header -->
+<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
+    <nav class="flex space-x-2 px-6 pt-3">
+        <a href="{% url 'compliance:dashboard' %}" class="{% if '/compliance/' in request.path and request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'kyc_app:kyc_dashboard' %}" class="{% if '/kyc/' in request.path %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            KYC
+        </a>
+        <a href="{% url 'compliance:requirements' %}" class="{% if '/compliance/' in request.path and request.resolver_match.url_name == 'requirements' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Requirements
+        </a>
+        <a href="{% url 'compliance:audits' %}" class="{% if '/compliance/' in request.path and request.resolver_match.url_name == 'audits' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Audits
+        </a>
+        <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Regulatory Calendar
+        </a>
+        <a href="{% url 'compliance:reports' %}" class="{% if '/compliance/' in request.path and request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Reports
+        </a>
+    </nav>
 </div>
 
-<!-- Secondary Navigation Bar -->
-<div class="bg-gray-50 border-b border-gray-200">
-    <div class="px-8 py-3">
-        <div class="flex space-x-6">
-            <a href="{% url 'kyc_app:kyc_dashboard' %}" class="{% if request.resolver_match.url_name == 'kyc_dashboard' %}text-blue-600 font-medium py-2 px-1 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-blue-600 font-medium py-2 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Overview</a>
-            <a href="{% url 'kyc_app:register_kyc_profile' %}" class="{% if request.resolver_match.url_name == 'register_kyc_profile' %}text-blue-600 font-medium py-2 px-1 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-blue-600 font-medium py-2 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Individual KYC</a>
-            <a href="{% url 'kyc_app:register_kyc_business' %}" class="{% if request.resolver_match.url_name == 'register_kyc_business' %}text-blue-600 font-medium py-2 px-1 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-blue-600 font-medium py-2 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Business KYC</a>
-            <a href="{% url 'kyc_app:kyc_workflow_dashboard' %}" class="{% if request.resolver_match.url_name == 'kyc_workflow_dashboard' %}text-blue-600 font-medium py-2 px-1 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-blue-600 font-medium py-2 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Workflow</a>
-            <a href="{% url 'kyc_app:check_individual' %}" class="{% if request.resolver_match.url_name == 'check_individual' %}text-blue-600 font-medium py-2 px-1 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-blue-600 font-medium py-2 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Screening</a>
-            <a href="{% url 'kyc_app:browse_documents' %}" class="{% if request.resolver_match.url_name == 'browse_documents' %}text-blue-600 font-medium py-2 px-1 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-blue-600 font-medium py-2 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Documents</a>
-            <a href="{% url 'kyc_app:kyc_reports_list' %}" class="{% if request.resolver_match.url_name == 'kyc_reports_list' %}text-blue-600 font-medium py-2 px-1 border-b-2 border-blue-600{% else %}text-gray-600 hover:text-blue-600 font-medium py-2 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %}">Reports</a>
-        </div>
-    </div>
+<!-- KYC Secondary Navigation Bar (matching first menu bar style) -->
+<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
+    <nav class="flex space-x-2 px-6 pt-3">
+        <a href="{% url 'kyc_app:register_kyc_profile' %}" class="{% if request.resolver_match.url_name == 'register_kyc_profile' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Register individual
+        </a>
+        <a href="{% url 'kyc_app:register_kyc_business' %}" class="{% if request.resolver_match.url_name == 'register_kyc_business' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Register Business
+        </a>
+        <a href="{% url 'kyc_app:check_individual' %}" class="{% if request.resolver_match.url_name == 'check_individual' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Individual Check
+        </a>
+        <a href="{% url 'kyc_app:kyc_workflow_dashboard' %}" class="{% if request.resolver_match.url_name == 'kyc_workflow_dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Workflow
+        </a>
+        <a href="{% url 'kyc_app:browse_documents' %}" class="{% if request.resolver_match.url_name == 'browse_documents' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Documents
+        </a>
+        <a href="{% url 'kyc_app:kyc_reports_list' %}" class="{% if request.resolver_match.url_name == 'kyc_reports_list' or request.resolver_match.url_name == 'reports_dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Reports
+        </a>
+        <a href="{% url 'kyc_app:kyc_configurations' %}" class="{% if request.resolver_match.url_name == 'kyc_configurations' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Configurations
+        </a>
+    </nav>
 </div>
-
-<!-- Tertiary Navigation for Registration -->
-{% if request.resolver_match.url_name == 'register_kyc_business' or request.resolver_match.url_name == 'register_kyc_profile' %}
-<div class="bg-white border-b border-gray-200">
-    <div class="px-8 py-2">
-        <div class="flex space-x-4">
-            <a href="{% url 'kyc_app:register_kyc_profile' %}" class="{% if request.resolver_match.url_name == 'register_kyc_profile' %}text-blue-600 font-medium py-1 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-1 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">Individual Registration</a>
-            <a href="{% url 'kyc_app:register_kyc_business' %}" class="{% if request.resolver_match.url_name == 'register_kyc_business' %}text-blue-600 font-medium py-1 px-1 border-b-2 border-blue-600{% else %}text-gray-500 hover:text-blue-600 font-medium py-1 px-1 hover:border-b-2 hover:border-blue-600 transition-colors{% endif %} text-sm">Business Registration</a>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 <!-- Main Content -->
-<div class="bg-gray-50 min-h-screen">
+<div class="bg-gray-50 min-h-0 flex-1 overflow-y-auto">
     <div class="p-8">
         {% block kyc_content %}{% endblock %}
     </div>

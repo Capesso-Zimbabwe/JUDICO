@@ -14,7 +14,7 @@
             </form>
             
             <div class="flex gap-2 items-center">
-                <select name="category" form="search-form" onchange="filterExpenses(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1" id="categoryFilter">
+                <select name="category" form="search-form" onchange="filterExpenses(this.value)" class="text-xs border border-gray-300 rounded-none px-2 py-1" id="categoryFilter">
                     <option value="">All Categories</option>
                     <option value="OFFICE_SUPPLIES">Office Supplies</option>
                     <option value="UTILITIES">Utilities</option>
@@ -25,7 +25,7 @@
                     <option value="OTHER">Other</option>
                 </select>
                 
-                <select name="status" form="search-form" onchange="filterExpenses()" class="text-xs border border-gray-300 rounded px-2 py-1" id="statusFilter">
+                <select name="status" form="search-form" onchange="filterExpenses()" class="text-xs border border-gray-300 rounded-none px-2 py-1" id="statusFilter">
                     <option value="">All Status</option>
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
@@ -201,6 +201,14 @@
                     document.getElementById('detailExpenseCreatedBy').textContent = data.created_by;
                     document.getElementById('detailExpenseStatus').textContent = data.approved_by ? 'Approved' : 'Pending';
                     
+                    // Handle receipt display
+                    const receiptContainer = document.getElementById('detailExpenseReceipt');
+                    if (data.receipt_url) {
+                        receiptContainer.innerHTML = `<a href="${data.receipt_url}" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z"/></svg>View Receipt</a>`;
+                    } else {
+                        receiptContainer.innerHTML = '<span class="text-gray-500">No receipt uploaded</span>';
+                    }
+                    
                     // Set status badge color
                     const statusBadge = document.getElementById('detailExpenseStatus');
                     if (data.approved_by) {
@@ -233,38 +241,31 @@
                  window.detailsExpenseModal.hide();
              }
              
-             // Show the modal first
-             if (window.updateExpenseModal) {
-                 window.updateExpenseModal.show();
-             }
-             
-             // Get the modal body content element (the actual form container inside the modal)
-             const modalBodyContent = document.getElementById('updateExpenseModalContent');
-             
-             if (!modalBodyContent) {
-                 console.error('Modal body content element not found');
-                 alert('Error: Modal content element not found. Please refresh the page and try again.');
-                 return;
-             }
-             
-             // Show loading state
-             modalBodyContent.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div><p class="mt-2 text-gray-600">Loading expense data...</p></div>';
-             
-             // Fetch only the form content, not the entire modal
-             fetch(`/finance/expenses/${expenseId}/edit/`, {
-                 headers: {
-                     'HX-Request': 'true'
-                 }
-             })
-                 .then(response => response.text())
-                 .then(html => {
-                     // Load only the form content into the modal body container
-                     modalBodyContent.innerHTML = html;
+             // Fetch expense data
+             fetch(`/finance/api/expenses/${expenseId}/`)
+                 .then(response => response.json())
+                 .then(data => {
+                     // Populate form fields
+                     document.getElementById('updateExpenseTitle').value = data.title || '';
+                     document.getElementById('updateExpenseAmount').value = data.amount || '0.00';
+                     document.getElementById('updateExpenseCategory').value = data.category || '';
+                     document.getElementById('updateExpenseDate').value = data.expense_date || '';
+                     document.getElementById('updateExpenseDescription').value = data.description || '';
+                     
+                     // Update form action URL
+                     const form = document.getElementById('updateExpenseForm');
+                     if (form) {
+                         form.setAttribute('hx-post', `/finance/expenses/${expenseId}/edit/`);
+                     }
+                     
+                     // Show the modal
+                     if (window.updateExpenseModal) {
+                         window.updateExpenseModal.show();
+                     }
                  })
                  .catch(error => {
-                     console.error('Error loading expense form:', error);
-                     // Show a loading error message
-                     modalBodyContent.innerHTML = '<div class="text-center py-8"><p class="text-red-600">Error loading expense data. Please try again.</p></div>';
+                     console.error('Error fetching expense details:', error);
+                     alert('Error loading expense data. Please try again.');
                  });
          }
 
@@ -346,30 +347,32 @@
                 });
             }
 
-            // Initialize Flowbite modals
-            const newExpenseModalElement = document.getElementById('new-expense-modal');
-            if (newExpenseModalElement) {
-                window.newExpenseModal = new Modal(newExpenseModalElement, modalOptions, {
-                    id: 'new-expense-modal',
-                    override: true
-                });
-            }
-            
-            const detailsExpenseModalElement = document.getElementById('details-expense-modal');
-            if (detailsExpenseModalElement) {
-                window.detailsExpenseModal = new Modal(detailsExpenseModalElement, modalOptions, {
-                    id: 'details-expense-modal',
-                    override: true
-                });
-            }
-            
-            // Initialize Update Expense Modal
-            const updateExpenseModalElement = document.getElementById('update-expense-modal');
-            if (updateExpenseModalElement) {
-                window.updateExpenseModal = new Modal(updateExpenseModalElement, modalOptions, {
-                    id: 'update-expense-modal',
-                    override: true
-                });
+            // Initialize Flowbite modals (modalOptions is defined in base template)
+            if (typeof Modal !== 'undefined' && typeof modalOptions !== 'undefined') {
+                const newExpenseModalElement = document.getElementById('new-expense-modal');
+                if (newExpenseModalElement) {
+                    window.newExpenseModal = new Modal(newExpenseModalElement, modalOptions, {
+                        id: 'new-expense-modal',
+                        override: true
+                    });
+                }
+                
+                const detailsExpenseModalElement = document.getElementById('details-expense-modal');
+                if (detailsExpenseModalElement) {
+                    window.detailsExpenseModal = new Modal(detailsExpenseModalElement, modalOptions, {
+                        id: 'details-expense-modal',
+                        override: true
+                    });
+                }
+                
+                // Initialize Update Expense Modal
+                const updateExpenseModalElement = document.getElementById('update-expense-modal');
+                if (updateExpenseModalElement) {
+                    window.updateExpenseModal = new Modal(updateExpenseModalElement, modalOptions, {
+                        id: 'update-expense-modal',
+                        override: true
+                    });
+                }
             }
         });
 
@@ -386,7 +389,7 @@
                     setTimeout(() => {
                         window.location.reload();
                     }, 500);
-                } else if (event.detail.target.id === 'updateExpenseModalContent') {
+                } else if (event.detail.target.id === 'update-expense-modal-container') {
                     // Close the update expense modal
                     if (window.updateExpenseModal) {
                         window.updateExpenseModal.hide();

@@ -194,3 +194,16 @@ input[type="checkbox"] {
     font-size: 1.125rem;
     font-weight: 700;
 }
+
+/* HTMX Loading Indicator */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}

@@ -1,85 +1,475 @@
-{% extends 'base.html' %}
+{% extends 'compliance/base.html' %}
 
 {% block title %}Compliance - Requirements{% endblock %}
 
-{% block content %}
-<!-- Navigation Bar -->
-<div class="nav-bar -mt-3 -ml-3 mb-4 w-[calc(100%+1.5rem)] bg-white border-b border-gray-200">
-    <div class="flex space-x-4 px-6 py-2">
-        <a href="{% url 'compliance:dashboard' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
-            Dashboard
-        </a>
-        <a href="{% url 'compliance:requirements' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'requirements' %} active{% endif %}">
-            Requirements
-        </a>
-        <a href="{% url 'compliance:audits' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'audits' %} active{% endif %}">
-            Audits
-        </a>
-        <a href="{% url 'compliance:reports' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'reports' %} active{% endif %}">
-            Reports
-        </a>
-    </div>
-</div>
+{% block compliance_content %}
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
 
-<!-- Requirements Header -->
-<div class="p-8 bg-white shadow rounded-lg">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Compliance Requirements</h1>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-            Add Requirement
-        </button>
+        <!-- Filters Section -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <form action="" class="flex-1 max-w-sm" id="search-form">
+                <input type="text" id="searchInput" name="search" placeholder="Search requirements..." 
+                       class="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+            </form>
+            
+            <div class="flex gap-2 items-center">
+                <select name="filter" form="search-form" onchange="filterRequirements(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1">
+                    <option value="">All Categories</option>
+                    <option value="regulatory">Regulatory</option>
+                    <option value="internal">Internal Policies</option>
+                    <option value="industry">Industry Standards</option>
+                    <option value="legal">Legal Requirements</option>
+                </select>
+                
+                <button type="button"
+                        class="p-2 flex gap-1"
+                        data-modal-target="new-requirement-modal" 
+                        data-modal-toggle="new-requirement-modal">
+                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                         height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 12h14m-7 7V5"></path>
+                    </svg>
+                    <span class="font-bold">Add Requirement</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="requirementsTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Requirement ID
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Title
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Category
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Due Date
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Status
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="requirementsTableBody">
+                    {% if requirements %}
+                        {% for requirement in requirements %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200" 
+                            data-requirement-id="{{ requirement.id }}" 
+                            data-requirement-title="{{ requirement.title }}" 
+                            data-requirement-category="{{ requirement.category }}" 
+                            data-requirement-status="{{ requirement.status }}">
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">REQ-{{ requirement.id|stringformat:"04d" }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        onclick="viewRequirement('{{ requirement.id }}')">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full 
+                                            {% if requirement.category == 'regulatory' %}bg-blue-100{% elif requirement.category == 'internal' %}bg-green-100{% elif requirement.category == 'industry' %}bg-purple-100{% elif requirement.category == 'legal' %}bg-red-100{% else %}bg-gray-100{% endif %} 
+                                            flex items-center justify-center">
+                                            <span class="
+                                                {% if requirement.category == 'regulatory' %}text-blue-600{% elif requirement.category == 'internal' %}text-green-600{% elif requirement.category == 'industry' %}text-purple-600{% elif requirement.category == 'legal' %}text-red-600{% else %}text-gray-600{% endif %} 
+                                                font-medium text-xs">{{ requirement.title|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ requirement.title|truncatechars:25 }}</span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if requirement.category == 'regulatory' %}bg-blue-100 text-blue-800
+                                    {% elif requirement.category == 'internal' %}bg-green-100 text-green-800
+                                    {% elif requirement.category == 'industry' %}bg-purple-100 text-purple-800
+                                    {% elif requirement.category == 'legal' %}bg-red-100 text-red-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ requirement.category|title }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ requirement.due_date|date:"M d, Y" }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if requirement.status == 'Compliant' %}bg-green-100 text-green-800
+                                    {% elif requirement.status == 'Non-Compliant' %}bg-red-100 text-red-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {{ requirement.status }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <!-- View Details -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="View Requirement"
+                                            data-modal-target="details-modal" 
+                                            data-modal-toggle="details-modal"
+                                            onclick="viewRequirementDetails('{{ requirement.id }}', '{{ requirement.title }}', '{{ requirement.category }}', '{{ requirement.status }}', '{{ requirement.due_date }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Edit -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Edit Requirement"
+                                            onclick="editRequirement('{{ requirement.id }}', '{{ requirement.title }}', '{{ requirement.category }}', '{{ requirement.status }}', '{{ requirement.due_date }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Delete -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Delete Requirement"
+                                            onclick="deleteRequirement('{{ requirement.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="fas fa-clipboard-list text-4xl text-gray-400 mb-4"></i>
+                                    <h3 class="text-xs font-medium text-gray-900 mb-1">No requirements found</h3>
+                                    <p class="text-xs text-gray-500">Get started by creating your first requirement.</p>
+                                    <button type="button"
+                                            class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                                            data-modal-target="new-requirement-modal" 
+                                            data-modal-toggle="new-requirement-modal">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        Add Your First Requirement
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <!-- Requirements Table -->
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% if requirements %}
-                    {% for requirement in requirements %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ requirement.id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ requirement.title }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ requirement.category }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                {% if requirement.status == 'Compliant' %}bg-green-100 text-green-800
-                                {% elif requirement.status == 'Non-Compliant' %}bg-red-100 text-red-800
-                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                                {{ requirement.status }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ requirement.due_date }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div class="flex space-x-2">
-                                <button class="text-blue-600 hover:text-blue-900">Edit</button>
-                                <button class="text-red-600 hover:text-red-900">Delete</button>
+    <!-- Pagination -->
+    {% include "components/paginator.html" %}
+
+    <!-- Modals -->
+    <div id="new-requirement-modal" tabindex="-1" aria-hidden="true" data-modal-backdrop="static"
+         class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+
+        <div class="relative p-4 w-full max-w-2xl max-h-full">
+            <!-- Modal content -->
+            <div class="relative bg-white rounded-sm shadow-sm">
+
+                <!-- Modal header -->
+                <div class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200">
+                    <h3 class="text-base font-semibold text-gray-900">
+                        New Requirement
+                    </h3>
+
+                    <button type="button"
+                            class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+                            data-modal-hide="new-requirement-modal">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                             viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                </div>
+
+                <!-- Modal body -->
+                <div id="new-requirement-modal-container" class="p-1 md:p-2 max-h-[80vh] overflow-y-auto">
+                    <form novalidate="novalidate" method="post" action="{% url 'compliance:create_requirement' %}" id="newRequirementForm">
+                        {% csrf_token %}
+                        <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                
+                                <!-- Requirement Title -->
+                                <div class="space-y-1 required col-span-2">
+                                    <label for="id_title" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                        Title
+                                        <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="text" name="title" maxlength="255" 
+                                               class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                               required id="id_title" placeholder="Enter requirement title">
+                                    </div>
+                                </div>
+                                
+                                <!-- Requirement Category -->
+                                <div class="space-y-1 required">
+                                    <label for="id_category" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                        Category
+                                        <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <select name="category" 
+                                                class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white form-field disabled:opacity-50 disabled:cursor-not-allowed" 
+                                                required id="id_category">
+                                            <option value="">Select a category</option>
+                                            <option value="regulatory">Regulatory</option>
+                                            <option value="internal">Internal Policies</option>
+                                            <option value="industry">Industry Standards</option>
+                                            <option value="legal">Legal Requirements</option>
+                                        </select>
+                                        <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <!-- Due Date -->
+                                <div class="space-y-1 required">
+                                    <label for="id_due_date" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                        Due Date
+                                        <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="date" name="due_date" 
+                                               class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                               required id="id_due_date">
+                                    </div>
+                                </div>
+                                
+                                <!-- Status -->
+                                <div class="space-y-1 required">
+                                    <label for="id_status" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                        Status
+                                        <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <select name="status" 
+                                                class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white form-field disabled:opacity-50 disabled:cursor-not-allowed" 
+                                                id="id_status">
+                                            <option value="Pending" selected>Pending</option>
+                                            <option value="Compliant">Compliant</option>
+                                            <option value="Non-Compliant">Non-Compliant</option>
+                                        </select>
+                                        <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <!-- Priority -->
+                                <div class="space-y-1">
+                                    <label for="id_priority" class="flex items-center gap-2 text-xs text-gray-700 font-medium">
+                                        Priority
+                                    </label>
+                                    <div class="relative">
+                                        <select name="priority" 
+                                                class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white form-field disabled:opacity-50 disabled:cursor-not-allowed" 
+                                                id="id_priority">
+                                            <option value="">Select priority (optional)</option>
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High">High</option>
+                                            <option value="Critical">Critical</option>
+                                        </select>
+                                        <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <!-- Description -->
+                                <div class="space-y-1 col-span-2">
+                                    <label for="id_description" class="flex items-center gap-2 text-xs text-gray-700 font-medium">
+                                        Description
+                                    </label>
+                                    <div class="relative">
+                                        <textarea name="description" cols="40" rows="3" 
+                                                  class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                                  id="id_description" placeholder="Enter requirement description (optional)"></textarea>
+                                    </div>
+                                </div>
                             </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
-                            No requirements found. Click 'Add Requirement' to create one.
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                        </div>
+                        <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+                            <button type="button" data-modal-hide="new-requirement-modal" 
+                                    class="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Create Requirement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="new-requirement-modal-overlay" class="htmx-indicator absolute inset-0 bg-gray-50/60 rounded-sm p-6 flex items-center justify-center shadow-xl backdrop-blur-sm">
+                    <div class="bg-white rounded-md p-12 shadow-xl max-w-sm mx-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            <div class="text-gray-900">
+                                <div class="font-medium">Loading...</div>
+                                <div class="text-sm text-gray-500">Please wait</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+
+    <div id="details-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Requirement Details</h3>
+            </div>
+            <div class="px-6 py-4">
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ID</label>
+                        <p id="detailRequirementId" class="text-sm text-gray-900"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Title</label>
+                        <p id="detailRequirementTitle" class="text-sm text-gray-900"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Category</label>
+                        <p id="detailRequirementCategory" class="text-sm text-gray-900"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <span id="detailRequirementStatus" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"></span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Due Date</label>
+                        <p id="detailRequirementDueDate" class="text-sm text-gray-900"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-2">
+                <button type="button" onclick="closeDetailsModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Close</button>
+                <button type="button" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Edit</button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Global modal functions
+        function viewRequirementDetails(id, title, category, status, dueDate) {
+            document.getElementById('detailRequirementId').textContent = 'REQ-' + String(id).padStart(4, '0');
+            document.getElementById('detailRequirementTitle').textContent = title;
+            document.getElementById('detailRequirementCategory').textContent = category;
+            document.getElementById('detailRequirementDueDate').textContent = dueDate;
+            
+            const statusBadge = document.getElementById('detailRequirementStatus');
+            statusBadge.textContent = status;
+            if (status === 'Compliant') {
+                statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
+            } else if (status === 'Non-Compliant') {
+                statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800';
+            } else {
+                statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
+            }
+            
+            document.getElementById('details-modal').classList.remove('hidden');
+        }
+
+        function editRequirement(id, title, category, status, dueDate) {
+            // Implementation for edit functionality
+            console.log('Edit requirement:', id);
+        }
+
+        function deleteRequirement(id) {
+            if (confirm('Are you sure you want to delete this requirement?')) {
+                // Handle requirement deletion
+                console.log('Delete requirement:', id);
+            }
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('details-modal').classList.add('hidden');
+        }
+
+        function filterRequirements(category) {
+            const rows = document.querySelectorAll('#requirementsTableBody tr');
+            rows.forEach(row => {
+                const requirementCategory = row.getAttribute('data-requirement-category') || '';
+                const matchesCategory = !category || requirementCategory === category;
+                row.style.display = matchesCategory ? '' : 'none';
+            });
+        }
+
+        // Initialize search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('#requirementsTableBody tr');
+                    
+                    rows.forEach(row => {
+                        const id = row.getAttribute('data-requirement-id')?.toLowerCase() || '';
+                        const title = row.getAttribute('data-requirement-title')?.toLowerCase() || '';
+                        const matchesSearch = id.includes(searchTerm) || title.includes(searchTerm);
+                        row.style.display = matchesSearch ? '' : 'none';
+                    });
+                });
+            }
+            
+            // Handle form submission
+            const newRequirementForm = document.getElementById('newRequirementForm');
+            if (newRequirementForm) {
+                newRequirementForm.addEventListener('submit', function(e) {
+                    // Validate required fields
+                    const title = document.getElementById('id_title').value.trim();
+                    const category = document.getElementById('id_category').value;
+                    const dueDate = document.getElementById('id_due_date').value;
+                    
+                    if (!title || !category || !dueDate) {
+                        e.preventDefault();
+                        alert('Please fill in all required fields (Title, Category, and Due Date).');
+                        return false;
+                    }
+                    
+                    // Show loading overlay
+                    const overlay = document.getElementById('new-requirement-modal-overlay');
+                    if (overlay) {
+                        overlay.classList.remove('htmx-indicator');
+                    }
+                });
+            }
+            
+            // Reset form when modal is closed
+            const modal = document.getElementById('new-requirement-modal');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', function() {
+                    const form = document.getElementById('newRequirementForm');
+                    if (form) {
+                        form.reset();
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}

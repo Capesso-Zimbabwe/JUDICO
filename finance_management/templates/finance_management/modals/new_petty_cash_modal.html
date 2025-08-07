@@ -1,0 +1,109 @@
+<form
+        novalidate="novalidate"
+        method="post"
+        hx-post="{% url 'finance_management:petty_cash_create' %}{% querystring %}"
+        hx-target="#new-modal-container"
+        hx-swap="innerHTML"
+        hx-indicator=".submit-btn"
+        enctype="multipart/form-data"
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
+            
+            <!-- Transaction Number -->
+            <div>
+                <label for="id_transaction_number" class="block mb-2 text-sm font-medium text-gray-900">Transaction Number</label>
+                <input type="text" id="id_transaction_number" name="transaction_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Auto-generated" readonly>
+            </div>
+            
+            <!-- Transaction Type -->
+            <div>
+                <label for="id_transaction_type" class="block mb-2 text-sm font-medium text-gray-900">Transaction Type</label>
+                <select id="id_transaction_type" name="transaction_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                    <option value="">Select Transaction Type</option>
+                    <option value="DISBURSEMENT">Disbursement</option>
+                    <option value="REPLENISHMENT">Replenishment</option>
+                </select>
+            </div>
+            
+            <!-- Amount -->
+            <div>
+                <label for="id_amount" class="block mb-2 text-sm font-medium text-gray-900">Amount</label>
+                <input type="number" id="id_amount" name="amount" step="0.01" min="0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Enter amount" required>
+            </div>
+            
+            <!-- Transaction Date -->
+            <div>
+                <label for="id_transaction_date" class="block mb-2 text-sm font-medium text-gray-900">Transaction Date</label>
+                <input type="date" id="id_transaction_date" name="transaction_date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+            </div>
+            
+            <!-- Recipient -->
+            <div>
+                <label for="id_recipient" class="block mb-2 text-sm font-medium text-gray-900">Recipient</label>
+                <input type="text" id="id_recipient" name="recipient" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Enter recipient name">
+            </div>
+            
+            <!-- Status -->
+            <div>
+                <label for="id_status" class="block mb-2 text-sm font-medium text-gray-900">Status</label>
+                <select id="id_status" name="status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="PENDING" selected>Pending</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+            </div>
+            
+            <!-- Purpose -->
+            <div class="col-span-2">
+                <label for="id_purpose" class="block mb-2 text-sm font-medium text-gray-900">Purpose</label>
+                <textarea id="id_purpose" name="purpose" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Enter purpose of transaction"></textarea>
+            </div>
+            
+            <!-- Description -->
+            <div class="col-span-2">
+                <label for="id_description" class="block mb-2 text-sm font-medium text-gray-900">Description (Optional)</label>
+                <textarea id="id_description" name="description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Additional description..."></textarea>
+            </div>
+            
+            <!-- Receipt -->
+            <div class="col-span-2">
+                <label for="id_receipt" class="block mb-2 text-sm font-medium text-gray-900">Receipt (Optional)</label>
+                <input type="file" id="id_receipt" name="receipt" accept=".pdf,.jpg,.jpeg,.png" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+            </div>
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <div>
+            {% include 'components/submit-button.html' with button_text="Create Transaction" loading_text="Creating..." %}
+        </div>
+    </div>
+</form>
+
+<script>
+// Auto-generate transaction number and set current date when modal loads
+(function() {
+    // Generate transaction number
+    const transactionNumberField = document.getElementById('id_transaction_number');
+    if (transactionNumberField && !transactionNumberField.value) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+        transactionNumberField.value = `PC-${year}${month}${day}-${random}`;
+    }
+    
+    // Set current date
+    const dateField = document.getElementById('id_transaction_date');
+    if (dateField && !dateField.value) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        dateField.value = `${year}-${month}-${day}`;
+    }
+})();
+</script>

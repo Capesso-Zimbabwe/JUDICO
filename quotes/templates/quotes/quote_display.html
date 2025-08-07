@@ -1,5 +1,5 @@
 {% if daily_quote %}
-<div class="quote-container py-3 px-4 flex flex-col md:flex-row gap-2 md:items-center items-start md:justify-between shadow-md text-xs text-gray-800 bg-gray-350">
+<div class="quote-container sticky top-0 z-20 py-3 px-4 flex flex-col md:flex-row gap-2 md:items-center items-start md:justify-between shadow-md text-xs text-gray-800 bg-gray-350">
     <p class="quote-text italic font-bold">{{ daily_quote.text }}</p>
     {% if daily_quote.author %}
     <p class="quote-author text-right">— {{ daily_quote.author }}</p>

@@ -177,7 +177,7 @@
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col text-xs max-h-full max-w-full">
+<body class="bg-gray-50 min-h-screen flex flex-col text-xs">
 <!-- Sidebar with all modules -->
 
 <div id="main-sidebar"
@@ -421,7 +421,7 @@
 <!-- Header - improved height for perfect ratio -->
 <div class="xl:ml-56 relative flex flex-col flex-grow max-h-full max-w-full overflow-hidden">
     {% include 'quotes/quote_display.html' %}
-    <div class="sticky top-0 z-9 flex  shadow-md justify-between items-center h-full px-4 py-3 bg-white text-gray-800 header-height">
+    <div class="sticky top-12 z-10 flex  shadow-md justify-between items-center h-full px-4 py-3 bg-white text-gray-800 header-height">
         <div class="flex gap-2 items-center">
             <button data-drawer-target="main-sidebar" data-drawer-toggle="main-sidebar" aria-controls="main-sidebar"
                     type="button"
@@ -474,7 +474,7 @@
 
 
     <!-- Main Content -->
-    <div class=" p-4 bg-gray-100 flex-grow flex flex-col flex-grow-1 max-h-full max-w-full overflow-hidden">
+    <div class=" p-4 bg-gray-100 flex-grow flex flex-col flex-grow-1 min-h-0">
         <!-- Adjusted margin-left and reduced padding -->
         {% block content %}{% endblock %}
     </div>

@@ -1,89 +1,784 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Compliance - Audits{% endblock %}
+{% block title %}Audits - JUDICO{% endblock %}
 
 {% block content %}
-<!-- Navigation Bar -->
-<div class="nav-bar -mt-3 -ml-3 mb-4 w-[calc(100%+1.5rem)] bg-white border-b border-gray-200">
-    <div class="flex space-x-4 px-6 py-2">
-        <a href="{% url 'compliance:dashboard' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+<!-- Navigation header with improved styling -->
+<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
+    <nav class="flex space-x-2 px-6 pt-3">
+        <a href="{% url 'compliance:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Dashboard
         </a>
-        <a href="{% url 'compliance:requirements' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'requirements' %} active{% endif %}">
+        <a href="{% url 'kyc_app:kyc_dashboard' %}" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            KYC
+        </a>
+        <a href="{% url 'compliance:requirements' %}" class="{% if request.resolver_match.url_name == 'requirements' or request.resolver_match.url_name == 'create_requirement' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Requirements
         </a>
-        <a href="{% url 'compliance:audits' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'audits' %} active{% endif %}">
+        <a href="{% url 'compliance:audits' %}" class="{% if request.resolver_match.url_name == 'audits' or request.resolver_match.url_name == 'create_audit' or request.resolver_match.url_name == 'update_audit' or request.resolver_match.url_name == 'audit_details' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Audits
         </a>
-        <a href="{% url 'compliance:reports' %}" 
-           class="nav-item{% if request.resolver_match.url_name == 'reports' %} active{% endif %}">
+        <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Regulatory Calendar
+        </a>
+        <a href="{% url 'compliance:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Reports
         </a>
-    </div>
+    </nav>
 </div>
 
-<!-- Audits Header -->
-<div class="p-8 bg-white shadow rounded-lg">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Compliance Audits</h1>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-            Schedule Audit
-        </button>
-    </div>
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
 
-    <!-- Audits Table -->
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audit ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auditor</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% if audits %}
-                    {% for audit in audits %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ audit.id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ audit.title }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ audit.type }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                {% if audit.status == 'Completed' %}bg-green-100 text-green-800
-                                {% elif audit.status == 'In Progress' %}bg-yellow-100 text-yellow-800
-                                {% elif audit.status == 'Scheduled' %}bg-blue-100 text-blue-800
-                                {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                {{ audit.status }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ audit.date }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ audit.auditor }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div class="flex space-x-2">
-                                <button class="text-blue-600 hover:text-blue-900">View</button>
-                                <button class="text-blue-600 hover:text-blue-900">Edit</button>
-                                <button class="text-red-600 hover:text-red-900">Delete</button>
-                            </div>
-                        </td>
-                    </tr>
+        <!-- Filters Section -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <form action="" class="flex-1 max-w-sm" id="search-form">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query }}"
+                           placeholder="Search audits..."
+                           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                </div>
+            </form>
+            
+            <div class="flex gap-2 items-center">
+                <select name="type" form="search-form" onchange="filterAudits(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1">
+                    <option value="">All Types</option>
+                    {% for value, label in type_choices %}
+                        <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
-                            No audits found. Click 'Schedule Audit' to create one.
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                </select>
+                
+                <select name="status" form="search-form" onchange="filterAudits(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                
+                <select name="priority" form="search-form" onchange="filterAudits(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1">
+                    <option value="">All Priorities</option>
+                    {% for value, label in priority_choices %}
+                        <option value="{{ value }}" {% if priority_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="button" 
+                        data-modal-target="new-audit-modal" 
+                        data-modal-toggle="new-audit-modal"
+                        class="p-2 flex gap-1">
+                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                         height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 12h14m-7 7V5"></path>
+                    </svg>
+                    <span class="font-bold">Schedule Audit</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+            {% if audits %}
+                <table class="w-full divide-y divide-gray-200" id="auditsTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Audit ID
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Audit Title
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Type
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Status
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Priority
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Scheduled Date
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Auditor
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="auditsTableBody">
+                    {% for audit in audits %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200" 
+                            data-audit-id="{{ audit.id }}" 
+                            data-audit-title="{{ audit.title }}" 
+                            data-audit-type="{{ audit.audit_type }}" 
+                            data-audit-status="{{ audit.status }}">
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ audit.id }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        onclick="viewAuditDetails('{{ audit.id }}')">
+                                     <div class="flex-shrink-0 h-8 w-8">
+                                         <div class="h-8 w-8 rounded-full 
+                                             {% if audit.audit_type == 'Internal' %}bg-blue-100{% elif audit.audit_type == 'External' %}bg-purple-100{% elif audit.audit_type == 'Compliance' %}bg-green-100{% elif audit.audit_type == 'Financial' %}bg-orange-100{% elif audit.audit_type == 'Operational' %}bg-red-100{% endif %} 
+                                             flex items-center justify-center">
+                                             <span class="
+                                                 {% if audit.audit_type == 'Internal' %}text-blue-600{% elif audit.audit_type == 'External' %}text-purple-600{% elif audit.audit_type == 'Compliance' %}text-green-600{% elif audit.audit_type == 'Financial' %}text-orange-600{% elif audit.audit_type == 'Operational' %}text-red-600{% endif %} 
+                                                 font-medium text-xs">{{ audit.title|first|upper }}</span>
+                                         </div>
+                                     </div>
+                                     <div class="ml-2">
+                                         <div class="text-xs font-medium text-gray-900">
+                                             <span>{{ audit.title|truncatechars:25 }}</span>
+                                         </div>
+                                     </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if audit.audit_type == 'Internal' %}bg-blue-100 text-blue-800
+                                    {% elif audit.audit_type == 'External' %}bg-purple-100 text-purple-800
+                                    {% elif audit.audit_type == 'Compliance' %}bg-green-100 text-green-800
+                                    {% elif audit.audit_type == 'Financial' %}bg-orange-100 text-orange-800
+                                    {% elif audit.audit_type == 'Operational' %}bg-red-100 text-red-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ audit.get_audit_type_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if audit.status == 'Scheduled' %}bg-yellow-100 text-yellow-800
+                                    {% elif audit.status == 'In Progress' %}bg-blue-100 text-blue-800
+                                    {% elif audit.status == 'Completed' %}bg-green-100 text-green-800
+                                    {% elif audit.status == 'Cancelled' %}bg-red-100 text-red-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ audit.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if audit.priority == 'High' %}bg-red-100 text-red-800
+                                    {% elif audit.priority == 'Medium' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-green-100 text-green-800{% endif %}">
+                                    {{ audit.get_priority_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ audit.scheduled_date|date:"M d, Y" }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ audit.auditor }}</td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <!-- View Details -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="View Audit"
+                                            data-modal-target="audit-details-modal" 
+                                            data-modal-toggle="audit-details-modal"
+                                            onclick="viewAuditDetails('{{ audit.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Edit -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Edit Audit"
+                                            data-modal-target="update-audit-modal" 
+                                            data-modal-toggle="update-audit-modal"
+                                            onclick="editAudit('{{ audit.id }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing
+                            <span class="font-medium">{{ page_obj.start_index }}</span>
+                            to
+                            <span class="font-medium">{{ page_obj.end_index }}</span>
+                            of
+                            <span class="font-medium">{{ page_obj.paginator.count }}</span>
+                            results
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            {% if page_obj.has_previous %}
+                                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Previous</span>
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                        {{ num }}
+                                    </span>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        {{ num }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Next</span>
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No audits found</h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by scheduling your first audit.</p>
+                <div class="mt-6">
+                    <button type="button" 
+                            data-modal-target="new-audit-modal" 
+                            data-modal-toggle="new-audit-modal"
+                            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Schedule Audit
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
+
+<!-- New Audit Modal -->
+<div id="new-audit-modal" tabindex="-1" aria-hidden="true" data-modal-backdrop="static"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-sm shadow-sm">
+
+            <!-- Modal header -->
+            <div class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200">
+                <h3 class="text-base font-semibold text-gray-900">
+                    Schedule New Audit
+                </h3>
+
+                <button type="button"
+                        class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+                        data-modal-hide="new-audit-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+
+            <!-- Modal body -->
+            <div id="new-audit-modal-container" class="p-1 md:p-2 max-h-[80vh] overflow-y-auto">
+                <form novalidate="novalidate" method="post" action="{% url 'compliance:create_audit' %}" id="newAuditForm">
+                    {% csrf_token %}
+                    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            
+                            <!-- Audit Title -->
+                            <div class="space-y-1 required col-span-2">
+                                <label for="id_title" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                    Audit Title
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" name="title" maxlength="255" 
+                                           class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                           required id="id_title" placeholder="Enter audit title">
+                                </div>
+                            </div>
+                            
+                            <!-- Audit Type -->
+                            <div class="space-y-1 required">
+                                <label for="id_audit_type" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                    Audit Type
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <select name="audit_type" 
+                                            class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white form-field disabled:opacity-50 disabled:cursor-not-allowed" 
+                                            required id="id_audit_type">
+                                        <option value="">Select audit type</option>
+                                        {% for value, label in form.audit_type.field.choices %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <!-- Scheduled Date -->
+                            <div class="space-y-1 required">
+                                <label for="id_scheduled_date" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                    Scheduled Date
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="date" name="scheduled_date" 
+                                           class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                           required id="id_scheduled_date">
+                                </div>
+                            </div>
+                            
+                            <!-- Completion Date -->
+                            <div class="space-y-1">
+                                <label for="id_completion_date" class="flex items-center gap-2 text-xs text-gray-700 font-medium">
+                                    Completion Date
+                                </label>
+                                <div class="relative">
+                                    <input type="date" name="completion_date" 
+                                           class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                           id="id_completion_date">
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="space-y-1 required">
+                                <label for="id_status" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                    Status
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <select name="status" 
+                                            class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white form-field disabled:opacity-50 disabled:cursor-not-allowed" 
+                                            id="id_status">
+                                        {% for value, label in form.status.field.choices %}
+                                            <option value="{{ value }}" {% if value == 'Scheduled' %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <!-- Priority -->
+                            <div class="space-y-1">
+                                <label for="id_priority" class="flex items-center gap-2 text-xs text-gray-700 font-medium">
+                                    Priority
+                                </label>
+                                <div class="relative">
+                                    <select name="priority" 
+                                            class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white form-field disabled:opacity-50 disabled:cursor-not-allowed" 
+                                            id="id_priority">
+                                        <option value="">Select priority (optional)</option>
+                                        {% for value, label in form.priority.field.choices %}
+                                            <option value="{{ value }}" {% if value == 'Medium' %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <!-- Auditor -->
+                            <div class="space-y-1 required">
+                                <label for="id_auditor" class="flex items-center gap-2 text-xs text-gray-700 font-bold">
+                                    Auditor
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" name="auditor" 
+                                           class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                           required id="id_auditor" placeholder="Enter auditor name">
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <div class="space-y-1 col-span-2">
+                                <label for="id_description" class="flex items-center gap-2 text-xs text-gray-700 font-medium">
+                                    Description
+                                </label>
+                                <div class="relative">
+                                    <textarea name="description" cols="40" rows="3" 
+                                              class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                              id="id_description" placeholder="Enter audit description (optional)"></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Findings -->
+                            <div class="space-y-1 col-span-2">
+                                <label for="id_findings" class="flex items-center gap-2 text-xs text-gray-700 font-medium">
+                                    Findings
+                                </label>
+                                <div class="relative">
+                                    <textarea name="findings" cols="40" rows="3" 
+                                              class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50" 
+                                              id="id_findings" placeholder="Enter audit findings (optional)"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+                        <button type="button" data-modal-hide="new-audit-modal" 
+                                class="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Schedule Audit
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="new-audit-modal-overlay" class="htmx-indicator absolute inset-0 bg-gray-50/60 rounded-sm p-6 flex items-center justify-center shadow-xl backdrop-blur-sm">
+                <div class="bg-white rounded-md p-12 shadow-xl max-w-sm mx-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <div class="text-gray-900">
+                            <div class="font-medium">Loading...</div>
+                            <div class="text-sm text-gray-500">Please wait</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audit Details Modal -->
+<div id="audit-details-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Audit Details
+                </h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="audit-details-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <div class="p-4 md:p-5 space-y-4">
+                <div id="audit-details-content">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Audit Modal -->
+<div id="update-audit-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Update Audit
+                </h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="update-audit-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <form id="updateAuditForm" method="post">
+                {% csrf_token %}
+                <div class="p-4 md:p-5 space-y-4">
+                    <div id="update-audit-content">
+                        <!-- Content will be loaded here -->
+                    </div>
+                </div>
+                <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Update Audit</button>
+                    <button type="button" data-modal-hide="update-audit-modal" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global functions for audit management
+function viewAuditDetails(auditId) {
+    fetch(`/compliance/audits/${auditId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ID</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.id}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Title</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.title}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Type</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.audit_type}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.status}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Priority</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.priority}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Scheduled Date</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.scheduled_date || 'Not set'}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Completion Date</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.completion_date || 'Not completed'}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Auditor</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.auditor}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.description || 'No description provided'}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Findings</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.findings || 'No findings recorded'}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Created By</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.created_by}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Created At</label>
+                        <p class="mt-1 text-sm text-gray-900">${data.created_at}</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('audit-details-content').innerHTML = content;
+            
+            // Show modal using Flowbite
+            const modal = window.FlowbiteInstances.getInstance('Modal', 'audit-details-modal');
+            if (modal) {
+                modal.show();
+            } else {
+                // Fallback to manual show
+                document.getElementById('audit-details-modal').classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading audit details');
+        });
+}
+
+function editAudit(auditId) {
+    fetch(`/compliance/audits/${auditId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="update_title" class="block text-sm font-medium text-gray-700 mb-1">Audit Title *</label>
+                        <input type="text" name="title" id="update_title" value="${data.title}" required class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50">
+                    </div>
+                    <div>
+                        <label for="update_auditor" class="block text-sm font-medium text-gray-700 mb-1">Auditor *</label>
+                        <input type="text" name="auditor" id="update_auditor" value="${data.auditor}" required class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label for="update_scheduled_date" class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date *</label>
+                        <input type="date" name="scheduled_date" id="update_scheduled_date" value="${data.scheduled_date}" required class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50">
+                    </div>
+                    <div>
+                        <label for="update_completion_date" class="block text-sm font-medium text-gray-700 mb-1">Completion Date</label>
+                        <input type="date" name="completion_date" id="update_completion_date" value="${data.completion_date}" class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label for="update_description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" id="update_description" rows="3" class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50">${data.description || ''}</textarea>
+                </div>
+                <div class="mt-4">
+                    <label for="update_findings" class="block text-sm font-medium text-gray-700 mb-1">Findings</label>
+                    <textarea name="findings" id="update_findings" rows="3" class="w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50">${data.findings || ''}</textarea>
+                </div>
+            `;
+            document.getElementById('update-audit-content').innerHTML = content;
+            document.getElementById('updateAuditForm').action = `/compliance/audits/${auditId}/update/`;
+            
+            // Show modal using Flowbite
+            const modal = window.FlowbiteInstances.getInstance('Modal', 'update-audit-modal');
+            if (modal) {
+                modal.show();
+            } else {
+                // Fallback to manual show
+                document.getElementById('update-audit-modal').classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading audit details');
+        });
+}
+
+// Document ready functions
+document.addEventListener('DOMContentLoaded', function() {
+    // Search and filter form submission
+    const searchForm = document.querySelector('form[method="get"]');
+    if (searchForm) {
+        const searchInput = searchForm.querySelector('input[name="search"]');
+        const filterSelects = searchForm.querySelectorAll('select');
+        
+        // Auto-submit on filter change
+        filterSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                searchForm.submit();
+            });
+        });
+        
+        // Submit on Enter in search input
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchForm.submit();
+                }
+            });
+        }
+    }
+    
+    // New audit form submission
+    const newAuditForm = document.getElementById('newAuditForm');
+    if (newAuditForm) {
+        newAuditForm.addEventListener('submit', function(e) {
+            // Validate required fields
+            const title = document.getElementById('id_title').value.trim();
+            const auditType = document.getElementById('id_audit_type').value;
+            const scheduledDate = document.getElementById('id_scheduled_date').value;
+            const auditor = document.getElementById('id_auditor').value.trim();
+            
+            if (!title || !auditType || !scheduledDate || !auditor) {
+                e.preventDefault();
+                alert('Please fill in all required fields (Title, Audit Type, Scheduled Date, and Auditor).');
+                return false;
+            }
+            
+            // Show loading overlay
+            const overlay = document.getElementById('new-audit-modal-overlay');
+            if (overlay) {
+                overlay.classList.remove('htmx-indicator');
+            }
+        });
+    }
+    
+    // Update audit form submission
+    const updateAuditForm = document.getElementById('updateAuditForm');
+    if (updateAuditForm) {
+        updateAuditForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(updateAuditForm);
+            
+            fetch(updateAuditForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating audit: ' + JSON.stringify(data.errors));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating audit');
+            });
+        });
+    }
+    
+    // Reset form when modal is closed
+    const newAuditModal = document.getElementById('new-audit-modal');
+    if (newAuditModal) {
+        newAuditModal.addEventListener('hidden.bs.modal', function() {
+            const form = document.getElementById('newAuditForm');
+            if (form) {
+                form.reset();
+            }
+        });
+    }
+    
+    // Initialize Flowbite modals
+    if (typeof window.Modal !== 'undefined') {
+        // Initialize all modals
+        const modalElements = [
+            document.getElementById('new-audit-modal'),
+            document.getElementById('audit-details-modal'),
+            document.getElementById('update-audit-modal')
+        ];
+        
+        modalElements.forEach(modalElement => {
+            if (modalElement) {
+                new window.Modal(modalElement);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

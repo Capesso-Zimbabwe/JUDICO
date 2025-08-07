@@ -33,32 +33,41 @@
                 Case Information
             </h3>
         </div>
-        <div class="p-6">
-            <div class="space-y-4">
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Case Number:</div>
-                    <div class="flex-1 text-xs text-gray-900 font-mono">#{{ case.code }}</div>
+        <div class="p-2 md:p-3 space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Case Number -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Case Number</label>
+                    <p class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">#{{ case.code }}</p>
                 </div>
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Client:</div>
-                    <div class="flex-1 text-xs text-gray-900">{{ case.client.name }}</div>
+                
+                <!-- Client -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Client</label>
+                    <p class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">{{ case.client.name }}</p>
                 </div>
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Title:</div>
-                    <div class="flex-1 text-xs text-gray-900">{{ case.title }}</div>
+                
+                <!-- Title -->
+                <div class="col-span-2">
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Title</label>
+                    <p class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">{{ case.title }}</p>
                 </div>
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Case Type:</div>
-                    <div class="flex-1">
+                
+                <!-- Case Type -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Case Type</label>
+                    <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             {{ case.get_case_type_display }}
                         </span>
                     </div>
                 </div>
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Status:</div>
-                    <div class="flex-1">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                
+                <!-- Status -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Status</label>
+                    <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
                             {% if case.status == 'pending' %}bg-yellow-100 text-yellow-800
                             {% elif case.status == 'active' %}bg-green-100 text-green-800
                             {% elif case.status == 'on_hold' %}bg-orange-100 text-orange-800
@@ -73,10 +82,12 @@
                         </span>
                     </div>
                 </div>
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Priority:</div>
-                    <div class="flex-1">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                
+                <!-- Priority -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Priority</label>
+                    <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
                             {% if case.priority == 'low' %}bg-gray-100 text-gray-800
                             {% elif case.priority == 'medium' %}bg-yellow-100 text-yellow-800
                             {% elif case.priority == 'high' %}bg-orange-100 text-orange-800
@@ -89,9 +100,11 @@
                         </span>
                     </div>
                 </div>
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Progress:</div>
-                    <div class="flex-1">
+                
+                <!-- Progress -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Progress</label>
+                    <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <div class="flex items-center">
                             <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
                                 <div class="bg-blue-600 h-2 rounded-full" style="width: {{ case.progress_percentage }}%"></div>
@@ -100,25 +113,31 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Assigned Lawyer:</div>
-                    <div class="flex-1 text-xs text-gray-900">{{ case.assigned_lawyer.get_full_name|default:"Not Assigned" }}</div>
+                
+                <!-- Assigned Lawyer -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Assigned Lawyer</label>
+                    <p class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">{{ case.assigned_lawyer.get_full_name|default:"Not Assigned" }}</p>
                 </div>
+                
                 {% if case.court_date %}
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Court Date:</div>
-                    <div class="flex-1">
-                        <div class="text-xs text-gray-900">{{ case.court_date|date:"F j, Y g:i A" }}</div>
+                <!-- Court Date -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Court Date</label>
+                    <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <div class="text-sm text-gray-900">{{ case.court_date|date:"F j, Y g:i A" }}</div>
                         {% if case.court_location %}
                             <div class="text-xs text-gray-500 mt-1">{{ case.court_location }}</div>
                         {% endif %}
                     </div>
                 </div>
                 {% endif %}
+                
                 {% if case.description %}
-                <div class="flex items-start">
-                    <div class="w-32 text-xs font-medium text-gray-600">Description:</div>
-                    <div class="flex-1 text-xs text-gray-900">{{ case.description }}</div>
+                <!-- Description -->
+                <div class="col-span-2">
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Description</label>
+                    <p class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 min-h-[60px]">{{ case.description }}</p>
                 </div>
                 {% endif %}
             </div>

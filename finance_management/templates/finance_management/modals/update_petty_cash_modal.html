@@ -1,0 +1,92 @@
+<!-- Modal backdrop and container -->
+<div id="{{ modal_id|default:'modal' }}" tabindex="-1" aria-hidden="true" data-modal-backdrop="static"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-sm shadow-sm">
+
+            <!-- Modal header -->
+            <div class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200">
+                <h3 class="text-base font-semibold text-gray-900">
+                    Update Petty Cash Transaction
+                </h3>
+
+                <button type="button"
+                        class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+                        data-modal-hide="{{ modal_id|default:'modal' }}">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+
+            <!-- Modal body -->
+            <div id="{{ modal_id|default:'modal' }}-container" class="p-1 md:p-2 flex flex-col max-h-[80vh] overflow-hidden">
+                <form id="updatePettyCashForm" method="post" action="" enctype="multipart/form-data" class="">
+                    {% csrf_token %}
+                    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="edit-transaction-number" class="block mb-2 text-sm font-medium text-gray-900">Transaction Number</label>
+                                <input type="text" name="transaction_number" id="editTransactionNumber" class="bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" readonly>
+                            </div>
+                            <div>
+                                <label for="edit-transaction-type" class="block mb-2 text-sm font-medium text-gray-900">Transaction Type</label>
+                                <select name="transaction_type" id="editTransactionType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                                    <option value="">Select Type</option>
+                                    <option value="cash_in">Cash In</option>
+                                    <option value="cash_out">Cash Out</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-amount" class="block mb-2 text-sm font-medium text-gray-900">Amount</label>
+                                <input type="number" name="amount" id="editAmount" step="0.01" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" required>
+                            </div>
+                            <div>
+                                <label for="edit-transaction-date" class="block mb-2 text-sm font-medium text-gray-900">Transaction Date</label>
+                                <input type="date" name="transaction_date" id="editTransactionDate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                            </div>
+                            <div>
+                                <label for="edit-recipient" class="block mb-2 text-sm font-medium text-gray-900">Recipient</label>
+                                <input type="text" name="recipient" id="editRecipient" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Recipient name" required>
+                            </div>
+                            <div>
+                                <label for="edit-status" class="block mb-2 text-sm font-medium text-gray-900">Status</label>
+                                <select name="status" id="editStatus" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <label for="edit-description" class="block mb-2 text-sm font-medium text-gray-900">Description</label>
+                                <textarea name="description" id="editDescription" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Transaction description..." required></textarea>
+                            </div>
+                            <div class="col-span-2">
+                                <label for="edit-purpose" class="block mb-2 text-sm font-medium text-gray-900">Purpose</label>
+                                <textarea name="purpose" id="editPurpose" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Purpose of transaction..."></textarea>
+                            </div>
+                            <div class="col-span-2">
+                                <label for="edit-receipt" class="block mb-2 text-sm font-medium text-gray-900">Receipt (Optional)</label>
+                                <input type="file" name="receipt" id="editReceipt" accept=".pdf,.jpg,.jpeg,.png" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <p class="mt-1 text-xs text-gray-500">Accepted formats: PDF, JPG, JPEG, PNG (Max 5MB)</p>
+                                <div id="current-receipt" class="mt-2" style="display: none;">
+                                    <p class="text-sm text-gray-600">Current receipt: <a id="current-receipt-link" href="#" target="_blank" class="text-blue-600 hover:text-blue-800">View</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+                        <button data-modal-hide="{{ modal_id|default:'modal' }}" type="button" class="text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 py-2 px-3 font-medium transition-all duration-200 rounded-none">Cancel</button>
+                        <button type="button" id="deleteTransactionBtn" class="text-xs bg-red-700 text-white py-2 px-3 font-medium hover:bg-red-800 transition-all duration-200 shadow-sm rounded-none">Delete</button>
+                        <button type="submit" form="updatePettyCashForm" class="text-xs bg-blue-900 text-white py-2 px-3 font-medium hover:bg-blue-700 transition-all duration-200 shadow-sm disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed submit-btn rounded-none">Update Transaction</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

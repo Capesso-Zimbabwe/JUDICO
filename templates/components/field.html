@@ -51,11 +51,11 @@
     <!-- Field Widget -->
     <div class="relative">
         {% if field.field.widget.input_type == 'select' %}
-            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-airtable-blue focus:border-transparent appearance-none bg-white form-field disabled:opacity-50 disabled:cursor-not-allowed"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
+            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-airtable-blue focus:border-transparent appearance-none bg-white form-field disabled:opacity-50 disabled:cursor-not-allowed"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
             <i class="bi bi-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none select-arrow"></i>
 
         {% elif field.field.widget.input_type == 'textarea' %}
-            {{ field|add_class:"w-full text-xs px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-airtable-blue focus:border-transparent resize-none form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|attr:"rows:4"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
+            {{ field|add_class:"w-full text-xs px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-airtable-blue focus:border-transparent resize-none form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|attr:"rows:4"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
             {% if field.name == 'description' %}
                 <div class="text-xs text-gray-500 mt-1">
                     <span id="{{ field.id_for_label }}-counter">0</span> characters
@@ -90,23 +90,23 @@
             </div>
 
         {% elif field.field.widget.input_type == 'email' %}
-            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|attr:"placeholder:Enter email address"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
+            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|attr:"placeholder:Enter email address"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
             <i class="bi bi-envelope absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
 
         {% elif field.field.widget.input_type == 'url' %}
-            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|attr:"placeholder:https://example.com"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
+            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|attr:"placeholder:https://example.com"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
             <i class="bi bi-link-45deg absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
 
         {% elif field.field.widget.input_type == 'date' %}
-            {{ field|add_class:"w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
+            {{ field|add_class:"w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
             <i class="bi bi-calendar absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
 
         {% elif field.field.widget.input_type == 'number' %}
-            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
+            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
             <i class="bi bi-hash absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
 
         {% else %}
-            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
+            {{ field|add_class:"w-full text-sm px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-1 focus:ring-airtable-blue focus:border-transparent form-field disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"|add_error_class:"focus-red-700 bg-red-50 border-red-500" }}
         {% endif %}
     </div>
 
