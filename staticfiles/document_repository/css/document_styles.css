@@ -1,0 +1,97 @@
+/* Document Repository Styles */
+
+/* Custom Colors */
+:root {
+    --primary-blue: #3B82F6;
+    --success-green: #34D399;
+    --warning-yellow: #FBBF24;
+    --danger-red: #F87171;
+    --purple: #8B5CF6;
+    --orange: #f58020;
+    --gray-light: #F3F4F6;
+    --gray-medium: #9CA3AF;
+    --gray-dark: #4B5563;
+}
+
+/* Document Dashboard Cards */
+.bg-custom-orange {
+    background-color: #f58020;
+}
+
+.text-custom-orange {
+    color: #f58020;
+}
+
+.border-custom-orange {
+    border-color: #f58020;
+}
+
+.hover\:border-custom-orange:hover {
+    border-color: #f58020;
+}
+
+.focus\:ring-custom-orange:focus {
+    --tw-ring-color: #f58020;
+}
+
+.focus\:border-custom-orange:focus {
+    border-color: #f58020;
+}
+
+/* Document Card Hover Effect */
+.document-card {
+    transition: all 0.3s ease;
+}
+
+.document-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Category Card Hover Effect */
+.category-card {
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+
+.category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Search Suggestions Dropdown */
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+    border-radius: 0 0 0.5rem 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    display: none;
+}
+
+.search-suggestion-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.search-suggestion-item:hover {
+    background-color: #f9fafb;
+}
+
+.search-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}

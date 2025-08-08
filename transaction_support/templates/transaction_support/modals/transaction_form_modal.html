@@ -1,0 +1,121 @@
+<!-- Transaction Form Modal -->
+<div id="transaction-form-modal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Add New Transaction
+                </h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="transaction-form-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+
+            <!-- Modal body -->
+            <form id="transactionForm" method="post" action="{% url 'transaction_support:transaction_create' %}" hx-post="{% url 'transaction_support:transaction_create' %}" hx-target="[block='transaction_content']" hx-swap="outerHTML" hx-indicator="#transaction-form-modal-overlay">
+                {% csrf_token %}
+                <div class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Transaction Name -->
+                            <div>
+                                <label for="transaction-name" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Transaction Name*</label>
+                                <input type="text" id="transaction-name" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter transaction name" required>
+                            </div>
+                            
+                            <!-- Transaction Type -->
+                            <div>
+                                <label for="transaction-type" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Transaction Type*</label>
+                                <select id="transaction-type" name="transaction_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                                    <option value="">Select transaction type</option>
+                                    <option value="acquisition">Acquisition</option>
+                                    <option value="merger">Merger</option>
+                                    <option value="joint_venture">Joint Venture</option>
+                                    <option value="divestiture">Divestiture</option>
+                                    <option value="financing">Financing</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Client -->
+                            <div>
+                                <label for="client" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Client*</label>
+                                <select id="client" name="client" class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                                    <option value="">Select client</option>
+                                    <option value="1">Acme Corporation</option>
+                                    <option value="2">Globex Industries</option>
+                                    <option value="3">Stark Enterprises</option>
+                                    <option value="4">Wayne Enterprises</option>
+                                    <option value="5">Umbrella Corporation</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Transaction Value -->
+                            <div>
+                                <label for="transaction-value" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Transaction Value ($)</label>
+                                <input type="number" id="transaction-value" name="value" min="0" step="0.01" class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter transaction value">
+                            </div>
+                            
+                            <!-- Expected Completion Date -->
+                            <div>
+                                <label for="completion-date" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Expected Completion Date*</label>
+                                <input type="date" id="completion-date" name="completion_date" class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                            </div>
+                            
+                            <!-- Priority -->
+                            <div>
+                                <label for="priority" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Priority</label>
+                                <select id="priority" name="priority" class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                                    <option value="">Select priority</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-span-2">
+                                <label for="description" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Description</label>
+                                <textarea id="description" name="description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter transaction description"></textarea>
+                            </div>
+                            
+                            <!-- Lead Attorney -->
+                            <div>
+                                <label for="lead-attorney" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Lead Attorney*</label>
+                                <select id="lead-attorney" name="lead_attorney" class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                                    <option value="">Select lead attorney</option>
+                                    <option value="1">John Smith</option>
+                                    <option value="2">Sarah Johnson</option>
+                                    <option value="3">Michael Brown</option>
+                                    <option value="4">Emily Davis</option>
+                                    <option value="5">Robert Wilson</option>
+                                </select>
+                            </div>
+                        </div>
+                </div>
+                <!-- Modal footer -->
+                <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+                    <button type="submit" class="w-full text-xs bg-blue-900 text-white py-2 px-3 font-medium hover:bg-blue-700 transition-all duration-200 shadow-sm disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed submit-btn rounded-none">Create Transaction</button>
+                    <button type="button" data-modal-hide="transaction-form-modal" class="w-full text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 py-2 px-3 font-medium transition-all duration-200 rounded-none">Cancel</button>
+                </div>
+            </form>
+
+            <div id="transaction-form-modal-overlay" class="htmx-indicator absolute inset-0 bg-gray-50/60 rounded-sm p-6 flex items-center justify-center shadow-xl backdrop-blur-sm">
+                <div class="bg-white rounded-md p-12 shadow-xl max-w-sm mx-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <div class="text-gray-900">
+                            <div class="font-medium">Loading...</div>
+                            <div class="text-sm text-gray-500">Please wait</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

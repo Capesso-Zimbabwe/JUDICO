@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction Support{% endblock %}
+
+{% load static %}
+
+{% block header_title %}Transaction Support - Dashboard{% endblock header_title %}
+
+{% block content %}
+<!-- Navigation header with improved styling -->
+<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
+    <nav class="flex space-x-2 px-6 pt-3">
+        <a href="{% url 'transaction_support:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'transaction_support:transaction_list' %}" class="{% if request.resolver_match.url_name == 'transaction_list' or request.resolver_match.url_name == 'transaction_form' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Transactions
+        </a>
+    </nav>
+</div>
+
+{% block transaction_content %}{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,218 @@
+/* Document Repository Styles */
+
+/* Custom Colors */
+:root {
+    --primary-blue: #3B82F6;
+    --success-green: #34D399;
+    --warning-yellow: #FBBF24;
+    --danger-red: #F87171;
+    --purple: #8B5CF6;
+    --orange: #f58020;
+    --gray-light: #F3F4F6;
+    --gray-medium: #9CA3AF;
+    --gray-dark: #4B5563;
+    --table-border: #e5e7eb;
+    --table-header-bg: #f9fafb;
+    --table-hover-bg: #f3f4f6;
+}
+
+/* Navigation styles - matching governance module */
+.document-nav {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Document Dashboard Cards */
+.bg-custom-orange {
+    background-color: #f58020;
+}
+
+.text-custom-orange {
+    color: #f58020;
+}
+
+.border-custom-orange {
+    border-color: #f58020;
+}
+
+.hover\:border-custom-orange:hover {
+    border-color: #f58020;
+}
+
+.focus\:ring-custom-orange:focus {
+    --tw-ring-color: #f58020;
+}
+
+.focus\:border-custom-orange:focus {
+    border-color: #f58020;
+}
+
+/* Document Card Hover Effect */
+.document-card {
+    transition: all 0.3s ease;
+}
+
+.document-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Category Card Hover Effect */
+.category-card {
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+
+.category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Search Suggestions Dropdown */
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+    border-radius: 0 0 0.5rem 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    display: none;
+}
+
+.search-suggestion-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.search-suggestion-item:hover {
+    background-color: #f9fafb;
+}
+
+.search-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+/* Table Styles */
+.document-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.document-table thead {
+    background-color: var(--table-header-bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.document-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-dark);
+    border-bottom: 1px solid var(--table-border);
+}
+
+.document-table td {
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--table-border);
+    vertical-align: middle;
+}
+
+.document-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.document-table tbody tr:hover {
+    background-color: var(--table-hover-bg);
+}
+
+.document-table .action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.document-table .view-button {
+    background-color: #e6f0ff;
+    color: var(--primary-blue);
+}
+
+.document-table .view-button:hover {
+    background-color: #d1e2ff;
+}
+
+.document-table .download-button {
+    background-color: var(--gray-light);
+    color: var(--gray-dark);
+}
+
+.document-table .download-button:hover {
+    background-color: #e5e7eb;
+}
+
+/* Compact table styles */
+.compact-table {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.compact-table::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.compact-table::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.compact-table::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+/* Button styles - matching governance module */
+.btn-document {
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+}
+
+.btn-document:hover {
+    background-color: #2563eb;
+}
+
+/* Table styles - matching governance module */
+.document-table {
+    border-collapse: collapse;
+}
+
+.document-table th,
+.document-table td {
+    border: 1px solid #e5e7eb;
+    padding: 0.75rem;
+}

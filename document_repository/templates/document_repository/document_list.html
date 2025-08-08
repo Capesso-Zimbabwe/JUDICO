@@ -35,28 +35,30 @@
     </div>
 
     <!-- Documents Table -->
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
         <!-- Table Header -->
-        <div class="bg-white text-black px-6 py-3">
-            <h2 class="text-sm font-bold">All Documents</h2>
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <h2 class="text-sm font-bold text-black m-0">All Documents</h2>
         </div>
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
         
         {% if page_obj %}
-            <table class="min-w-full">
-                <thead class="bg-gray-50">
+            <table class="min-w-full document-table">
+                <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">DOCUMENT</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">CATEGORY</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">SIZE</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">UPLOADED</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">MODIFIED</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ACTIONS</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Document</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Category</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Size</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Uploaded</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Modified</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white">
+                <tbody class="bg-white divide-y divide-gray-200">
                     {% for document in page_obj %}
-                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                         <td class="px-6 py-4">
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                         <td class="px-3 py-1 whitespace-nowrap">
                              <div class="flex items-center">
                                  <div class="flex-shrink-0 h-10 w-10">
                                      <div class="bg-blue-100 h-10 w-10 rounded-full flex items-center justify-center">
@@ -81,27 +83,27 @@
                                  </div>
                              </div>
                          </td>
-                         <td class="px-6 py-4">
+                         <td class="px-3 py-1 whitespace-nowrap">
                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                  {{ document.category.name|default:"Uncategorized" }}
                              </span>
                          </td>
-                         <td class="px-6 py-4 text-sm text-gray-900">
+                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
                              {{ document.file_size_mb }} MB
                          </td>
-                         <td class="px-6 py-4 text-sm text-gray-900">
+                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
                              {{ document.uploaded_at|date:"M d, Y" }}
                          </td>
-                         <td class="px-6 py-4 text-sm text-gray-900">
+                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
                              {{ document.updated_at|date:"M d, Y" }}
                          </td>
-                         <td class="px-6 py-4">
+                         <td class="px-3 py-1 whitespace-nowrap">
                              <div class="flex items-center space-x-2">
-                                 <a href="{{ document.file.url }}" target="_blank" class="bg-blue-100 hover:bg-blue-200 text-blue-600 px-3 py-1 rounded text-xs font-medium">
-                                     View
+                                 <a href="{{ document.file.url }}" target="_blank" class="action-button view-button">
+                                     <i class="fas fa-eye mr-1"></i> View
                                  </a>
-                                 <a href="{{ document.file.url }}" download class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1 rounded text-xs font-medium">
-                                     Download
+                                 <a href="{{ document.file.url }}" download class="action-button download-button">
+                                     <i class="fas fa-download mr-1"></i> Download
                                  </a>
                              </div>
                          </td>
@@ -109,44 +111,52 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
+        </div>
         {% else %}
-            <div class="p-8 text-center">
-                <div class="text-gray-400 mb-4">
-                    <i class="fas fa-folder-open fa-2x"></i>
+            <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+                <div class="p-8 text-center">
+                    <div class="text-gray-400 mb-4">
+                        <i class="fas fa-folder-open fa-2x"></i>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-900 mb-1">No Documents Available</h3>
+                    <p class="text-xs text-gray-600 mb-4">Upload your first document to get started</p>
+                    <a href="{% url 'document_repository:document_upload' %}" class="bg-custom-orange hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 text-xs inline-flex items-center">
+                        <i class="fas fa-upload mr-1"></i>Upload Document
+                    </a>
                 </div>
-                <h3 class="text-sm font-medium text-gray-900 mb-1">No Documents Available</h3>
-                <p class="text-xs text-gray-600 mb-4">Upload your first document to get started</p>
-                <a href="{% url 'document_repository:document_upload' %}" class="bg-custom-orange hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 text-xs inline-flex items-center">
-                    <i class="fas fa-upload mr-1"></i>Upload Document
-                </a>
             </div>
         {% endif %}
     </div>
 
     <!-- Pagination -->
     {% if page_obj.has_other_pages %}
-    <div class="flex justify-center mt-6">
-        <nav class="flex space-x-1" aria-label="Pagination">
+    <div class="flex justify-center py-3 border-t border-gray-200 bg-white">
+        <div class="flex space-x-1">
             {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-medium">
-                Previous
-            </a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center">
+                    <i class="fas fa-chevron-left text-xs"></i>
+                </a>
             {% endif %}
             
             {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-            <span class="px-3 py-2 rounded-lg bg-custom-orange text-white text-xs font-medium">{{ num }}</span>
-            {% else %}
-            <a href="?page={{ num }}" class="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-medium">{{ num }}</a>
-            {% endif %}
+                {% if page_obj.number == num %}
+                    <a href="?page={{ num }}" class="px-2 py-1 rounded text-xs bg-custom-orange text-white font-medium">
+                        {{ num }}
+                    </a>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}" class="px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 text-gray-700">
+                        {{ num }}
+                    </a>
+                {% endif %}
             {% endfor %}
-
+            
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-medium">
-                Next
-            </a>
+                <a href="?page={{ page_obj.next_page_number }}" class="px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                </a>
             {% endif %}
-        </nav>
+        </div>
     </div>
     {% endif %}
 </div>
