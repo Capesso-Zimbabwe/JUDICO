@@ -1,0 +1,95 @@
+<!-- Task Form Modal Template -->
+<div class="relative bg-white rounded-lg shadow dark:bg-gray-700 w-full max-w-2xl mx-auto">
+    <!-- Modal header -->
+    <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {% if task %}Edit Task{% else %}Add New Task{% endif %}
+        </h3>
+        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="new-modal">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+            <span class="sr-only">Close modal</span>
+        </button>
+    </div>
+    <!-- Modal body -->
+    <div class="p-4 md:p-5 space-y-4">
+        <form method="post" action="{% if task %}{% url 'task_update' task.id %}{% else %}{% url 'task_create' %}{% endif %}" class="space-y-4">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Title Field -->
+                <div class="col-span-2">
+                    <label for="id_title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ form.title.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Client Field -->
+                <div>
+                    <label for="id_client" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Client</label>
+                    {{ form.client }}
+                    {% if form.client.errors %}
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ form.client.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Assigned To Field -->
+                <div>
+                    <label for="id_assigned_to" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Assigned To</label>
+                    {{ form.assigned_to }}
+                    {% if form.assigned_to.errors %}
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ form.assigned_to.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Status Field -->
+                <div>
+                    <label for="id_status" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ form.status.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Priority Field -->
+                <div>
+                    <label for="id_priority" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Priority</label>
+                    {{ form.priority }}
+                    {% if form.priority.errors %}
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ form.priority.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Due Date Field -->
+                <div class="col-span-2">
+                    <label for="id_due_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Due Date</label>
+                    {{ form.due_date }}
+                    {% if form.due_date.errors %}
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ form.due_date.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Description Field -->
+                <div class="col-span-2">
+                    <label for="id_description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ form.description.errors }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <button type="button" class="px-4 py-2 text-sm font-medium text-gray-500 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600" data-modal-hide="new-modal">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    {% if task %}Update Task{% else %}Create Task{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

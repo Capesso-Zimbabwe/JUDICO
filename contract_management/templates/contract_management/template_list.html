@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block title %}Contract Templates{% endblock %}
-
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
 <style>
     .page-header {
         background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
@@ -152,206 +152,311 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="h2 mb-2">Contract Templates</h1>
-                <p class="mb-0 opacity-75">Manage and use pre-built contract templates to streamline contract creation</p>
+<!-- Navigation header with improved styling -->
+<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
+    <nav class="flex space-x-2 px-6 pt-3">
+        <a href="{% url 'contract_management:contract_dashboard' %}" class="{% if request.resolver_match.url_name == 'contract_dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'contract_management:contract_list' %}" class="{% if request.resolver_match.url_name == 'contract_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            All Contracts
+        </a>
+        <a href="{% url 'contract_management:template_list' %}" class="{% if request.resolver_match.url_name == 'template_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Templates
+        </a>
+    </nav>
+</div>
+
+<!-- Page Header -->
+<div class="bg-white rounded-sm shadow-md p-4 mb-4">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-semibold text-gray-800">Contract Templates</h1>
+            <p class="text-sm text-gray-600">Manage and use pre-built contract templates to streamline contract creation</p>
+        </div>
+        <div>
+            <a href="{% url 'contract_management:template_create' %}" class="p-2 flex gap-1 items-center bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"></path>
+                </svg>
+                <span class="font-bold text-sm">Create Template</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <div class="bg-white rounded-lg shadow p-3">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-semibold text-gray-700">Total Templates</h3>
+                <p class="text-2xl font-bold">{{ total_templates }}</p>
             </div>
-            <div class="col-md-4 text-end">
-                <a href="{% url 'contract_management:template_create' %}" class="btn btn-light btn-lg">
-                    <i class="fas fa-plus me-2"></i>Create Template
-                </a>
+            <div class="bg-blue-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
             </div>
         </div>
     </div>
-
-    <!-- Statistics -->
-    <div class="stats-row">
-        <div class="stat-card">
-            <div class="stat-number">{{ total_templates }}</div>
-            <div class="stat-label">Total Templates</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ categories_count }}</div>
-            <div class="stat-label">Categories</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ recent_templates }}</div>
-            <div class="stat-label">Added This Month</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ most_used_count }}</div>
-            <div class="stat-label">Most Used</div>
+    
+    <div class="bg-white rounded-lg shadow p-3">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-semibold text-gray-700">Categories</h3>
+                <p class="text-2xl font-bold">{{ categories_count }}</p>
+            </div>
+            <div class="bg-purple-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+            </div>
         </div>
     </div>
-
-    <!-- Search and Filters -->
-    <div class="search-filters">
-        <form method="get" class="row align-items-end">
-            <div class="col-md-4">
-                <div class="filter-group">
-                    <label for="search" class="form-label fw-bold">Search Templates</label>
-                    <input type="text" class="form-control" id="search" name="search" 
-                           placeholder="Search by name or description..." value="{{ request.GET.search }}">
-                </div>
+    
+    <div class="bg-white rounded-lg shadow p-3">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-semibold text-gray-700">Added This Month</h3>
+                <p class="text-2xl font-bold">{{ recent_templates }}</p>
             </div>
-            <div class="col-md-3">
-                <div class="filter-group">
-                    <label for="category" class="form-label fw-bold">Category</label>
-                    <select class="form-control" id="category" name="category">
-                        <option value="">All Categories</option>
-                        {% for category in categories %}
-                        <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
-                            {{ category }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+            <div class="bg-green-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
             </div>
-            <div class="col-md-3">
-                <div class="filter-group">
-                    <label for="sort" class="form-label fw-bold">Sort By</label>
-                    <select class="form-control" id="sort" name="sort">
-                        <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
-                        <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
-                        <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name A-Z</option>
-                        <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>Name Z-A</option>
-                        <option value="category" {% if request.GET.sort == 'category' %}selected{% endif %}>Category</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="filter-group">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search me-2"></i>Filter
-                    </button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
+        <div class="bg-white rounded-lg shadow p-3">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xs font-semibold text-gray-700">Most Used</h3>
+                <p class="text-2xl font-bold">{{ most_used_count }}</p>
+            </div>
+            <div class="bg-yellow-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <!-- Templates List -->
-    {% if templates %}
-        <div class="row">
-            {% for template in templates %}
-            <div class="col-lg-6 col-xl-4">
-                <div class="template-card">
-                    <div class="template-header">
-                        <div>
-                            <div class="template-title">{{ template.name }}</div>
-                            <span class="template-category">{{ template.category }}</span>
-                        </div>
-                        <div class="template-actions">
-                            <div class="dropdown">
-                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" 
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" href="{% url 'contract_management:contract_create' %}?template={{ template.pk }}">
-                                            <i class="fas fa-plus me-2"></i>Use Template
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" onclick="previewTemplate({{ template.pk }})">
-                                            <i class="fas fa-eye me-2"></i>Preview
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" onclick="editTemplate({{ template.pk }})">
-                                            <i class="fas fa-edit me-2"></i>Edit
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item text-danger" href="#" onclick="deleteTemplate({{ template.pk }})">
-                                            <i class="fas fa-trash me-2"></i>Delete
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="template-description">
-                        {{ template.description|truncatewords:20 }}
-                    </div>
-                    
-                    {% if template.default_terms %}
-                    <div class="mb-3">
-                        <small class="text-muted">
-                            <i class="fas fa-list-alt me-1"></i>Includes default terms and conditions
-                        </small>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="template-meta">
-                        <div>
-                            <i class="fas fa-calendar me-1"></i>
-                            {{ template.created_at|date:"M d, Y" }}
-                        </div>
-                        <div>
-                            <a href="{% url 'contract_management:contract_create' %}?template={{ template.pk }}" 
-                               class="btn btn-use btn-template">
-                                <i class="fas fa-plus me-2"></i>Use Template
+<!-- Search and Filters -->
+<div class="bg-white rounded-sm shadow-md p-4 mb-4">
+    <form method="get" class="flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[200px]">
+            <label for="search" class="block text-xs font-medium text-gray-700 mb-1">Search Templates</label>
+            <div class="relative">
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                       id="search" name="search" placeholder="Search by name or description..." value="{{ request.GET.search }}">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1 min-w-[200px]">
+            <label for="category" class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+            <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    id="category" name="category">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
+                    {{ category }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex-1 min-w-[200px]">
+            <label for="sort" class="block text-xs font-medium text-gray-700 mb-1">Sort By</label>
+            <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    id="sort" name="sort">
+                <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+                <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name A-Z</option>
+                <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>Name Z-A</option>
+                <option value="category" {% if request.GET.sort == 'category' %}selected{% endif %}>Category</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                </svg>
+                <span>Filter</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Templates List -->
+{% if templates %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for template in templates %}
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
+        <div class="flex justify-between items-start mb-3">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800">{{ template.name }}</h3>
+                <span class="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">{{ template.category }}</span>
+            </div>
+            <div class="relative">
+                <button id="dropdownButton-{{ template.pk }}" data-dropdown-toggle="dropdown-{{ template.pk }}" class="p-1.5 text-gray-500 rounded hover:bg-gray-100">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
+                        <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                    </svg>
+                </button>
+                <div id="dropdown-{{ template.pk }}" class="hidden absolute right-0 z-10 mt-2 w-44 bg-white rounded divide-y divide-gray-100 shadow">
+                    <ul class="py-1 text-sm text-gray-700">
+                        <li>
+                            <a href="{% url 'contract_management:contract_create' %}?template={{ template.pk }}" class="block py-2 px-4 hover:bg-gray-100">
+                                <svg class="w-4 h-4 inline-block mr-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16"/>
+                                </svg>
+                                Use Template
                             </a>
-                        </div>
-                    </div>
+                        </li>
+                        <li>
+                            <a href="#" onclick="previewTemplate({{ template.pk }})" class="block py-2 px-4 hover:bg-gray-100">
+                                <svg class="w-4 h-4 inline-block mr-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 14">
+                                    <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                                        <path d="M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                                        <path d="M10 13c4.97 0 9-2.686 9-6s-4.03-6-9-6-9 2.686-9 6 4.03 6 9 6Z"/>
+                                    </g>
+                                </svg>
+                                Preview
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="editTemplate({{ template.pk }})" class="block py-2 px-4 hover:bg-gray-100">
+                                <svg class="w-4 h-4 inline-block mr-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m13.835 7.578-.005.007-7.137 7.137 2.139 2.138 7.143-7.142-2.14-2.14Zm-10.696 3.59 2.139 2.14m7.142-7.143 2.139 2.14M4.282 16.713l2.138-2.138"/>
+                                </svg>
+                                Edit
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="deleteTemplate({{ template.pk }})" class="block py-2 px-4 text-red-600 hover:bg-gray-100">
+                                <svg class="w-4 h-4 inline-block mr-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z"/>
+                                </svg>
+                                Delete
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
-            {% endfor %}
         </div>
         
-        <!-- Pagination -->
-        {% if is_paginated %}
-        <nav aria-label="Templates pagination" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
-                    </li>
-                {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ num }}</span>
-                        </li>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <li class="page-item">
-                            <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ num }}">{{ num }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
+        <div class="text-sm text-gray-600 mb-4">
+            {{ template.description|truncatewords:20 }}
+        </div>
+        
+        {% if template.default_terms %}
+        <div class="mb-3">
+            <span class="text-xs text-gray-500 flex items-center">
+                <svg class="w-4 h-4 mr-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 5H2m16 5H2m16 5H2"/>
+                </svg>
+                Includes default terms and conditions
+            </span>
+        </div>
         {% endif %}
-    {% else %}
-        <div class="empty-state">
-            <i class="fas fa-file-contract"></i>
-            <h4>No Contract Templates Found</h4>
-            <p class="mb-4">{% if request.GET.search or request.GET.category %}No templates match your current filters.{% else %}Get started by creating your first contract template.{% endif %}</p>
-            {% if request.GET.search or request.GET.category %}
-                <a href="{% url 'contract_management:template_list' %}" class="btn btn-outline-primary me-3">
-                    <i class="fas fa-times me-2"></i>Clear Filters
+        
+        <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+            <div class="text-xs text-gray-500 flex items-center">
+                <svg class="w-4 h-4 mr-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1v3m5-3v3m5-3v3M1 7h18M5 11h10M2 3h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/>
+                </svg>
+                {{ template.created_at|date:"M d, Y" }}
+            </div>
+            <a href="{% url 'contract_management:contract_create' %}?template={{ template.pk }}" 
+               class="px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded hover:bg-green-600 transition-colors duration-200 flex items-center gap-1">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16"/>
+                </svg>
+                Use Template
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+        </div>
+        
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="flex justify-center mt-6">
+    <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        {% if page_obj.has_previous %}
+            <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <span class="sr-only">Previous</span>
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+            </a>
+        {% else %}
+            <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                <span class="sr-only">Previous</span>
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+            </span>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
+                    {{ num }}
+                </span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    {{ num }}
                 </a>
             {% endif %}
-            <a href="{% url 'contract_management:template_create' %}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Create First Template
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <span class="sr-only">Next</span>
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+            </a>
+        {% else %}
+            <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                <span class="sr-only">Next</span>
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+            </span>
+        {% endif %}
+    </nav>
+</div>
+{% endif %}
+    {% else %}
+        <div class="flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-sm mt-6">
+            <div class="rounded-full bg-gray-100 p-6 mb-4">
+                <svg class="h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No Contract Templates Found</h3>
+            <p class="text-gray-500 mb-6 text-center">{% if request.GET.search or request.GET.category %}No templates match your current filters.{% else %}Get started by creating your first contract template.{% endif %}</p>
+            {% if request.GET.search or request.GET.category %}
+                <a href="{% url 'contract_management:template_list' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3">
+                    <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Clear Filters
+                </a>
+            {% endif %}
+            <a href="{% url 'contract_management:template_create' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Create First Template
             </a>
         </div>
     {% endif %}

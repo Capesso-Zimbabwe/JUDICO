@@ -7,7 +7,7 @@
     <!-- Mobile pagination -->
     <div class="flex-1 flex justify-between sm:hidden">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.contract_type %}&contract_type={{ request.GET.contract_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}{% if request.GET.assigned_lawyer %}&assigned_lawyer={{ request.GET.assigned_lawyer }}{% endif %}" 
                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -16,7 +16,7 @@
             </a>
         {% endif %}
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.contract_type %}&contract_type={{ request.GET.contract_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}{% if request.GET.assigned_lawyer %}&assigned_lawyer={{ request.GET.assigned_lawyer }}{% endif %}" 
                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
                 Next
                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@
             <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 <!-- First page -->
                 {% if page_obj.has_previous %}
-                    <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+                    <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.contract_type %}&contract_type={{ request.GET.contract_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}{% if request.GET.assigned_lawyer %}&assigned_lawyer={{ request.GET.assigned_lawyer }}{% endif %}" 
                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200" 
                        title="First page">
                         <span class="sr-only">First</span>
@@ -54,7 +54,7 @@
                     </a>
                     
                     <!-- Previous page -->
-                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.contract_type %}&contract_type={{ request.GET.contract_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}{% if request.GET.assigned_lawyer %}&assigned_lawyer={{ request.GET.assigned_lawyer }}{% endif %}" 
                        class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200" 
                        title="Previous page">
                         <span class="sr-only">Previous</span>
@@ -72,13 +72,13 @@
                             {{ num }}
                         </span>
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+                        <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.contract_type %}&contract_type={{ request.GET.contract_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}{% if request.GET.assigned_lawyer %}&assigned_lawyer={{ request.GET.assigned_lawyer }}{% endif %}" 
                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200">
                             {{ num }}
                         </a>
                     {% elif num == 1 or num == page_obj.paginator.num_pages %}
                         {% if num != page_obj.number %}
-                            <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+                            <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.contract_type %}&contract_type={{ request.GET.contract_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}{% if request.GET.assigned_lawyer %}&assigned_lawyer={{ request.GET.assigned_lawyer }}{% endif %}" 
                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200">
                                 {{ num }}
                             </a>
@@ -92,7 +92,7 @@
 
                 <!-- Next page -->
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.contract_type %}&contract_type={{ request.GET.contract_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}{% if request.GET.assigned_lawyer %}&assigned_lawyer={{ request.GET.assigned_lawyer }}{% endif %}" 
                        class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200" 
                        title="Next page">
                         <span class="sr-only">Next</span>
@@ -102,7 +102,7 @@
                     </a>
                     
                     <!-- Last page -->
-                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.contract_type %}&contract_type={{ request.GET.contract_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}{% if request.GET.assigned_lawyer %}&assigned_lawyer={{ request.GET.assigned_lawyer }}{% endif %}" 
                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200" 
                        title="Last page">
                         <span class="sr-only">Last</span>

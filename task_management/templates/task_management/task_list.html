@@ -2,49 +2,201 @@
 
 {% block title %}JUDICO - Task Management{% endblock %}
 
-{% block header_title %}Task Management - Task List{% endblock %}
+{% block extra_js %}
+<script>
+    // Initialize modals
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the details modal
+        window.detailsModal = new Modal(document.getElementById('details-modal'));
+        
+        // Initialize the new modal
+        window.newModal = new Modal(document.getElementById('new-modal'));
+    });
+    
+    // Show modal when HTMX content is loaded
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'details-modal-container') {
+            window.detailsModal.show();
+        }
+        if (event.detail.target.id === 'new-modal-container') {
+            window.newModal.show();
+        }
+    });
+</script>
+{% endblock %}
+
+{% block header_title %}Task Management - All Tasks{% endblock %}
 
 {% block task_content %}
-<!-- Task Header with proper spacing -->
-<div class="mb-6 flex justify-between items-center">
-    <h1 class="text-2xl font-semibold text-gray-900">{% if status %}{{ status|title }} {% endif %}Tasks</h1>
-    <a href="{% url 'task_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-        </svg>
-        Add New Task
-    </a>
+
+<!-- Task Management Table - Pixel perfect match to client_list.html -->
+<div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+    <div class="bg-white px-4 py-3 flex items-center justify-between">
+        <form action="" class="flex-1 max-w-sm" id="search-form">
+            {% include "components/field.html" with hide_label=True field=search_form.search %}
+        </form>
+        <a hx-get="{% url 'task_create' %}"
+           hx-target="#new-modal-container"
+           hx-indicator="#new-modal-overlay"
+           hx-trigger="click"
+           data-modal-target="new-modal" data-modal-toggle="new-modal"
+           href="{% url 'task_create' %}" class="p-2 flex gap-1">
+            <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                 height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 12h14m-7 7V5"></path>
+            </svg>
+            <span class="font-bold">Add New Task</span>
+        </a>
+    </div>
+    <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+        <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+            {% if tasks %}
+            <table class="w-full divide-y divide-gray-200" id="tasksTable">
+                <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                <tr>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Task Title
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Client
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Assigned To
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Status
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Priority
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Due Date
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Actions
+                    </th>
+                </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                {% for task in tasks %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-3 py-1 whitespace-nowrap">
+                            <button type="button"
+                                    class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                    hx-target="#details-modal-container"
+                                    hx-trigger="click"
+                                    hx-get="{% url 'task_detail' task.id %}"
+                                    hx-indicator="#details-modal-overlay"
+                                    onclick="window.detailsModal.show()"
+                            >
+                                <div class="flex-shrink-0 h-8 w-8">
+                                    <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span class="text-blue-600 font-medium text-xs">{{ task.title|first|upper }}</span>
+                                    </div>
+                                </div>
+                                <div class="ml-2">
+                                    <div class="text-xs font-medium text-gray-900">
+                                        <span>{{ task.title|truncatechars:20 }}</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </td>
+                        <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">{{ task.client.name|default:"-" }}</td>
+                        <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                            {% if task.assigned_to %}
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-6 w-6">
+                                        <div class="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                            <span class="text-green-600 font-medium text-xs">{{ task.assigned_to.get_full_name|first|upper|default:task.assigned_to.username|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-1">
+                                        <span class="text-xs font-medium text-gray-900">{{ task.assigned_to.get_full_name|default:task.assigned_to.username|truncatechars:15 }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="text-xs text-gray-500">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-1 whitespace-nowrap">
+                            {% if task.status == 'pending' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                            {% elif task.status == 'in_progress' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">In Progress</span>
+                            {% elif task.status == 'completed' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                            {% elif task.status == 'on_hold' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">On Hold</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-1 whitespace-nowrap">
+                            {% if task.priority == 'low' %}
+                                <span class="text-xs text-green-600">Low</span>
+                            {% elif task.priority == 'medium' %}
+                                <span class="text-xs text-yellow-600">Medium</span>
+                            {% elif task.priority == 'high' %}
+                                <span class="text-xs text-orange-600">High</span>
+                            {% elif task.priority == 'urgent' %}
+                                <span class="text-xs text-red-600 font-semibold">Urgent</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">{{ task.due_date|date:"M d, Y" }}</td>
+                        <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'task_detail' task.id %}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                   title="View Task">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'task_update' task.id %}"
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                   title="Edit Task">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <!-- Empty state with consistent styling -->
+            <div class="bg-white p-8 text-center">
+                <p class="text-gray-500 text-sm mb-4">No tasks found.</p>
+                <a hx-get="{% url 'task_create' %}"
+                   hx-target="#new-modal-container"
+                   hx-indicator="#new-modal-overlay"
+                   hx-trigger="click"
+                   data-modal-target="new-modal" data-modal-toggle="new-modal"
+                   href="{% url 'task_create' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                    Create your first task
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% include 'components/paginator.html' %}
 </div>
 
-<!-- Stats Section -->
-<div class="p-8 mt-5 bg-gray-50 p-5 mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Total Tasks Card -->
-        <div class="bg-white rounded-lg p-6 shadow-sm">
-            <h3 class="text-gray-500 text-sm font-medium mb-2">Total Tasks</h3>
-            <p class="text-3xl font-semibold text-gray-900">{{ tasks|length }}</p>
-        </div>
-
-        <!-- Pending Tasks Card -->
-        <div class="bg-white rounded-lg p-6 shadow-sm">
-            <h3 class="text-gray-500 text-sm font-medium mb-2">Pending Tasks</h3>
-            <p class="text-3xl font-semibold text-gray-900">{{ pending_tasks }}</p>
-        </div>
-
-        <!-- In Progress Tasks Card -->
-        <div class="bg-white rounded-lg p-6 shadow-sm">
-            <h3 class="text-gray-500 text-sm font-medium mb-2">In Progress</h3>
-            <p class="text-3xl font-semibold text-gray-900">{{ in_progress_tasks }}</p>
-        </div>
-
-        <!-- Completed Tasks Card -->
-        <div class="bg-white rounded-lg p-6 shadow-sm">
-            <h3 class="text-gray-500 text-sm font-medium mb-2">Completed Tasks</h3>
-            <p class="text-3xl font-semibold text-gray-900">{{ completed_tasks }}</p>
-        </div>
+<!-- Modal for task details -->
+<div id="details-modal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
+        <div id="details-modal-overlay" class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
     </div>
 </div>
 
-<!-- Task Table with consistent styling -->
-{% include "task_management/task_table_partial.html" %}
+<!-- Modal for new task -->
+<div id="new-modal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-2xl max-h-full">
+        <div id="new-modal-overlay" class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+    </div>
+</div>
+
 {% endblock %}

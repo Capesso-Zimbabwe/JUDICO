@@ -138,7 +138,7 @@ def contract_create(request):
             contract.created_by = request.user
             contract.save()
             messages.success(request, 'Contract created successfully!')
-            return redirect('contract_detail', pk=contract.pk)
+            return redirect('contract_management:contract_detail', pk=contract.pk)
     else:
         form = ContractForm()
     
@@ -160,7 +160,7 @@ def contract_update(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Contract updated successfully!')
-            return redirect('contract_detail', pk=contract.pk)
+            return redirect('contract_management:contract_detail', pk=contract.pk)
     else:
         form = ContractForm(instance=contract)
     
@@ -181,7 +181,7 @@ def contract_delete(request, pk):
     if request.method == 'POST':
         contract.delete()
         messages.success(request, 'Contract deleted successfully!')
-        return redirect('contract_list')
+        return redirect('contract_management:contract_list')
     
     context = {
         'contract': contract
@@ -202,7 +202,7 @@ def add_signature_request(request, contract_pk):
             signature.contract = contract
             signature.save()
             messages.success(request, 'Signature request added successfully!')
-            return redirect('contract_detail', pk=contract.pk)
+            return redirect('contract_management:contract_detail', pk=contract.pk)
     else:
         form = ContractSignatureForm()
     
@@ -294,7 +294,7 @@ def template_create(request):
             template.created_by = request.user
             template.save()
             messages.success(request, 'Template created successfully!')
-            return redirect('template_list')
+            return redirect('contract_management:template_list')
     else:
         form = ContractTemplateForm()
     
@@ -319,7 +319,7 @@ def add_amendment(request, contract_pk):
             amendment.created_by = request.user
             amendment.save()
             messages.success(request, 'Amendment added successfully!')
-            return redirect('contract_detail', pk=contract.pk)
+            return redirect('contract_management:contract_detail', pk=contract.pk)
     else:
         form = ContractAmendmentForm()
     

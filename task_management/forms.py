@@ -3,6 +3,15 @@ from .models import Task
 from django.contrib.auth.models import User
 from lawyer_portal.models import LawyerProfile
 
+class TaskFilterForm(forms.Form):
+    search = forms.CharField(widget=forms.TextInput(
+        attrs={
+            'type': 'search',
+            'placeholder': 'Search tasks...',
+            'onchange': 'document.getElementById("search-form").submit();',
+        }), required=False)
+
+
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task

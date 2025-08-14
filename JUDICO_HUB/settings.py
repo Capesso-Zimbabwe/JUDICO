@@ -167,7 +167,8 @@ STATIC_URL = 'static/'
 STATIC_ROOT= BASE_DIR /'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'JUDICO_HUB' / 'static',
-    BASE_DIR / 'theme'/ 'static'
+    BASE_DIR / 'theme'/ 'static',
+    BASE_DIR / 'contract_management' / 'static'
 ]
 
 # Default primary key field type

@@ -4,182 +4,294 @@
 {% block title %}Contract List{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
 <style>
-    .contract-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        transition: transform 0.2s;
+    /* Status badges */
+    .status-draft {
+        background-color: #e2e8f0;
+        color: #4a5568;
     }
-    .contract-card:hover {
-        transform: translateY(-2px);
+    
+    .status-pending_review {
+        background-color: #fef3c7;
+        color: #92400e;
     }
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
+    
+    .status-pending_signature {
+        background-color: #dbeafe;
+        color: #1e40af;
     }
-    .status-draft { background-color: #f8f9fa; color: #6c757d; }
-    .status-pending_signature { background-color: #fff3cd; color: #856404; }
-    .status-signed { background-color: #d4edda; color: #155724; }
-    .status-executed { background-color: #d1ecf1; color: #0c5460; }
-    .status-terminated { background-color: #f8d7da; color: #721c24; }
-    .status-expired { background-color: #e2e3e5; color: #383d41; }
-    .filter-form {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
+    
+    .status-active {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-expired {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    .status-terminated {
+        background-color: #f3f4f6;
+        color: #1f2937;
+    }
+    
+    /* Table styles */
+    .compact-table th, .compact-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Hover effect for table rows */
+    .hover-row:hover {
+        background-color: rgba(243, 244, 246, 0.7);
+    }
+    
+    /* Scrollbar styling */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Card styling for empty state */
+    .empty-state-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0">Contract Management</h1>
-                    <p class="text-muted">Manage all contracts and agreements</p>
-                </div>
-                <a href="{% url 'contract_management:contract_create' %}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>New Contract
-                </a>
-            </div>
-        </div>
-    </div>
+<!-- Navigation header with improved styling -->
+<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
+    <nav class="flex space-x-2 px-6 pt-3">
+        <a href="{% url 'contract_management:contract_dashboard' %}" class="{% if request.resolver_match.url_name == 'contract_dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'contract_management:contract_list' %}" class="{% if request.resolver_match.url_name == 'contract_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            All Contracts
+        </a>
+        <a href="{% url 'contract_management:template_list' %}" class="{% if request.resolver_match.url_name == 'template_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Templates
+        </a>
+    </nav>
+</div>
 
+<!-- Page Header -->
+<div class="px-6 py-4">
+    <div>
+        <h1 class="text-sm font-semibold text-gray-900">Contract Management</h1>
+        <p class="text-xs text-gray-600 mt-1">Manage and monitor contracts through their lifecycle</p>
+    </div>
+</div>
+
+<!-- Contract Management Table -->
+<div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+        <form action="" class="flex-1 max-w-sm" id="search-form" method="get">
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                </div>
+                <input type="text" name="search" value="{{ search_query }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-xs placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Search contracts...">
+            </div>
+        </form>
+
+        <!-- Create Contract Button -->
+        <a href="{% url 'contract_management:contract_create' %}" class="inline-flex items-center px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add New Contract
+        </a>
+    </div>
+    
     <!-- Filters -->
-    <div class="filter-form">
-        <form method="get" class="row g-3">
-            <div class="col-md-3">
-                {{ filter_form.status.label_tag }}
+    <div class="bg-gray-50 px-4 py-2 border-t border-b border-gray-200">
+        <form method="get" class="flex flex-wrap gap-2 items-end">
+            <div class="w-full md:w-auto">
+                <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
                 {{ filter_form.status }}
             </div>
-            <div class="col-md-3">
-                {{ filter_form.contract_type.label_tag }}
+            <div class="w-full md:w-auto">
+                <label for="contract_type" class="block text-xs font-medium text-gray-700 mb-1">Contract Type</label>
                 {{ filter_form.contract_type }}
             </div>
-            <div class="col-md-3">
-                {{ filter_form.client.label_tag }}
+            <div class="w-full md:w-auto">
+                <label for="client" class="block text-xs font-medium text-gray-700 mb-1">Client</label>
                 {{ filter_form.client }}
             </div>
-            <div class="col-md-3">
-                {{ filter_form.assigned_lawyer.label_tag }}
+            <div class="w-full md:w-auto">
+                <label for="assigned_lawyer" class="block text-xs font-medium text-gray-700 mb-1">Assigned Lawyer</label>
                 {{ filter_form.assigned_lawyer }}
             </div>
-            <div class="col-md-6">
-                <label for="search" class="form-label">Search</label>
-                <input type="text" class="form-control" id="search" name="search" 
-                       value="{{ search_query }}" placeholder="Search contracts...">
-            </div>
-            <div class="col-md-6 d-flex align-items-end">
-                <button type="submit" class="btn btn-outline-primary me-2">
-                    <i class="fas fa-search me-1"></i>Filter
+            <div class="flex gap-2">
+                <button type="submit" class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Filter
                 </button>
-                <a href="{% url 'contract_management:contract_list' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times me-1"></i>Clear
+                <a href="{% url 'contract_management:contract_list' %}" class="px-3 py-2 text-xs font-medium text-center text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors duration-200">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Clear
                 </a>
             </div>
         </form>
     </div>
 
-    <!-- Contract List -->
-    <div class="row">
-        {% for contract in page_obj %}
-        <div class="col-md-6 col-lg-4">
-            <div class="contract-card">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h5 class="card-title mb-0">
-                            <a href="{% url 'contract_management:contract_detail' contract.pk %}" 
-                               class="text-decoration-none">{{ contract.title }}</a>
-                        </h5>
-                        <span class="status-badge status-{{ contract.status }}">{{ contract.get_status_display }}</span>
-                    </div>
-                    
-                    <p class="card-text text-muted mb-2">{{ contract.description|truncatewords:15 }}</p>
-                    
-                    <div class="mb-3">
-                        <small class="text-muted">
-                            <i class="fas fa-user me-1"></i>{{ contract.client.name }}
-                        </small><br>
-                        <small class="text-muted">
-                            <i class="fas fa-gavel me-1"></i>{{ contract.assigned_lawyer.get_full_name|default:"Unassigned" }}
-                        </small><br>
-                        <small class="text-muted">
-                            <i class="fas fa-file-contract me-1"></i>{{ contract.get_contract_type_display }}
-                        </small>
-                    </div>
-                    
-                    {% if contract.contract_value %}
-                    <div class="mb-3">
-                        <strong class="text-success">${{ contract.contract_value|floatformat:2 }}</strong>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">{{ contract.created_at|date:"M d, Y" }}</small>
-                        <div class="btn-group btn-group-sm">
-                            <a href="{% url 'contract_management:contract_detail' contract.pk %}" 
-                               class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{% url 'contract_management:contract_update' contract.pk %}" 
-                               class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Contract List Table -->
+    <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+        <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+            <table class="w-full divide-y divide-gray-200 table-fixed" id="contractsTable">
+                <thead class="bg-gray-50 whitespace-nowrap text-xs sticky top-0 z-10">
+                <tr class="border-b border-gray-200">
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Contract Title
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Client
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Assigned Lawyer
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Type
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Status
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Value
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Created
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Actions
+                    </th>
+                </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                {% for contract in page_obj %}
+                    <tr class="hover-row border-b border-gray-100">
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <button type="button"
+                                    class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                    onclick="window.location.href='{% url 'contract_management:contract_detail' contract.pk %}'"
+                            >
+                                <div class="flex-shrink-0 h-8 w-8">
+                                    <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span class="text-blue-600 font-medium text-xs">{{ contract.title|first|upper }}</span>
+                                    </div>
+                                </div>
+                                <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ contract.title|truncatechars:30 }}</span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ contract.client.name|truncatechars:20 }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {% if contract.assigned_lawyer %}
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-6 w-6">
+                                        <div class="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                            <span class="text-green-600 font-medium text-xs">{{ contract.assigned_lawyer.get_full_name|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-1">
+                                        <span class="text-xs font-medium text-gray-900">{{ contract.assigned_lawyer.get_full_name|truncatechars:15 }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Unassigned
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ contract.get_contract_type_display }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium status-{{ contract.status }}">
+                                    {{ contract.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                                {% if contract.contract_value %}
+                                    <span class="text-green-600">${{ contract.contract_value|floatformat:2 }}</span>
+                                {% else %}
+                                    <span class="text-gray-500">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ contract.created_at|date:"M d, Y" }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                <a href="{% url 'contract_management:contract_detail' contract.pk %}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                   title="View Contract">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'contract_management:contract_update' contract.pk %}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                   title="Edit Contract">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="text-center py-8 empty-state-card bg-white shadow-sm rounded-lg">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-500">No contracts found</p>
+                                <p class="text-xs mb-4">Get started by adding your first contract.</p>
+                                <a href="{% url 'contract_management:contract_create' %}" class="px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Create Contract
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="text-center py-5">
-                <i class="fas fa-file-contract fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">No contracts found</h4>
-                <p class="text-muted">Create your first contract to get started.</p>
-                <a href="{% url 'contract_management:contract_create' %}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Create Contract
-                </a>
-            </div>
-        </div>
-        {% endfor %}
     </div>
 
     <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <nav aria-label="Contract pagination">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% for key, value in filter_form.data.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% for key, value in filter_form.data.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
-                </li>
-            {% endif %}
-            
-            <li class="page-item active">
-                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-            </li>
-            
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% for key, value in filter_form.data.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% for key, value in filter_form.data.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 text-xs">
+        {% include 'components/paginator.html' with page_obj=page_obj %}
+    </div>
 </div>
 {% endblock %}
 
