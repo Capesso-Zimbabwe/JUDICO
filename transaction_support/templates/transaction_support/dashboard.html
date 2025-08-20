@@ -1,61 +1,82 @@
-{% extends 'base.html' %}
+{% extends 'transaction_support/base.html' %}
 
 {% block title %}Transaction Support Dashboard{% endblock %}
 
 {% load static %}
 
 {% block extra_js %}
+{{ block.super }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
-{% block content %}
-<!-- Navigation header with improved styling -->
-<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
-    <nav class="flex space-x-2 px-6 pt-3">
-        <a href="{% url 'transaction_support:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
-            Dashboard
-        </a>
-        <a href="{% url 'transaction_support:transaction_list' %}" class="{% if request.resolver_match.url_name == 'transaction_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
-            Transactions
-        </a>
-        <a href="{% url 'transaction_support:monitoring' %}" class="{% if request.resolver_match.url_name == 'monitoring' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
-            Monitoring
-        </a>
-        <a href="{% url 'transaction_support:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
-            Reports
-        </a>
-    </nav>
-</div>
+{% block transaction_content %}
 
 <!-- Transaction Overview Cards -->
-<div class="grid grid-cols-1 bg-white md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-    <div class="bg-white rounded-lg shadow p-3 transaction-card">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-xs font-semibold text-gray-700">Total Transactions</h3>
-                <p class="text-2xl font-bold">1,247</p>
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6" id="dashboard-stats">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
             </div>
-            <div class="bg-blue-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow p-3 transaction-card">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="font-semibold text-gray-700">Pending Review</h3>
-                <p class="text-2xl font-bold">23</p>
-            </div>
-            <div class="bg-yellow-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Total Transactions</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.total_transactions|default:0 }}</p>
             </div>
         </div>
     </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Active Transactions</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.active_transactions|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Completed</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.completed_transactions|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Pending Tasks</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.pending_tasks|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
     
     <div class="bg-white rounded-lg shadow p-3 transaction-card">
         <div class="flex items-center justify-between">

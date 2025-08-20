@@ -1,0 +1,333 @@
+{% extends 'transaction_support/base.html' %}
+{% load static %}
+
+{% block transaction_content %}
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-sm shadow-md overflow-hidden">
+        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-white">Transaction Reports & Analytics</h1>
+                    <p class="text-green-100 text-sm mt-1">Comprehensive insights and performance metrics</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="exportReport()" class="bg-white text-green-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+                        <i class="bi bi-download mr-1"></i> Export
+                    </button>
+                    <button onclick="refreshReports()" class="bg-white text-green-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+                        <i class="bi bi-arrow-clockwise mr-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Filters -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                <select name="date_range" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="30" {% if request.GET.date_range == '30' %}selected{% endif %}>Last 30 Days</option>
+                    <option value="90" {% if request.GET.date_range == '90' %}selected{% endif %}>Last 3 Months</option>
+                    <option value="180" {% if request.GET.date_range == '180' %}selected{% endif %}>Last 6 Months</option>
+                    <option value="365" {% if request.GET.date_range == '365' %}selected{% endif %}>Last Year</option>
+                    <option value="all" {% if request.GET.date_range == 'all' %}selected{% endif %}>All Time</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Transaction Type</label>
+                <select name="transaction_type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">All Types</option>
+                    <option value="merger" {% if request.GET.transaction_type == 'merger' %}selected{% endif %}>Merger</option>
+                    <option value="acquisition" {% if request.GET.transaction_type == 'acquisition' %}selected{% endif %}>Acquisition</option>
+                    <option value="ipo" {% if request.GET.transaction_type == 'ipo' %}selected{% endif %}>IPO</option>
+                    <option value="financing" {% if request.GET.transaction_type == 'financing' %}selected{% endif %}>Financing</option>
+                    <option value="restructuring" {% if request.GET.transaction_type == 'restructuring' %}selected{% endif %}>Restructuring</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Lead Lawyer</label>
+                <select name="lead_lawyer" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">All Lawyers</option>
+                    {% for lawyer in lawyers %}
+                    <option value="{{ lawyer.id }}" {% if request.GET.lead_lawyer == lawyer.id|stringformat:'s' %}selected{% endif %}>
+                        {{ lawyer.get_full_name|default:lawyer.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                    Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Key Performance Indicators -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Total Transaction Value</p>
+                    <p class="text-2xl font-bold text-gray-900">${{ report_data.total_value|floatformat:0 }}</p>
+                    <p class="text-xs text-green-600 mt-1">
+                        <i class="bi bi-arrow-up"></i> {{ report_data.value_growth }}% from last period
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="bi bi-currency-dollar text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Completed Transactions</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ report_data.completed_count }}</p>
+                    <p class="text-xs text-blue-600 mt-1">
+                        <i class="bi bi-arrow-up"></i> {{ report_data.completion_rate }}% completion rate
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="bi bi-check-circle text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Average Deal Size</p>
+                    <p class="text-2xl font-bold text-gray-900">${{ report_data.avg_deal_size|floatformat:0 }}</p>
+                    <p class="text-xs text-purple-600 mt-1">
+                        <i class="bi bi-graph-up"></i> {{ report_data.avg_size_change }}% vs last period
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <i class="bi bi-bar-chart text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Average Time to Close</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ report_data.avg_time_to_close }} days</p>
+                    <p class="text-xs text-orange-600 mt-1">
+                        <i class="bi bi-clock"></i> {{ report_data.time_efficiency }}% efficiency
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                    <i class="bi bi-stopwatch text-orange-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Transaction Volume Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Transaction Volume Trend</h3>
+                <div class="flex space-x-2">
+                    <button onclick="toggleChart('volume', 'monthly')" class="text-sm px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200">Monthly</button>
+                    <button onclick="toggleChart('volume', 'quarterly')" class="text-sm px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200">Quarterly</button>
+                </div>
+            </div>
+            <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                <div class="text-gray-500 text-center">
+                    <i class="bi bi-bar-chart text-4xl mb-2"></i>
+                    <p>Chart will be displayed here</p>
+                    <p class="text-sm">(Chart.js integration required)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Value Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Transaction Value by Type</h3>
+                <div class="flex space-x-2">
+                    <button onclick="toggleChart('value', 'pie')" class="text-sm px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200">Pie</button>
+                    <button onclick="toggleChart('value', 'bar')" class="text-sm px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200">Bar</button>
+                </div>
+            </div>
+            <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                <div class="text-gray-500 text-center">
+                    <i class="bi bi-pie-chart text-4xl mb-2"></i>
+                    <p>Chart will be displayed here</p>
+                    <p class="text-sm">(Chart.js integration required)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Tables -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top Performing Lawyers -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Top Performing Lawyers</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lawyer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deals</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Time</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for lawyer in top_lawyers %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ lawyer.name }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ lawyer.deal_count }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ lawyer.total_value|floatformat:0 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ lawyer.avg_time }} days</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">No data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Completed Transactions -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Recent Completed Transactions</h3>
+            </div>
+            <div class="max-h-80 overflow-y-auto">
+                {% for transaction in recent_completed %}
+                <div class="px-6 py-4 border-b border-gray-100 last:border-b-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="text-sm font-medium text-gray-900">{{ transaction.title }}</div>
+                            <div class="text-sm text-gray-500">{{ transaction.transaction_type|title }}</div>
+                            <div class="text-xs text-gray-400 mt-1">
+                                Completed: {{ transaction.completed_date|date:"M d, Y" }}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-medium text-gray-900">${{ transaction.transaction_value|floatformat:0 }}</div>
+                            <div class="text-xs text-gray-500">{{ transaction.lead_lawyer.get_full_name|default:transaction.lead_lawyer.username }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="px-6 py-4 text-center text-gray-500">
+                    No completed transactions in this period.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Detailed Transaction Analytics</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead Lawyer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for transaction in detailed_transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">
+                                <a href="{% url 'transaction_support:transaction_detail' transaction.pk %}" class="text-blue-600 hover:text-blue-800">
+                                    {{ transaction.title }}
+                                </a>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ transaction.transaction_type|title }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ transaction.transaction_value|floatformat:0 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                {% if transaction.status == 'active' %}bg-green-100 text-green-800
+                                {% elif transaction.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif transaction.status == 'completed' %}bg-blue-100 text-blue-800
+                                {% elif transaction.status == 'on_hold' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ transaction.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ transaction.lead_lawyer.get_full_name|default:transaction.lead_lawyer.username }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ transaction.duration_days }} days</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: {{ transaction.progress_percentage }}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">{{ transaction.progress_percentage }}%</div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            No transactions found for the selected criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshReports() {
+    location.reload();
+}
+
+function exportReport() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('export', 'csv');
+    window.location.href = window.location.pathname + '?' + params.toString();
+}
+
+function toggleChart(chartType, viewType) {
+    console.log(`Toggling ${chartType} chart to ${viewType} view`);
+    // Implementation would depend on the charting library used
+}
+
+// Auto-submit form when filters change
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const selects = form.querySelectorAll('select');
+    
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            form.submit();
+        });
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,268 @@
+{% extends 'transaction_support/base.html' %}
+{% load static %}
+
+{% block title %}{{ document.title }} - Document Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'transaction_support:transaction_list' %}">Transactions</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'transaction_support:transaction_detail' document.transaction.pk %}">Transaction {{ document.transaction.id }}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'transaction_support:document_list' document.transaction.pk %}">Documents</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ document.title }}</li>
+                </ol>
+            </nav>
+            
+            <!-- Document Header -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">{{ document.title }}</h4>
+                        <p class="text-muted mb-0">{{ document.description|default:"No description provided" }}</p>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'transaction_support:document_download' document.pk %}" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                        {% if perms.transaction_support.change_transactiondocument %}
+                            <a href="{% url 'transaction_support:document_version_create' document.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-code-branch"></i> New Version
+                            </a>
+                            <a href="{% url 'transaction_support:document_review_toggle' document.pk %}" class="btn btn-{% if document.is_reviewed %}warning{% else %}success{% endif %}">
+                                <i class="fas fa-{% if document.is_reviewed %}times{% else %}check{% endif %}"></i> 
+                                {% if document.is_reviewed %}Mark as Pending{% else %}Mark as Reviewed{% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Document Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Type:</strong></td>
+                                    <td><span class="badge bg-info">{{ document.get_document_type_display }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Access Level:</strong></td>
+                                    <td>
+                                        <span class="badge {% if document.access_level == 'public' %}bg-success{% elif document.access_level == 'restricted' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ document.get_access_level_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Version:</strong></td>
+                                    <td>v{{ document.version }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>File Size:</strong></td>
+                                    <td>{{ document.file_size|filesizeformat }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>File Hash:</strong></td>
+                                    <td><code>{{ document.file_hash|truncatechars:16 }}...</code></td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Upload & Review Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Uploaded By:</strong></td>
+                                    <td>{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Uploaded At:</strong></td>
+                                    <td>{{ document.uploaded_at|date:"M d, Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Last Accessed:</strong></td>
+                                    <td>{{ document.last_accessed|date:"M d, Y H:i"|default:"Never" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Review Status:</strong></td>
+                                    <td>
+                                        {% if document.is_reviewed %}
+                                            <span class="badge bg-success">Reviewed</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Pending Review</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if document.is_reviewed and document.reviewed_by %}
+                                <tr>
+                                    <td><strong>Reviewed By:</strong></td>
+                                    <td>{{ document.reviewed_by.get_full_name|default:document.reviewed_by.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Reviewed At:</strong></td>
+                                    <td>{{ document.reviewed_at|date:"M d, Y H:i" }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Due Diligence Categories -->
+                    {% if document.due_diligence_categories.exists %}
+                    <div class="mt-3">
+                        <h6>Due Diligence Categories</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for category in document.due_diligence_categories.all %}
+                                <span class="badge bg-secondary">{{ category.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Version History -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Version History</h5>
+                </div>
+                <div class="card-body">
+                    {% if versions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Version</th>
+                                    <th>Title</th>
+                                    <th>File Size</th>
+                                    <th>Uploaded By</th>
+                                    <th>Uploaded At</th>
+                                    <th>Review Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for version in versions %}
+                                <tr {% if version.pk == document.pk %}class="table-primary"{% endif %}>
+                                    <td>
+                                        <strong>v{{ version.version }}</strong>
+                                        {% if version.pk == document.pk %}
+                                            <span class="badge bg-primary ms-2">Current</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ version.title }}</td>
+                                    <td>{{ version.file_size|filesizeformat }}</td>
+                                    <td>{{ version.uploaded_by.get_full_name|default:version.uploaded_by.username }}</td>
+                                    <td>{{ version.uploaded_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if version.is_reviewed %}
+                                            <span class="badge bg-success">Reviewed</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'transaction_support:document_download' version.pk %}" class="btn btn-outline-primary" title="Download">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            {% if version.pk != document.pk %}
+                                                <a href="{% url 'transaction_support:document_detail' version.pk %}" class="btn btn-outline-info" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-history fa-2x mb-3"></i>
+                        <p>This is the first version of this document.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Preview Modal (for supported file types) -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Document Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent" class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{% url 'transaction_support:document_download' document.pk %}" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add preview functionality for supported file types
+document.addEventListener('DOMContentLoaded', function() {
+    const fileName = '{{ document.document_file.name }}';
+    const fileExtension = fileName.split('.').pop().toLowerCase();
+    
+    // Add preview button for supported file types
+    if (['pdf', 'jpg', 'jpeg', 'png', 'gif', 'txt'].includes(fileExtension)) {
+        const downloadBtn = document.querySelector('a[href*="document_download"]');
+        if (downloadBtn) {
+            const previewBtn = document.createElement('a');
+            previewBtn.href = '#';
+            previewBtn.className = 'btn btn-info me-2';
+            previewBtn.innerHTML = '<i class="fas fa-eye"></i> Preview';
+            previewBtn.onclick = function(e) {
+                e.preventDefault();
+                showPreview();
+            };
+            downloadBtn.parentNode.insertBefore(previewBtn, downloadBtn);
+        }
+    }
+    
+    function showPreview() {
+        const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+        const previewContent = document.getElementById('previewContent');
+        const downloadUrl = '{% url "transaction_support:document_download" document.pk %}';
+        
+        if (fileExtension === 'pdf') {
+            previewContent.innerHTML = `<embed src="${downloadUrl}" type="application/pdf" width="100%" height="600px" />`;
+        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+            previewContent.innerHTML = `<img src="${downloadUrl}" class="img-fluid" alt="Document preview" />`;
+        } else if (fileExtension === 'txt') {
+            fetch(downloadUrl)
+                .then(response => response.text())
+                .then(text => {
+                    previewContent.innerHTML = `<pre class="text-start">${text}</pre>`;
+                })
+                .catch(error => {
+                    previewContent.innerHTML = '<p class="text-danger">Error loading preview</p>';
+                });
+        }
+        
+        modal.show();
+    }
+});
+</script>
+{% endblock %}

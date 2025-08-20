@@ -1,0 +1,211 @@
+{% extends 'transaction_support/base.html' %}
+{% load static %}
+
+{% block title %}Documents - Transaction {{ transaction.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Transaction Documents</h4>
+                    <div>
+                        <a href="{% url 'transaction_support:document_create' transaction.pk %}" class="btn btn-primary me-2">
+                            <i class="fas fa-plus"></i> Upload Document
+                        </a>
+                        <a href="{% url 'transaction_support:bulk_document_upload' transaction.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-upload"></i> Bulk Upload
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="typeFilter">
+                                <option value="">All Types</option>
+                                {% for type_code, type_name in document_types %}
+                                    <option value="{{ type_code }}">{{ type_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="accessFilter">
+                                <option value="">All Access Levels</option>
+                                {% for access_code, access_name in access_levels %}
+                                    <option value="{{ access_code }}">{{ access_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="reviewFilter">
+                                <option value="">All Documents</option>
+                                <option value="reviewed">Reviewed</option>
+                                <option value="pending">Pending Review</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="searchFilter" placeholder="Search documents...">
+                        </div>
+                    </div>
+                    
+                    <!-- Documents Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Access Level</th>
+                                    <th>Version</th>
+                                    <th>Size</th>
+                                    <th>Uploaded By</th>
+                                    <th>Uploaded At</th>
+                                    <th>Review Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in documents %}
+                                <tr data-type="{{ document.document_type }}" data-access="{{ document.access_level }}" data-review="{% if document.is_reviewed %}reviewed{% else %}pending{% endif %}">
+                                    <td>
+                                        <a href="{% url 'transaction_support:document_detail' document.pk %}" class="text-decoration-none">
+                                            <strong>{{ document.title }}</strong>
+                                        </a>
+                                        {% if document.description %}
+                                            <br><small class="text-muted">{{ document.description|truncatechars:50 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ document.get_document_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if document.access_level == 'public' %}bg-success{% elif document.access_level == 'restricted' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ document.get_access_level_display }}
+                                        </span>
+                                    </td>
+                                    <td>v{{ document.version }}</td>
+                                    <td>{{ document.file_size|filesizeformat }}</td>
+                                    <td>{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</td>
+                                    <td>{{ document.uploaded_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if document.is_reviewed %}
+                                            <span class="badge bg-success">Reviewed</span>
+                                            {% if document.reviewed_by %}
+                                                <br><small class="text-muted">by {{ document.reviewed_by.get_full_name|default:document.reviewed_by.username }}</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'transaction_support:document_download' document.pk %}" class="btn btn-outline-primary" title="Download">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <a href="{% url 'transaction_support:document_detail' document.pk %}" class="btn btn-outline-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if perms.transaction_support.change_transactiondocument %}
+                                                <a href="{% url 'transaction_support:document_version_create' document.pk %}" class="btn btn-outline-secondary" title="New Version">
+                                                    <i class="fas fa-code-branch"></i>
+                                                </a>
+                                                <a href="{% url 'transaction_support:document_review_toggle' document.pk %}" class="btn btn-outline-{% if document.is_reviewed %}warning{% else %}success{% endif %}" title="{% if document.is_reviewed %}Mark as Pending{% else %}Mark as Reviewed{% endif %}">
+                                                    <i class="fas fa-{% if document.is_reviewed %}times{% else %}check{% endif %}"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-4">
+                                        <i class="fas fa-file-alt fa-3x mb-3"></i>
+                                        <p>No documents uploaded yet.</p>
+                                        <a href="{% url 'transaction_support:document_create' transaction.pk %}" class="btn btn-primary">
+                                            Upload First Document
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if is_paginated %}
+                    <nav aria-label="Document pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const typeFilter = document.getElementById('typeFilter');
+    const accessFilter = document.getElementById('accessFilter');
+    const reviewFilter = document.getElementById('reviewFilter');
+    const searchFilter = document.getElementById('searchFilter');
+    const tableRows = document.querySelectorAll('tbody tr[data-type]');
+    
+    function filterTable() {
+        const typeValue = typeFilter.value;
+        const accessValue = accessFilter.value;
+        const reviewValue = reviewFilter.value;
+        const searchValue = searchFilter.value.toLowerCase();
+        
+        tableRows.forEach(row => {
+            const type = row.getAttribute('data-type');
+            const access = row.getAttribute('data-access');
+            const review = row.getAttribute('data-review');
+            const text = row.textContent.toLowerCase();
+            
+            const typeMatch = !typeValue || type === typeValue;
+            const accessMatch = !accessValue || access === accessValue;
+            const reviewMatch = !reviewValue || review === reviewValue;
+            const searchMatch = !searchValue || text.includes(searchValue);
+            
+            if (typeMatch && accessMatch && reviewMatch && searchMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    typeFilter.addEventListener('change', filterTable);
+    accessFilter.addEventListener('change', filterTable);
+    reviewFilter.addEventListener('change', filterTable);
+    searchFilter.addEventListener('input', filterTable);
+});
+</script>
+{% endblock %}

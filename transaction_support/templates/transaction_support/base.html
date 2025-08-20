@@ -4,7 +4,11 @@
 
 {% load static %}
 
-{% block header_title %}Transaction Support - Dashboard{% endblock header_title %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'transaction_support/css/transaction_styles.css' %}">
+{% endblock %}
+
+{% block header_title %}Transaction Support - Dashboard{% endblock %}
 
 {% block content %}
 <!-- Navigation header with improved styling -->
@@ -13,12 +17,45 @@
         <a href="{% url 'transaction_support:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Dashboard
         </a>
-        <a href="{% url 'transaction_support:transaction_list' %}" class="{% if request.resolver_match.url_name == 'transaction_list' or request.resolver_match.url_name == 'transaction_form' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
-            Transactions
+        <a href="{% url 'transaction_support:transaction_list_cbv' %}" class="{% if 'transaction_list' in request.resolver_match.url_name or 'transaction_detail' in request.resolver_match.url_name %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            All Transactions
+        </a>
+        <a href="{% url 'transaction_support:transaction_create_cbv' %}" class="{% if 'transaction_create' in request.resolver_match.url_name %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            New Transaction
+        </a>
+        <a href="{% url 'transaction_support:monitoring' %}" class="{% if request.resolver_match.url_name == 'monitoring' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Monitoring
+        </a>
+        <a href="{% url 'transaction_support:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Reports
         </a>
     </nav>
 </div>
 
 {% block transaction_content %}{% endblock %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Transaction-specific JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh dashboard every 30 seconds
+    if (window.location.pathname.includes('dashboard')) {
+        setInterval(function() {
+            htmx.trigger('#dashboard-stats', 'refresh');
+        }, 30000);
+    }
+    
+    // Task status update handling
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.xhr.status === 200 && event.target.classList.contains('task-status-update')) {
+            // Show success notification
+            if (typeof notyf !== 'undefined') {
+                notyf.success('Task status updated successfully');
+            }
+        }
+    });
+});
+</script>
 {% endblock %}
