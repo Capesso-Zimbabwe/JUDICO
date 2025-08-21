@@ -1,0 +1,58 @@
+{% extends 'components/modals/base-form-modal.html' %}
+
+{% block modal_content %}
+
+    <div class="min-h-[300px]">
+        <h3 class="text-xs leading-6 font-medium text-gray-900" id="modal-title">
+            Document Details
+        </h3>
+        <div class="mt-2">
+            <p class="text-xs text-gray-500">
+                Document information and metadata
+            </p>
+        </div>
+        {% if document %}
+        <dl class="mt-4 space-y-4">
+            <dt class="text-xs font-medium text-gray-500">Title</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ document.title }}</dd>
+            
+            <dt class="text-xs font-medium text-gray-500">Type</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ document.get_document_type_display }}</dd>
+            
+            <dt class="text-xs font-medium text-gray-500">Access Level</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ document.get_access_level_display }}</dd>
+            
+            <dt class="text-xs font-medium text-gray-500">Version</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ document.version }}</dd>
+            
+            <dt class="text-xs font-medium text-gray-500">File Size</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ document.file_size|filesizeformat }}</dd>
+            
+            <dt class="text-xs font-medium text-gray-500">Uploaded By</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</dd>
+            
+            <dt class="text-xs font-medium text-gray-500">Upload Date</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ document.uploaded_at|date:"M d, Y g:i A" }}</dd>
+        </dl>
+        {% else %}
+        <div class="mt-4 text-center text-gray-500">
+            <p class="text-xs">No document selected</p>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block modal_body_classes %}flex flex-col max-h-[80vh] overflow-hidden{% endblock %}
+{% block modal_title %}New Document{% endblock %}
+
+{% block close_button %}
+    <button type="button"
+            class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-xs w-8 h-8 ms-auto inline-flex justify-center items-center"
+            onclick="window.documentModal.hide()">
+        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+        </svg>
+        <span class="sr-only">Close modal</span>
+    </button>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'components/modals/base-form-modal.html' %}
+
+{% block modal_content %}
+    <div id="update-modal-container">
+        {% include "transaction_support/transaction_form_modal.html" %}
+    </div>
+{% endblock %}
+{% block modal_body_classes %}flex flex-col max-h-[80vh] overflow-hidden{% endblock %}
+{% block modal_title %}Update Transaction Details{% endblock %}

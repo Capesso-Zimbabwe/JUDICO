@@ -1,0 +1,9 @@
+{% extends 'components/modals/base-form-modal.html' %}
+
+{% block modal_content %}
+    <div id="new-modal-container">
+        {% include "transaction_support/transaction_form_modal.html" %}
+    </div>
+{% endblock %}
+
+{% block modal_title %}New Transaction{% endblock %}

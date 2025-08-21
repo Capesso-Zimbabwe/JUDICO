@@ -3,309 +3,263 @@
 
 {% block transaction_content %}
 
-<div class="bg-white rounded-sm shadow-md overflow-hidden">
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+    <div class="bg-white border-b border-gray-200 px-6 py-4">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-xl font-bold text-white">{{ transaction.title }}</h1>
-                <p class="text-blue-100 text-sm mt-1">{{ transaction.get_transaction_type_display }} Transaction</p>
+                <h1 class="text-xs font-bold text-gray-900">{{ transaction.title }}</h1>
+        <p class="text-gray-600 text-xs mt-1">{{ transaction.get_transaction_type_display }} Transaction</p>
             </div>
-            <div class="flex items-center space-x-2">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                    {% if transaction.status == 'draft' %}bg-gray-100 text-gray-800
-                    {% elif transaction.status == 'active' %}bg-green-100 text-green-800
-                    {% elif transaction.status == 'completed' %}bg-blue-100 text-blue-800
-                    {% elif transaction.status == 'cancelled' %}bg-red-100 text-red-800
-                    {% else %}bg-gray-100 text-gray-800{% endif %}">
-                    {{ transaction.get_status_display }}
-                </span>
+            <div class="flex items-center space-x-3">
                 <a href="{% url 'transaction_support:transaction_update' transaction.pk %}" 
-                   class="bg-white text-blue-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
                     Edit Transaction
                 </a>
+                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Delete
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Content -->
     <div class="p-6">
-        <!-- Transaction Overview -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="lg:col-span-2">
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Transaction Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Transaction Value</label>
-                            <p class="mt-1 text-sm text-gray-900">
-                                {% if transaction.transaction_value %}
-                                    ${{ transaction.transaction_value|floatformat:0 }}
-                                {% else %}
-                                    Not specified
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Lead Lawyer</label>
-                            <p class="mt-1 text-sm text-gray-900">
-                                {% if transaction.lead_lawyer %}
-                                    {{ transaction.lead_lawyer.get_full_name|default:transaction.lead_lawyer.username }}
-                                {% else %}
-                                    Unassigned
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Created Date</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ transaction.created_at|date:"F d, Y" }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Expected Close Date</label>
-                            <p class="mt-1 text-sm text-gray-900">
-                                {% if transaction.expected_close_date %}
-                                    {{ transaction.expected_close_date|date:"F d, Y" }}
-                                {% else %}
-                                    To be determined
-                                {% endif %}
-                            </p>
-                        </div>
+        <!-- Transaction Information -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div>
+                <h3 class="text-xs font-medium text-gray-900 mb-4">Transaction Information</h3>
+                <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Status</dt>
+                        <dd class="mt-1">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if transaction.status == 'draft' %}bg-gray-100 text-gray-800
+                                {% elif transaction.status == 'active' %}bg-green-100 text-green-800
+                                {% elif transaction.status == 'completed' %}bg-blue-100 text-blue-800
+                                {% elif transaction.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ transaction.get_status_display }}
+                            </span>
+                        </dd>
                     </div>
-                    {% if transaction.description %}
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ transaction.description }}</p>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Transaction Type</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ transaction.get_transaction_type_display }}</dd>
                     </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- Quick Stats -->
-            <div class="space-y-4">
-                <div class="bg-blue-50 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-blue-900">Entities</p>
-                            <p class="text-2xl font-bold text-blue-600">{{ entities.count }}</p>
-                        </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Transaction Value</dt>
+            <dd class="mt-1 text-xs text-gray-900">
+                            {% if transaction.transaction_value %}
+                                ${{ transaction.transaction_value|floatformat:0 }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </dd>
                     </div>
-                </div>
-                
-                <div class="bg-green-50 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-green-900">Documents</p>
-                            <p class="text-2xl font-bold text-green-600">{{ documents.count }}</p>
-                        </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Lead Lawyer</dt>
+            <dd class="mt-1 text-xs text-gray-900">
+                            {% if transaction.lead_lawyer %}
+                                {{ transaction.lead_lawyer.get_full_name|default:transaction.lead_lawyer.username }}
+                            {% else %}
+                                Unassigned
+                            {% endif %}
+                        </dd>
                     </div>
-                </div>
-                
-                <div class="bg-yellow-50 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-yellow-900">Active Tasks</p>
-                            <p class="text-2xl font-bold text-yellow-600">{{ active_tasks_count }}</p>
-                        </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Created Date</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ transaction.created_at|date:"F d, Y" }}</dd>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="entities">
-                    Entities
-                </button>
-                <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="documents">
-                    Documents
-                </button>
-                <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="workflow">
-                    Workflow & Tasks
-                </button>
-                <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="audit">
-                    Audit Log
-                </button>
-            </nav>
-        </div>
-
-        <!-- Tab Content -->
-        <div class="mt-6">
-            <!-- Entities Tab -->
-            <div id="entities-tab" class="tab-content">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Transaction Entities</h3>
-                    <a href="{% url 'transaction_support:transaction_entity_create' transaction.pk %}" 
-                       class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                        Add Entity
-                    </a>
-                </div>
-                {% if entities %}
-                <div class="bg-white shadow overflow-hidden sm:rounded-md">
-                    <ul class="divide-y divide-gray-200">
-                        {% for entity in entities %}
-                        <li>
-                            <div class="px-4 py-4 flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                            <span class="text-sm font-medium text-gray-700">{{ entity.entity.name|first }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ entity.entity.name }}</div>
-                                        <div class="text-sm text-gray-500">{{ entity.get_role_display }}</div>
-                                    </div>
-                                </div>
-                                <div class="text-sm text-gray-500">
-                                    Added {{ entity.created_at|date:"M d, Y" }}
-                                </div>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% else %}
-                <div class="text-center py-8">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">No entities</h3>
-                    <p class="mt-1 text-sm text-gray-500">Get started by adding an entity to this transaction.</p>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Expected Close Date</dt>
+            <dd class="mt-1 text-xs text-gray-900">
+                            {% if transaction.expected_close_date %}
+                                {{ transaction.expected_close_date|date:"F d, Y" }}
+                            {% else %}
+                                To be determined
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+                {% if transaction.description %}
+                <div class="mt-6">
+                    <dt class="text-xs font-medium text-gray-500">Description</dt>
+            <dd class="mt-1 text-xs text-gray-900">{{ transaction.description }}</dd>
                 </div>
                 {% endif %}
             </div>
-
-            <!-- Documents Tab -->
-            <div id="documents-tab" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Transaction Documents</h3>
-                    <div class="flex space-x-2">
-                        <a href="{% url 'transaction_support:document_list' transaction.pk %}" 
-                           class="bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
-                            View All Documents
-                        </a>
-                        <a href="{% url 'transaction_support:document_create' transaction.pk %}" 
-                           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                            Upload Document
-                        </a>
-                        <a href="{% url 'transaction_support:bulk_document_upload' transaction.pk %}" 
-                           class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">
-                            Bulk Upload
-                        </a>
-                    </div>
-                </div>
-                {% if documents %}
-                <div class="bg-white shadow overflow-hidden sm:rounded-md">
-                    <ul class="divide-y divide-gray-200">
-                        {% for document in documents %}
-                        <li>
-                            <div class="px-4 py-4 flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            <a href="{% url 'transaction_support:document_detail' document.pk %}" class="text-blue-600 hover:text-blue-900">
-                                                {{ document.title }}
-                                            </a>
-                                        </div>
-                                        <div class="text-sm text-gray-500">{{ document.get_document_type_display }} • v{{ document.version }}</div>
-                                        {% if document.description %}
-                                            <div class="text-xs text-gray-400 mt-1">{{ document.description|truncatechars:60 }}</div>
-                                        {% endif %}
-                                    </div>
+            
+            <div>
+                <h3 class="text-xs font-medium text-gray-900 mb-4">Assigned Lawyer</h3>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    {% if transaction.lead_lawyer %}
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
+                                    <span class="text-xs font-medium text-white">
+                                        {{ transaction.lead_lawyer.get_full_name|default:transaction.lead_lawyer.username|first }}
+                                    </span>
                                 </div>
-                                <div class="flex items-center space-x-3">
-                                    <div class="text-right">
-                                        <div class="text-sm text-gray-500">{{ document.uploaded_at|date:"M d, Y" }}</div>
-                                        <div class="text-xs text-gray-400">{{ document.file_size|filesizeformat }}</div>
-                                        {% if document.is_reviewed %}
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mt-1">
-                                                Reviewed
-                                            </span>
-                                        {% else %}
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">
-                                                Pending
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex items-center space-x-1">
-                                        <a href="{% url 'transaction_support:document_download' document.pk %}" 
-                                           class="text-blue-600 hover:text-blue-900 p-1" title="Download">
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-xs font-medium text-gray-900">
+                                    {{ transaction.lead_lawyer.get_full_name|default:transaction.lead_lawyer.username }}
+                                </p>
+                                <p class="text-xs text-gray-500">Lead Lawyer</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-gray-500">No lawyer assigned</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Documents -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-xs font-medium text-gray-900">Transaction Documents</h3>
+                <a href="{% url 'transaction_support:document_create' transaction.pk %}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Upload Document
+                </a>
+            </div>
+
+            <div class="p-6">
+                {% if documents %}
+                <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upload Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for document in documents %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <a href="{% url 'transaction_support:document_detail' document.pk %}" class="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                        {{ document.title|truncatechars:40 }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">
+                                    {{ document.get_document_type_display }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                                    {{ document.uploaded_at|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if document.is_reviewed %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                                <circle cx="4" cy="4" r="3"/>
+                                            </svg>
+                                            Reviewed
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                                <circle cx="4" cy="4" r="3"/>
+                                            </svg>
+                                            Pending
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{% url 'transaction_support:document_download' document.pk %}" class="text-blue-600 hover:text-blue-900" title="Download">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
                                         </a>
-                                        <a href="{% url 'transaction_support:document_detail' document.pk %}" 
-                                           class="text-gray-600 hover:text-gray-900 p-1" title="View Details">
+                                        <button class="text-red-600 hover:text-red-900" title="Delete">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
-                                        </a>
+                                        </button>
                                     </div>
-                                </div>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
                 {% else %}
-                <div class="text-center py-8">
+                <div class="text-center py-12">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">No documents</h3>
-                    <p class="mt-1 text-sm text-gray-500">Get started by uploading a document.</p>
-                    <div class="mt-4 flex justify-center space-x-3">
+                    <h3 class="mt-2 text-xs font-medium text-gray-900">No documents uploaded</h3>
+            <p class="mt-1 text-xs text-gray-500">Get started by uploading your first document.</p>
+                    <div class="mt-6">
                         <a href="{% url 'transaction_support:document_create' transaction.pk %}" 
-                           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                           class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
                             Upload Document
-                        </a>
-                        <a href="{% url 'transaction_support:bulk_document_upload' transaction.pk %}" 
-                           class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">
-                            Bulk Upload
                         </a>
                     </div>
                 </div>
                 {% endif %}
             </div>
+        </div>
 
-            <!-- Workflow Tab -->
-            <div id="workflow-tab" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Workflow & Tasks</h3>
-                    {% if not workflows %}
-                    <a href="{% url 'transaction_support:transaction_workflow_create' transaction.pk %}" 
-                       class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                        Create Workflow
-                    </a>
-                    {% endif %}
+        <!-- Related Tasks -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-xs font-medium text-gray-900">Related Tasks</h3>
+                <a href="#" 
+                   class="text-xs font-medium text-blue-600 hover:text-blue-500">
+                    View All Tasks
+                </a>
+            </div>
+
+            <div class="p-6">
+                {% if active_tasks_count > 0 %}
+                <div class="space-y-4">
+                    <!-- This would be populated with actual task data -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <h4 class="text-xs font-medium text-gray-900">Sample Task</h4>
+                <p class="text-xs text-gray-500">Due in 3 days</p>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            In Progress
+                        </span>
+                    </div>
                 </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <h3 class="mt-2 text-xs font-medium text-gray-900">No tasks assigned</h3>
+            <p class="mt-1 text-xs text-gray-500">Tasks will appear here when they are created for this transaction.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
                 {% if workflows %}
                     {% for workflow in workflows %}
                     <div class="bg-white shadow rounded-lg mb-6">
                         <div class="px-4 py-5 sm:p-6">
-                            <h4 class="text-lg font-medium text-gray-900 mb-4">{{ workflow.name }}</h4>
+                            <h4 class="text-xs font-medium text-gray-900 mb-4">{{ workflow.name }}</h4>
                             {% if workflow.transactiontask_set.all %}
                             <div class="space-y-3">
                                 {% for task in workflow.transactiontask_set.all %}
@@ -327,8 +281,8 @@
                                             {% endif %}
                                         </div>
                                         <div class="ml-3">
-                                            <p class="text-sm font-medium text-gray-900">{{ task.title }}</p>
-                                            <p class="text-sm text-gray-500">{{ task.get_status_display }}</p>
+                                            <p class="text-xs font-medium text-gray-900">{{ task.title }}</p>
+                    <p class="text-xs text-gray-500">{{ task.get_status_display }}</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center space-x-2">
@@ -345,138 +299,15 @@
                                 {% endfor %}
                             </div>
                             {% else %}
-                            <p class="text-gray-500 text-sm">No tasks in this workflow.</p>
+                            <p class="text-gray-500 text-xs">No tasks assigned to this transaction.</p>
                             {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
-                {% else %}
-                <div class="text-center py-8">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">No workflow</h3>
-                    <p class="mt-1 text-sm text-gray-500">Create a workflow to manage tasks for this transaction.</p>
                 </div>
-                {% endif %}
-            </div>
-
-            <!-- Audit Log Tab -->
-            <div id="audit-tab" class="tab-content hidden">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Audit Log</h3>
-                {% if audit_logs %}
-                <div class="flow-root">
-                    <ul class="-mb-8">
-                        {% for log in audit_logs %}
-                        <li>
-                            <div class="relative pb-8">
-                                {% if not forloop.last %}
-                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-                                {% endif %}
-                                <div class="relative flex space-x-3">
-                                    <div>
-                                        <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
-                                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </span>
-                                    </div>
-                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                        <div>
-                                            <p class="text-sm text-gray-500">{{ log.action }} by 
-                                                <span class="font-medium text-gray-900">{{ log.user.get_full_name|default:log.user.username }}</span>
-                                            </p>
-                                            {% if log.details %}
-                                            <p class="mt-1 text-sm text-gray-600">{{ log.details }}</p>
-                                            {% endif %}
-                                        </div>
-                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
-                                            <time datetime="{{ log.timestamp|date:'c' }}">{{ log.timestamp|date:"M d, Y g:i A" }}</time>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% else %}
-                <div class="text-center py-8">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">No audit logs</h3>
-                    <p class="mt-1 text-sm text-gray-500">Activity will appear here as actions are performed.</p>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
-
-<script>
-// Tab functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    // Set first tab as active
-    if (tabButtons.length > 0) {
-        tabButtons[0].classList.add('border-blue-500', 'text-blue-600');
-        tabButtons[0].classList.remove('border-transparent', 'text-gray-500');
-    }
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const targetTab = this.getAttribute('data-tab');
-            
-            // Remove active classes from all tabs
-            tabButtons.forEach(btn => {
-                btn.classList.remove('border-blue-500', 'text-blue-600');
-                btn.classList.add('border-transparent', 'text-gray-500');
-            });
-            
-            // Add active classes to clicked tab
-            this.classList.add('border-blue-500', 'text-blue-600');
-            this.classList.remove('border-transparent', 'text-gray-500');
-            
-            // Hide all tab contents
-            tabContents.forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Show target tab content
-            const targetContent = document.getElementById(targetTab + '-tab');
-            if (targetContent) {
-                targetContent.classList.remove('hidden');
-            }
-        });
-    });
-    
-    // Task status update functionality
-    const taskStatusBtns = document.querySelectorAll('.task-status-btn');
-    taskStatusBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const taskId = this.getAttribute('data-task-id');
-            const currentStatus = this.getAttribute('data-current-status');
-            
-            // Simple status cycling for demo
-            let newStatus;
-            if (currentStatus === 'pending') {
-                newStatus = 'in_progress';
-            } else if (currentStatus === 'in_progress') {
-                newStatus = 'completed';
-            } else {
-                newStatus = 'pending';
-            }
-            
-            // Here you would typically make an AJAX call to update the status
-            // For now, just update the UI
-            this.setAttribute('data-current-status', newStatus);
-            this.textContent = 'Status: ' + newStatus.replace('_', ' ');
-        });
-    });
-});
 </script>
 
 {% endblock %}

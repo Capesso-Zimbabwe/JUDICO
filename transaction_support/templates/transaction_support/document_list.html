@@ -4,168 +4,189 @@
 {% block title %}Documents - Transaction {{ transaction.id }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Transaction Documents</h4>
-                    <div>
-                        <a href="{% url 'transaction_support:document_create' transaction.pk %}" class="btn btn-primary me-2">
-                            <i class="fas fa-plus"></i> Upload Document
-                        </a>
-                        <a href="{% url 'transaction_support:bulk_document_upload' transaction.pk %}" class="btn btn-secondary">
-                            <i class="fas fa-upload"></i> Bulk Upload
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="card-body">
-                    <!-- Filters -->
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <select class="form-select" id="typeFilter">
-                                <option value="">All Types</option>
-                                {% for type_code, type_name in document_types %}
-                                    <option value="{{ type_code }}">{{ type_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="accessFilter">
-                                <option value="">All Access Levels</option>
-                                {% for access_code, access_name in access_levels %}
-                                    <option value="{{ access_code }}">{{ access_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="reviewFilter">
-                                <option value="">All Documents</option>
-                                <option value="reviewed">Reviewed</option>
-                                <option value="pending">Pending Review</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <input type="text" class="form-control" id="searchFilter" placeholder="Search documents...">
-                        </div>
-                    </div>
-                    
-                    <!-- Documents Table -->
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Type</th>
-                                    <th>Access Level</th>
-                                    <th>Version</th>
-                                    <th>Size</th>
-                                    <th>Uploaded By</th>
-                                    <th>Uploaded At</th>
-                                    <th>Review Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for document in documents %}
-                                <tr data-type="{{ document.document_type }}" data-access="{{ document.access_level }}" data-review="{% if document.is_reviewed %}reviewed{% else %}pending{% endif %}">
-                                    <td>
-                                        <a href="{% url 'transaction_support:document_detail' document.pk %}" class="text-decoration-none">
-                                            <strong>{{ document.title }}</strong>
-                                        </a>
-                                        {% if document.description %}
-                                            <br><small class="text-muted">{{ document.description|truncatechars:50 }}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ document.get_document_type_display }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge {% if document.access_level == 'public' %}bg-success{% elif document.access_level == 'restricted' %}bg-warning{% else %}bg-danger{% endif %}">
-                                            {{ document.get_access_level_display }}
-                                        </span>
-                                    </td>
-                                    <td>v{{ document.version }}</td>
-                                    <td>{{ document.file_size|filesizeformat }}</td>
-                                    <td>{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</td>
-                                    <td>{{ document.uploaded_at|date:"M d, Y H:i" }}</td>
-                                    <td>
+<!-- Document Management Table -->
+<div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+    <div class="bg-white px-4 py-3 flex items-center justify-between">
+        <h6 class="text-black font-bold text-xs m-0">Transaction Documents</h6>
+        <div class="flex gap-2">
+            <a href="{% url 'transaction_support:document_create' transaction.pk %}" class="p-2 flex gap-1 text-xs">
+                <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"></path>
+                </svg>
+                <span class="font-bold">Upload Document</span>
+            </a>
+            <a href="{% url 'transaction_support:bulk_document_upload' transaction.pk %}" class="p-2 flex gap-1 text-xs">
+                <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"></path>
+                </svg>
+                <span class="font-bold">Bulk Upload</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="px-4 py-2 bg-gray-50 border-b border-gray-200">
+        <div class="flex gap-2 items-center">
+            <select class="text-xs border border-gray-300 rounded px-2 py-1" id="typeFilter">
+                <option value="">All Types</option>
+                {% for type_code, type_name in document_types %}
+                    <option value="{{ type_code }}">{{ type_name }}</option>
+                {% endfor %}
+            </select>
+            <select class="text-xs border border-gray-300 rounded px-2 py-1" id="accessFilter">
+                <option value="">All Access Levels</option>
+                {% for access_code, access_name in access_levels %}
+                    <option value="{{ access_code }}">{{ access_name }}</option>
+                {% endfor %}
+            </select>
+            <select class="text-xs border border-gray-300 rounded px-2 py-1" id="reviewFilter">
+                <option value="">All Documents</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="pending">Pending Review</option>
+            </select>
+            <input type="text" class="text-xs border border-gray-300 rounded px-2 py-1 flex-1 max-w-sm" id="searchFilter" placeholder="Search documents...">
+        </div>
+    </div>
+    
+    <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+        <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+            <table class="w-full divide-y divide-gray-200" id="documentsTable">
+                <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Title</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Type</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Access Level</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Version</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Size</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Uploaded By</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Uploaded At</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Review Status</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for document in documents %}
+                    <tr data-type="{{ document.document_type }}" data-access="{{ document.access_level }}" data-review="{% if document.is_reviewed %}reviewed{% else %}pending{% endif %}" class="hover:bg-gray-50">
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <a href="{% url 'transaction_support:document_detail' document.pk %}" class="text-xs font-medium text-gray-900 hover:text-blue-600">
+                                {{ document.title|truncatechars:30 }}
+                            </a>
+                            {% if document.description %}
+                                <div class="text-xs text-gray-500">{{ document.description|truncatechars:40 }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ document.get_document_type_display }}</span>
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if document.access_level == 'public' %}bg-green-100 text-green-800{% elif document.access_level == 'restricted' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ document.get_access_level_display }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-mono">v{{ document.version }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ document.file_size|filesizeformat }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ document.uploaded_at|date:"M d, Y H:i" }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            {% if document.is_reviewed %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Reviewed</span>
+                                {% if document.reviewed_by %}
+                                    <div class="text-xs text-gray-500">by {{ document.reviewed_by.get_full_name|default:document.reviewed_by.username }}</div>
+                                {% endif %}
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <div class="flex items-center space-x-1">
+                                <a href="{% url 'transaction_support:document_download' document.pk %}" class="text-blue-600 hover:text-blue-900" title="Download">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'transaction_support:document_detail' document.pk %}" class="text-gray-600 hover:text-gray-900" title="View Details">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
+                                {% if perms.transaction_support.change_transactiondocument %}
+                                    <a href="{% url 'transaction_support:document_version_create' document.pk %}" class="text-gray-600 hover:text-gray-900" title="New Version">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </a>
+                                    <a href="{% url 'transaction_support:document_review_toggle' document.pk %}" class="{% if document.is_reviewed %}text-yellow-600 hover:text-yellow-900{% else %}text-green-600 hover:text-green-900{% endif %}" title="{% if document.is_reviewed %}Mark as Pending{% else %}Mark as Reviewed{% endif %}">
                                         {% if document.is_reviewed %}
-                                            <span class="badge bg-success">Reviewed</span>
-                                            {% if document.reviewed_by %}
-                                                <br><small class="text-muted">by {{ document.reviewed_by.get_full_name|default:document.reviewed_by.username }}</small>
-                                            {% endif %}
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
                                         {% else %}
-                                            <span class="badge bg-warning">Pending</span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
                                         {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{% url 'transaction_support:document_download' document.pk %}" class="btn btn-outline-primary" title="Download">
-                                                <i class="fas fa-download"></i>
-                                            </a>
-                                            <a href="{% url 'transaction_support:document_detail' document.pk %}" class="btn btn-outline-info" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            {% if perms.transaction_support.change_transactiondocument %}
-                                                <a href="{% url 'transaction_support:document_version_create' document.pk %}" class="btn btn-outline-secondary" title="New Version">
-                                                    <i class="fas fa-code-branch"></i>
-                                                </a>
-                                                <a href="{% url 'transaction_support:document_review_toggle' document.pk %}" class="btn btn-outline-{% if document.is_reviewed %}warning{% else %}success{% endif %}" title="{% if document.is_reviewed %}Mark as Pending{% else %}Mark as Reviewed{% endif %}">
-                                                    <i class="fas fa-{% if document.is_reviewed %}times{% else %}check{% endif %}"></i>
-                                                </a>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="9" class="text-center text-muted py-4">
-                                        <i class="fas fa-file-alt fa-3x mb-3"></i>
-                                        <p>No documents uploaded yet.</p>
-                                        <a href="{% url 'transaction_support:document_create' transaction.pk %}" class="btn btn-primary">
-                                            Upload First Document
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    {% if is_paginated %}
-                    <nav aria-label="Document pagination">
-                        <ul class="pagination justify-content-center">
-                            {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=1">First</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                                </li>
-                            {% endif %}
-                            
-                            <li class="page-item active">
-                                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                            </li>
-                            
-                            {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-                                </li>
-                            {% endif %}
-                        </ul>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="px-3 py-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <h3 class="mt-2 text-xs font-medium text-gray-900">No documents uploaded yet</h3>
+<p class="mt-1 text-xs text-gray-500">Get started by uploading your first document.</p>
+                            <div class="mt-6">
+                                <a href="{% url 'transaction_support:document_create' transaction.pk %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                    Upload First Document
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="bg-white px-4 py-3 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</a>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-xs text-gray-700">
+                        Showing page <span class="font-medium">{{ page_obj.number }}</span> of <span class="font-medium">{{ page_obj.paginator.num_pages }}</span>
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50">First</a>
+                            <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50">Previous</a>
+                        {% endif %}
+                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-xs font-medium text-blue-600">{{ page_obj.number }}</span>
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50">Next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50">Last</a>
+                        {% endif %}
                     </nav>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 
 <script>

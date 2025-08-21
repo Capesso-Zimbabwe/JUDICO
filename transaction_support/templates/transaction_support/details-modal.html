@@ -1,0 +1,68 @@
+{% extends 'components/modals/base-form-modal.html' %}
+
+{% block modal_content %}
+
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-xs leading-6 font-medium text-gray-900" id="modal-title">
+                Transaction Details
+            </h3>
+            <div class="mt-2">
+                <p class="text-xs text-gray-500">
+                    View detailed information about this transaction.
+                </p>
+            </div>
+            {% if transaction %}
+            <div class="mt-5">
+                <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Transaction ID</dt>
+                        <dd class="mt-1 text-xs text-gray-900">{{ transaction.id }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Title</dt>
+                        <dd class="mt-1 text-xs text-gray-900">{{ transaction.title }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Type</dt>
+                        <dd class="mt-1 text-xs text-gray-900">{{ transaction.get_transaction_type_display }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Status</dt>
+                        <dd class="mt-1 text-xs text-gray-900">{{ transaction.get_status_display }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Lead Lawyer</dt>
+                        <dd class="mt-1 text-xs text-gray-900">{{ transaction.lead_lawyer.get_full_name|default:"Not assigned" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Created</dt>
+                        <dd class="mt-1 text-xs text-gray-900">{{ transaction.created_at|date:"M d, Y g:i A" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500">Last Updated</dt>
+                        <dd class="mt-1 text-xs text-gray-900">{{ transaction.updated_at|date:"M d, Y g:i A" }}</dd>
+                    </div>
+                </dl>
+            </div>
+            {% else %}
+            <div class="mt-5 text-center text-gray-500">
+                <p class="text-xs">No transaction selected</p>
+            </div>
+            {% endif %}
+        </div>
+{% endblock %}
+{% block modal_body_classes %}flex flex-col max-h-[80vh] overflow-hidden{% endblock %}
+{% block modal_title %}Transaction Details{% endblock %}
+
+{% block close_button %}
+                    <button type="button"
+                            class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-xs w-8 h-8 ms-auto inline-flex justify-center items-center"
+                           onclick="window.detailsModal.hide()">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                             viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                {% endblock %}

@@ -10,11 +10,11 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Bulk Document Upload</h1>
-                    <p class="text-sm text-gray-600 mt-1">Transaction: {{ transaction.title }}</p>
+                    <h1 class="text-xs font-bold text-gray-900">Bulk Document Upload</h1>
+                    <p class="text-xs text-gray-600 mt-1">Transaction: {{ transaction.title }}</p>
                 </div>
                 <a href="{% url 'transaction_support:transaction_detail' transaction.pk %}" 
-                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
@@ -38,8 +38,8 @@
                         </svg>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-blue-800">Bulk Upload Instructions</h3>
-                        <div class="mt-2 text-sm text-blue-700">
+                        <h3 class="text-xs font-medium text-blue-800">Bulk Upload Instructions</h3>
+                        <div class="mt-2 text-xs text-blue-700">
                             <ul class="list-disc list-inside space-y-1">
                                 <li>Select multiple files to upload at once</li>
                                 <li>All files will use the same category and access level settings</li>
@@ -54,7 +54,7 @@
             <!-- File Selection -->
             <div class="space-y-6">
                 <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">File Selection</h3>
+                    <h3 class="text-xs font-medium text-gray-900 mb-4">File Selection</h3>
                     <div class="space-y-4">
                         <div>
                             {% include "components/field.html" with field=form.document %}
@@ -67,7 +67,7 @@
                             </svg>
                             <div class="mt-4">
                                 <label for="id_document" class="cursor-pointer">
-                                    <span class="mt-2 block text-sm font-medium text-gray-900">
+                                    <span class="mt-2 block text-xs font-medium text-gray-900">
                                         Drop files here or click to browse
                                     </span>
                                 </label>
@@ -81,7 +81,7 @@
 
                 <!-- Common Settings -->
                 <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Common Settings</h3>
+                    <h3 class="text-xs font-medium text-gray-900 mb-4">Common Settings</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             {% include "components/field.html" with field=form.category %}
@@ -100,7 +100,7 @@
 
             <!-- Selected Files Preview -->
             <div id="filePreview" class="hidden">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Selected Files</h3>
+                <h3 class="text-xs font-medium text-gray-900 mb-4">Selected Files</h3>
                 <div id="fileList" class="space-y-2">
                     <!-- Files will be listed here via JavaScript -->
                 </div>
@@ -109,11 +109,11 @@
             <!-- Form Actions -->
             <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                 <a href="{% url 'transaction_support:transaction_detail' transaction.pk %}" 
-                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Cancel
                 </a>
                 <button type="submit" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         id="uploadButton" disabled>
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
                     </svg>
                     <div>
-                        <p class="text-sm font-medium text-gray-900">${file.name}</p>
+                        <p class="text-xs font-medium text-gray-900">${file.name}</p>
                         <p class="text-xs text-gray-500">${formatFileSize(file.size)}</p>
                     </div>
                 </div>

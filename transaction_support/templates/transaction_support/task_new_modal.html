@@ -1,0 +1,11 @@
+{% extends "components/modals/base-form-modal.html" %}
+
+{% block modal_title %}
+    Add New Task
+{% endblock %}
+
+{% block modal_content %}
+    <div id="task-new-modal-container">
+        {% include "transaction_support/task_form.html" %}
+    </div>
+{% endblock %}
