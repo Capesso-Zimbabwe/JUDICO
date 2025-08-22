@@ -431,21 +431,30 @@ class TransactionTaskCreateView(LoginRequiredMixin, CreateView):
     form_class = TransactionTaskForm
 
     def dispatch(self, request, *args, **kwargs):
-        self.workflow = get_object_or_404(TransactionWorkflow, pk=kwargs['workflow_pk'])
+        if 'workflow_pk' in kwargs:
+            self.workflow = get_object_or_404(TransactionWorkflow, pk=kwargs['workflow_pk'])
+            self.transaction = self.workflow.transaction
+        elif 'transaction_pk' in kwargs:
+            self.transaction = get_object_or_404(Transaction, pk=kwargs['transaction_pk'])
+            self.workflow = None
+        else:
+            raise ValueError("Either workflow_pk or transaction_pk must be provided")
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['transaction'] = self.workflow.transaction
+        kwargs['transaction'] = self.transaction
         return kwargs
 
     def form_valid(self, form):
-        form.instance.workflow = self.workflow
+        form.instance.transaction = self.transaction
+        if self.workflow:
+            form.instance.workflow = self.workflow
         response = super().form_valid(form)
         
         # Create audit log
         TransactionAuditLog.objects.create(
-            transaction=self.workflow.transaction,
+            transaction=self.transaction,
             user=self.request.user,
             action='task_created',
             description=f'Task "{self.object.title}" created'
@@ -455,12 +464,12 @@ class TransactionTaskCreateView(LoginRequiredMixin, CreateView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('transaction_support:transaction_detail', kwargs={'pk': self.workflow.transaction.pk})
+        return reverse_lazy('transaction_support:transaction_detail', kwargs={'pk': self.transaction.pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['workflow'] = self.workflow
-        context['transaction'] = self.workflow.transaction
+        context['transaction'] = self.transaction
         return context
 
 

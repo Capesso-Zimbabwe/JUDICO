@@ -233,16 +233,20 @@
         });
 
         const tasksModalElement = document.getElementById('tasks-modal');
-        window.tasksModal = new Modal(tasksModalElement, modalOptions, {
-            id: 'tasks-modal',
-            override: true
-        });
+        if (tasksModalElement) {
+            window.tasksModal = new Modal(tasksModalElement, modalOptions, {
+                id: 'tasks-modal',
+                override: true
+            });
+        }
 
         const taskNewModalElement = document.getElementById('task-new-modal');
-        window.taskNewModal = new Modal(taskNewModalElement, modalOptions, {
-            id: 'task-new-modal',
-            override: true
-        });
+        if (taskNewModalElement) {
+            window.taskNewModal = new Modal(taskNewModalElement, modalOptions, {
+                id: 'task-new-modal',
+                override: true
+            });
+        }
 
         {% if request.GET.transaction_id %}
             htmx.ajax('GET', "{% url 'transaction_support:transaction_detail' request.GET.transaction_id %}", {
@@ -285,16 +289,23 @@
                 return;
             }
             
+            console.log('Current transaction data:', window.currentTransactionData);
+            console.log('Transaction ID:', window.currentTransactionData.id);
+            
             // Close the tasks modal
-            window.tasksModal.hide();
+            if (window.tasksModal) {
+                window.tasksModal.hide();
+            }
             
             // Load the form via HTMX and then show the modal
-            htmx.ajax('GET', '/transaction/tasks/create/', {
+            htmx.ajax('GET', `/transaction/transactions/${window.currentTransactionData.id}/tasks/create/`, {
                 target: '#task-new-modal-container',
                 swap: 'innerHTML'
             }).then(() => {
                 // Open the task creation modal after form is loaded
-                window.taskNewModal.show();
+                if (window.taskNewModal) {
+                    window.taskNewModal.show();
+                }
                 
                 // Pre-fill the transaction field if it exists
                 setTimeout(() => {
@@ -319,7 +330,9 @@
                 const response = event.detail.xhr.responseText;
                 if (response.includes('success') || event.detail.xhr.status === 200) {
                     // Close the task creation modal
-                    window.taskNewModal.hide();
+                    if (window.taskNewModal) {
+                        window.taskNewModal.hide();
+                    }
                     
                     // Refresh the tasks modal if it's open
                     if (window.currentTransactionData) {

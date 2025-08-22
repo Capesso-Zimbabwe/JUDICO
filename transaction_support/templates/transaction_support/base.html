@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('htmx:afterRequest', function(event) {
         if (event.detail.xhr.status === 200 && event.target.classList.contains('task-status-update')) {
             // Show success notification
-            if (typeof notyf !== 'undefined') {
-                notyf.success('Task status updated successfully');
+            if (typeof window.notyf !== 'undefined') {
+                window.notyf.success('Task status updated successfully');
             }
         }
     });

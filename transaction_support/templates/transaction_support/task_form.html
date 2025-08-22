@@ -5,7 +5,11 @@
         hx-post="{% url 'transaction_support:task_update' task.id %}{% querystring %}"
         hx-target="#update-modal-container"
         {% else %}
-        hx-post="{% url 'transaction_support:task_create' %}{% querystring %}"
+            {% if workflow %}
+            hx-post="{% url 'transaction_support:task_create' workflow.pk %}{% querystring %}"
+            {% else %}
+            hx-post="{% url 'transaction_support:task_create_for_transaction' transaction.pk %}{% querystring %}"
+            {% endif %}
         hx-target="#task-new-modal-container"
         {% endif %}
         class="">

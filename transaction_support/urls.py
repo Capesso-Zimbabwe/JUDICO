@@ -35,6 +35,7 @@ urlpatterns = [
     
     # Task Management
     path('workflows/<int:workflow_pk>/tasks/create/', views.TransactionTaskCreateView.as_view(), name='task_create'),
+    path('transactions/<int:transaction_pk>/tasks/create/', views.TransactionTaskCreateView.as_view(), name='task_create_for_transaction'),
     path('tasks/<int:task_pk>/update-status/', views.task_update_status, name='task_update_status'),
     
     # Monitoring and Reports
