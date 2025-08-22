@@ -1,6 +1,9 @@
 .venv/
-theme/
+
 .idea
 .env
 node_modules
 media
+.env
+
+db.sqlite3
