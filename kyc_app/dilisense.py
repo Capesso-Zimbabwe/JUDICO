@@ -114,8 +114,22 @@ def check_individual(request):
 
 ###########################################################################################################
 from django.template.loader import render_to_string
-from weasyprint import HTML
 from django.utils import timezone
+from django.http import HttpResponse
+
+# Try to import WeasyPrint, fall back to ReportLab if not available
+try:
+    from weasyprint import HTML
+    WEASYPRINT_AVAILABLE = True
+except (ImportError, OSError) as e:
+    WEASYPRINT_AVAILABLE = False
+    # Import ReportLab as fallback
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    import io
 
 
 def download_individual_report(request):
@@ -134,16 +148,18 @@ def download_individual_report(request):
     # Optionally add a timestamp or any other info
     screening_time = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Render the PDF template to HTML
-    html_string = render_to_string('pdf_template.html', {
-        'results': results,
-        'query': query,
-        'source_type': source_type,
-        'screening_time': screening_time,
-    })
-
-    # Convert HTML to PDF
-    pdf_file = HTML(string=html_string).write_pdf()
+    if WEASYPRINT_AVAILABLE:
+        # Use WeasyPrint for HTML to PDF conversion
+        html_string = render_to_string('pdf_template.html', {
+            'results': results,
+            'query': query,
+            'source_type': source_type,
+            'screening_time': screening_time,
+        })
+        pdf_file = HTML(string=html_string).write_pdf()
+    else:
+        # Use ReportLab as fallback
+        pdf_file = _generate_pdf_with_reportlab(results, query, source_type, screening_time)
 
     # Return as downloadable file
     response = HttpResponse(pdf_file, content_type='application/pdf')
@@ -151,9 +167,87 @@ def download_individual_report(request):
     return response
 
 
-
-
-
+def _generate_pdf_with_reportlab(results, query, source_type, screening_time):
+    """
+    Generate PDF using ReportLab as fallback when WeasyPrint is not available.
+    """
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    story = []
+    
+    # Title
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        spaceAfter=30,
+        alignment=1  # Center alignment
+    )
+    story.append(Paragraph("DILISense AML Screening Report", title_style))
+    story.append(Spacer(1, 12))
+    
+    # Report details
+    details_data = [
+        ['Query:', query],
+        ['Source Type:', source_type],
+        ['Screening Time:', screening_time],
+    ]
+    details_table = Table(details_data, colWidths=[2*inch, 4*inch])
+    details_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    story.append(details_table)
+    story.append(Spacer(1, 20))
+    
+    # Results section
+    if results and 'data' in results:
+        story.append(Paragraph("Search Results:", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        
+        for idx, result in enumerate(results['data'][:10], 1):  # Limit to first 10 results
+            # Result header
+            story.append(Paragraph(f"Result {idx}:", styles['Heading3']))
+            
+            # Result details
+            result_data = []
+            if 'name' in result:
+                result_data.append(['Name:', str(result['name'])])
+            if 'source' in result:
+                result_data.append(['Source:', str(result['source'])])
+            if 'match_strength' in result:
+                result_data.append(['Match Strength:', str(result['match_strength'])])
+            if 'categories' in result:
+                categories = ', '.join(result['categories']) if isinstance(result['categories'], list) else str(result['categories'])
+                result_data.append(['Categories:', categories])
+            
+            if result_data:
+                result_table = Table(result_data, colWidths=[1.5*inch, 4.5*inch])
+                result_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 9),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black)
+                ]))
+                story.append(result_table)
+            story.append(Spacer(1, 12))
+    else:
+        story.append(Paragraph("No results found.", styles['Normal']))
+    
+    # Build PDF
+    doc.build(story)
+    pdf_data = buffer.getvalue()
+    buffer.close()
+    return pdf_data
 
 
 ##########################################################################################################

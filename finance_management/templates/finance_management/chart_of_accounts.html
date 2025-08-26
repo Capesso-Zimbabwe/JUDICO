@@ -8,179 +8,184 @@
     <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
 
 
-        <!-- Filters Section -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between">
-            <form action="" class="flex-1 max-w-sm" id="search-form">
-                {% include "components/field.html" with hide_label=True field=search_form.search %}
-            </form>
+        <!-- Professional Header Section -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">Chart of Accounts</h2>
+                <div class="flex space-x-2">
+                    <button class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-edit mr-1"></i> Edit
+                    </button>
+                    <button class="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-download mr-1"></i> Export
+                    </button>
+                    <a hx-get="{% url 'finance_management:account_create' %}"
+                       hx-target="#new-modal-container"
+                       hx-indicator="#new-modal-overlay"
+                       hx-trigger="click"
+                       data-modal-target="new-modal" data-modal-toggle="new-modal"
+                       href="{% url 'finance_management:account_create' %}" 
+                       class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors">
+                        <i class="fas fa-plus mr-1"></i> Add Account
+                    </a>
+                </div>
+            </div>
             
-            <div class="flex gap-2 items-center">
-                <select name="filter" form="search-form" onchange="filterAccounts(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1">
-                    <option value="">All Types</option>
-                    <option value="asset">Assets</option>
-                    <option value="liability">Liabilities</option>
-                    <option value="equity">Equity</option>
-                    <option value="revenue">Revenue</option>
-                    <option value="expense">Expenses</option>
-                </select>
+            <!-- Search and Filter Section -->
+            <div class="mt-4 flex items-center justify-between">
+                <form action="" class="flex-1 max-w-sm" id="search-form">
+                    {% include "components/field.html" with hide_label=True field=search_form.search %}
+                </form>
                 
-                <a hx-get="{% url 'finance_management:account_create' %}"
-                   hx-target="#new-modal-container"
-                   hx-indicator="#new-modal-overlay"
-                   hx-trigger="click"
-                   data-modal-target="new-modal" data-modal-toggle="new-modal"
-                   href="{% url 'finance_management:account_create' %}" class="p-2 flex gap-1">
-                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                         height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M5 12h14m-7 7V5"></path>
-                    </svg>
-                    <span class="font-bold">Add Account</span>
-                </a>
+                <div class="flex gap-2 items-center">
+                    <select name="filter" form="search-form" onchange="filterAccounts(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1">
+                        <option value="">All Account Types</option>
+                        <option value="asset">Assets</option>
+                        <option value="liability">Liabilities</option>
+                        <option value="equity">Equity</option>
+                        <option value="revenue">Revenue</option>
+                        <option value="expense">Expenses</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
             <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-                <table class="w-full divide-y divide-gray-200" id="accountsTable">
+                <table class="w-full" id="accountsTable">
                     <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
                         <tr>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
                                 Account Code
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
                                 Account Name
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Type
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Account Type
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Balance
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Debit Balance
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Credit Balance
+                            </th>
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
                                 Status
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
                                 Actions
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="accountsTableBody">
-                    {% for account in accounts %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-200" 
-                            data-account-code="{{ account.code }}" 
-                            data-account-name="{{ account.name }}" 
-                            data-account-type="{{ account.type }}" 
-                            data-account-status="{{ account.status }}">
-                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ account.code }}</td>
-                            <td class="px-3 py-1 whitespace-nowrap">
-                                <button type="button"
-                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
-                                        onclick="viewAccount('{{ account.id }}')">
-                                    <div class="flex-shrink-0 h-8 w-8">
-                                        <div class="h-8 w-8 rounded-full 
-                                            {% if account.account_type == 'asset' %}bg-blue-100{% elif account.account_type == 'liability' %}bg-red-100{% elif account.account_type == 'equity' %}bg-green-100{% elif account.account_type == 'revenue' %}bg-purple-100{% elif account.account_type == 'expense' %}bg-orange-100{% endif %} 
-                                            flex items-center justify-center">
-                                            <span class="
-                                                {% if account.account_type == 'asset' %}text-blue-600{% elif account.account_type == 'liability' %}text-red-600{% elif account.account_type == 'equity' %}text-green-600{% elif account.account_type == 'revenue' %}text-purple-600{% elif account.account_type == 'expense' %}text-orange-600{% endif %} 
-                                                font-medium text-xs">{{ account.name|first|upper }}</span>
-                                        </div>
+                    <tbody class="bg-white" id="accountsTableBody">
+                        <!-- Dynamic accounts from database -->
+                        {% regroup accounts by account_type as account_groups %}
+                        {% for group in account_groups %}
+                            <!-- Account Type Header -->
+                            <tr class="{% if group.grouper == 'ASSET' %}bg-blue-50{% elif group.grouper == 'LIABILITY' %}bg-red-50{% elif group.grouper == 'EQUITY' %}bg-green-50{% elif group.grouper == 'REVENUE' %}bg-purple-50{% elif group.grouper == 'EXPENSE' %}bg-orange-50{% endif %}">
+                                <td class="px-4 py-3 text-sm font-bold {% if group.grouper == 'ASSET' %}text-blue-900{% elif group.grouper == 'LIABILITY' %}text-red-900{% elif group.grouper == 'EQUITY' %}text-green-900{% elif group.grouper == 'REVENUE' %}text-purple-900{% elif group.grouper == 'EXPENSE' %}text-orange-900{% endif %} border-b border-gray-200" colspan="7">
+                                    {% if group.grouper == 'ASSET' %}ASSETS
+                                    {% elif group.grouper == 'LIABILITY' %}LIABILITIES
+                                    {% elif group.grouper == 'EQUITY' %}EQUITY
+                                    {% elif group.grouper == 'REVENUE' %}REVENUE
+                                    {% elif group.grouper == 'EXPENSE' %}EXPENSES
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            
+                            <!-- Account Rows -->
+                            {% for account in group.list %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-200" 
+                                data-account-code="{{ account.code }}" 
+                                data-account-name="{{ account.name }}" 
+                                data-account-type="{{ account.account_type }}" 
+                                data-account-status="{{ account.status }}">
+                                <td class="px-4 py-2 text-sm text-gray-900 border-b border-gray-100 font-mono">{{ account.code }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-900 border-b border-gray-100">{{ account.name }}</td>
+                                <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                        {% if account.account_type == 'ASSET' %}bg-blue-100 text-blue-800
+                                        {% elif account.account_type == 'LIABILITY' %}bg-red-100 text-red-800
+                                        {% elif account.account_type == 'EQUITY' %}bg-green-100 text-green-800
+                                        {% elif account.account_type == 'REVENUE' %}bg-purple-100 text-purple-800
+                                        {% elif account.account_type == 'EXPENSE' %}bg-orange-100 text-orange-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {% if account.account_type == 'ASSET' %}Asset
+                                        {% elif account.account_type == 'LIABILITY' %}Liability
+                                        {% elif account.account_type == 'EQUITY' %}Equity
+                                        {% elif account.account_type == 'REVENUE' %}Revenue
+                                        {% elif account.account_type == 'EXPENSE' %}Expense
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100 font-mono">
+                                    {% if account.account_type == 'ASSET' or account.account_type == 'EXPENSE' %}
+                                        ${{ account.balance|floatformat:2 }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100 font-mono">
+                                    {% if account.account_type == 'LIABILITY' or account.account_type == 'EQUITY' or account.account_type == 'REVENUE' %}
+                                        ${{ account.balance|floatformat:2 }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="px-3 py-2 text-center text-sm border-b border-gray-100">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                        {% if account.status == 'ACTIVE' %}bg-green-100 text-green-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {% if account.status == 'ACTIVE' %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                    <div class="flex space-x-2">
+                                        <!-- View Details -->
+                                        <button type="button"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                                title="View Account"
+                                                data-modal-target="details-modal" 
+                                                data-modal-toggle="details-modal"
+                                                onclick="viewAccountDetails('{{ account.code }}', '{{ account.name }}', '{{ account.account_type }}', '{{ account.balance }}', '{{ account.status }}')">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                            </svg>
+                                        </button>
+                                        <!-- Edit -->
+                                        <button type="button"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                                title="Edit Account"
+                                                data-modal-target="update-modal" 
+                                                data-modal-toggle="update-modal"
+                                                onclick="editAccount('{{ account.code }}', '{{ account.name }}', '{{ account.account_type }}', '{{ account.balance }}', '{{ account.status }}')">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                            </svg>
+                                        </button>
+                                        <!-- Delete -->
+                                        <button type="button"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                                title="Delete Account"
+                                                onclick="deleteAccount('{{ account.code }}', '{{ account.name }}')">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <div class="ml-2">
-                                        <div class="text-xs font-medium text-gray-900">
-                                            <span>{{ account.name|truncatechars:25 }}</span>
-                                        </div>
-                                    </div>
-                                </button>
-                            </td>
-                            <td class="px-3 py-1 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                    {% if account.type == 'Asset' %}bg-green-100 text-green-800
-                                    {% elif account.type == 'Liability' %}bg-red-100 text-red-800
-                                    {% elif account.type == 'Equity' %}bg-blue-100 text-blue-800
-                                    {% elif account.type == 'Revenue' %}bg-purple-100 text-purple-800
-                                    {% elif account.type == 'Expense' %}bg-orange-100 text-orange-800
-                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                    {{ account.type }}
-                                </span>
-                            </td>
-                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">${{ account.balance|floatformat:2 }}</td>
-                            <td class="px-3 py-1 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                    {% if account.status == 'Active' %}bg-green-100 text-green-800
-                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                    {{ account.status }}
-                                </span>
-                            </td>
-                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
-                                <div class="flex space-x-2">
-                                    <!-- View Details -->
-                                    <button type="button"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                            title="View Account"
-                                            data-modal-target="details-modal" 
-                                            data-modal-toggle="details-modal"
-                                            onclick="viewAccountDetails('{{ account.code }}', '{{ account.name }}', '{{ account.type }}', '{{ account.balance }}', '{{ account.status }}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
-                                        </svg>
-                                    </button>
-                                    <!-- Edit -->
-                                    <button type="button"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                            title="Edit Account"
-                                            data-modal-target="update-modal" 
-                                            data-modal-toggle="update-modal"
-                                            onclick="editAccount('{{ account.code }}', '{{ account.name }}', '{{ account.type }}', '{{ account.balance }}', '{{ account.status }}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
-                                        </svg>
-                                    </button>
-                                    <!-- Transactions -->
-                                    <button type="button"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                            title="View Transactions"
-                                            data-modal-target="transactions-modal" 
-                                            data-modal-toggle="transactions-modal"
-                                            onclick="viewTransactions('{{ account.code }}', '{{ account.name }}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-chart-line text-4xl text-gray-400 mb-4"></i>
-                                    <h3 class="text-xs font-medium text-gray-900 mb-1">No accounts found</h3>
-                                    <p class="text-xs text-gray-500">Get started by creating your first account.</p>
-                                    <a hx-get="{% url 'finance_management:account_create' %}"
-                                       hx-target="#new-modal-container"
-                                       hx-indicator="#new-modal-overlay"
-                                       hx-trigger="click"
-                                       data-modal-target="new-modal" data-modal-toggle="new-modal"
-                                       href="{% url 'finance_management:account_create' %}"
-                                       class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                        </svg>
-                                        Add Your First Account
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Pagination -->
-    {% include "components/paginator.html" %}
+
 
     <!-- Modals -->
     {% include "finance_management/new-modal.html" with modal_id="new-modal" %}

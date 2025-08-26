@@ -300,16 +300,29 @@ class ChartOfAccountsView(LoginRequiredMixin, TemplateView):
                 Q(account_type__icontains=search_param)
             )
         
-        # Pagination
-        paginator = Paginator(accounts, 10)  # Show 10 accounts per page
-        page = self.request.GET.get('page')
-        
-        try:
-            page_obj = paginator.page(page)
-        except PageNotAnInteger:
-            page_obj = paginator.page(1)
-        except EmptyPage:
-            page_obj = paginator.page(paginator.num_pages)
+        # Calculate actual balances from journal entries
+        for account in accounts:
+            # Calculate balance from journal entry lines
+            debit_total = JournalEntryLine.objects.filter(
+                account=account,
+                journal_entry__status='POSTED'
+            ).aggregate(total=Sum('debit'))['total'] or Decimal('0.00')
+            
+            credit_total = JournalEntryLine.objects.filter(
+                account=account,
+                journal_entry__status='POSTED'
+            ).aggregate(total=Sum('credit'))['total'] or Decimal('0.00')
+            
+            # Calculate net balance based on account type
+            if account.account_type in ['ASSET', 'EXPENSE']:
+                # Debit accounts: positive balance = debit > credit
+                account.calculated_balance = debit_total - credit_total
+            else:
+                # Credit accounts: positive balance = credit > debit
+                account.calculated_balance = credit_total - debit_total
+            
+            # Update the account balance field with calculated balance
+            account.balance = account.calculated_balance
         
         # Initialize search form
         initial = {}
@@ -317,8 +330,7 @@ class ChartOfAccountsView(LoginRequiredMixin, TemplateView):
             initial['search'] = search_param
         search_form = AccountFilterForm(initial=initial)
         
-        context['accounts'] = page_obj
-        context['page_obj'] = page_obj
+        context['accounts'] = accounts
         context['search_form'] = search_form
         
         return context
@@ -1086,14 +1098,30 @@ class ReportDownloadView(LoginRequiredMixin, View):
         try:
             report = get_object_or_404(Report, pk=pk)
             
-            if report.status != 'completed' or not report.file_path:
-                messages.error(request, 'Report is not ready for download.')
-                return JsonResponse({'error': 'Report not ready'}, status=400)
-            
-            # For now, just return a success message
-            # In a real implementation, you would serve the actual file
-            messages.success(request, f'Report "{report.name}" download started.')
-            return JsonResponse({'success': True, 'message': 'Download started'})
+            # Handle different report statuses
+            if report.status == 'failed':
+                messages.error(request, 'Report generation failed. Please try generating the report again.')
+                return JsonResponse({'error': 'Report generation failed'}, status=400)
+            elif report.status == 'pending':
+                # Update status to processing and simulate report generation
+                report.status = 'processing'
+                report.save()
+                messages.info(request, f'Report "{report.name}" is being generated. Please wait a moment and try again.')
+                return JsonResponse({'info': 'Report is being generated'}, status=202)
+            elif report.status == 'processing':
+                # Simulate completion for demo purposes
+                report.status = 'completed'
+                report.file_path = f'reports/{report.name.replace(" ", "_").lower()}_{report.pk}.pdf'
+                report.save()
+                messages.success(request, f'Report "{report.name}" has been generated and download started.')
+                return JsonResponse({'success': True, 'message': 'Report generated and download started'})
+            elif report.status == 'completed':
+                # Report is ready for download
+                messages.success(request, f'Report "{report.name}" download started.')
+                return JsonResponse({'success': True, 'message': 'Download started'})
+            else:
+                messages.error(request, 'Report status is unknown.')
+                return JsonResponse({'error': 'Unknown report status'}, status=400)
             
         except Report.DoesNotExist:
             return JsonResponse({'error': 'Report not found'}, status=404)

@@ -19,15 +19,25 @@
         function deleteReport(id) {
             if (confirm('Are you sure you want to delete this report?')) {
                 // Handle report deletion
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                const formData = new FormData();
+                
+                if (csrfToken) {
+                    formData.append('csrfmiddlewaretoken', csrfToken.value);
+                }
+                
                 fetch(`/governance/reports/${id}/delete/`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    }
+                    method: 'POST',
+                    body: formData
                 }).then(response => {
                     if (response.ok) {
                         location.reload();
+                    } else {
+                        alert('Error deleting report. Please try again.');
                     }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting report. Please try again.');
                 });
             }
         }
@@ -108,6 +118,7 @@
 {% endblock %}
 
 {% block governance_content %}
+    {% csrf_token %}
     <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
 
         <!-- Filters Section -->

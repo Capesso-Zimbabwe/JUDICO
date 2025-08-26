@@ -54,6 +54,69 @@ This project uses `python-decouple` to manage environment variables for better s
 - Use `.env.example` as a template for other developers
 - In production, set environment variables through your hosting platform's configuration
 
+## WeasyPrint System Dependencies
+
+The KYC module uses WeasyPrint for PDF generation, which requires system-level dependencies. If WeasyPrint fails to import, the system will automatically fall back to ReportLab.
+
+### Ubuntu/Debian Installation
+
+For Ubuntu 18.04+ or Debian 10+:
+```bash
+sudo apt-get update
+sudo apt-get install build-essential python3-dev python3-pip python3-setuptools python3-wheel python3-cffi libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
+```
+
+For newer versions (Ubuntu 20.04+):
+```bash
+sudo apt install python3-pip libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
+```
+
+### CentOS/RHEL/Fedora Installation
+
+```bash
+sudo yum install gcc python3-devel python3-pip python3-cffi libffi-devel cairo-devel pango-devel gdk-pixbuf2-devel
+```
+
+### Alpine Linux Installation
+
+```bash
+apk add py3-pip gcc musl-dev python3-dev pango libffi-dev cairo-dev
+```
+
+### macOS Installation
+
+Using Homebrew:
+```bash
+brew install python3 cairo pango gdk-pixbuf libffi
+```
+
+Using MacPorts:
+```bash
+sudo port install py-pip pango libffi
+```
+
+### Windows Installation
+
+WeasyPrint on Windows requires GTK+ libraries. The easiest approach is to use conda:
+```bash
+conda install -c conda-forge weasyprint
+```
+
+Alternatively, install GTK+ manually and ensure it's in your PATH.
+
+### Fallback Solution
+
+If WeasyPrint cannot be installed due to system dependency issues, the application will automatically use ReportLab for PDF generation. ReportLab is already included in the project requirements and provides basic PDF functionality without requiring system dependencies.
+
+### Troubleshooting
+
+- **libpango error**: Install the libpango-1.0-0 package for your system
+- **libcairo error**: Install cairo development libraries
+- **libffi error**: Install libffi development packages
+- **Permission errors**: Use virtual environments and avoid system-wide installations
+
+For production deployments, consider using Docker with pre-installed system dependencies or cloud platforms that support WeasyPrint.
+
 ## Usage in Code
 
 The `decouple` library is used in `settings.py` like this:

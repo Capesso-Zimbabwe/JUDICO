@@ -1,169 +1,229 @@
 {% extends 'finance_management/base.html' %}
 {% load humanize %}
 
-{% block title %}Expenses - Finance Management{% endblock %}
+{% block title %}Expense Report - Finance Management{% endblock %}
 
-{% block header_title %}Finance Management - Expenses{% endblock %}
+{% block header_title %}Expense Report{% endblock %}
 
 {% block finance_content %}
     <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
-        <!-- Filters Section -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between">
-            <form action="" class="flex-1 max-w-sm" id="search-form">
-                {% include "components/field.html" with hide_label=True field=search_form.search %}
-            </form>
-            
-            <div class="flex gap-2 items-center">
-                <select name="category" form="search-form" onchange="filterExpenses(this.value)" class="text-xs border border-gray-300 rounded-none px-2 py-1" id="categoryFilter">
-                    <option value="">All Categories</option>
-                    <option value="OFFICE_SUPPLIES">Office Supplies</option>
-                    <option value="UTILITIES">Utilities</option>
-                    <option value="RENT">Rent</option>
-                    <option value="TRAVEL">Travel</option>
-                    <option value="PROFESSIONAL_FEES">Professional Fees</option>
-                    <option value="MARKETING">Marketing</option>
-                    <option value="OTHER">Other</option>
-                </select>
-                
-                <select name="status" form="search-form" onchange="filterExpenses()" class="text-xs border border-gray-300 rounded-none px-2 py-1" id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="approved">Approved</option>
-                    <option value="pending">Pending</option>
-                </select>
-                
-                <button type="button"
-                        class="p-2 flex gap-1"
-                        onclick="openNewExpenseModal()">
-                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                         height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M5 12h14m-7 7V5"></path>
-                    </svg>
-                    <span class="font-bold">Record Expense</span>
-                </button>
+
+        <!-- Header Section -->
+        <div class="bg-white px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-lg font-semibold text-gray-900">Expense Report</h1>
+                    <p class="text-sm text-gray-600">Main Campus Dormitory</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">
+                        <i class="fas fa-edit mr-1"></i> Edit
+                    </button>
+                    <button class="px-3 py-1 text-xs bg-gray-800 text-white rounded hover:bg-gray-700">
+                        <i class="fas fa-download mr-1"></i> Export
+                    </button>
+                </div>
             </div>
         </div>
 
+        <!-- Month Selection and Quick Select -->
+        <div class="bg-white px-6 py-3 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Select Months</label>
+                        <div class="grid grid-cols-4 gap-1">
+                            <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded">Jan</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Feb</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Mar</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Apr</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">May</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Jun</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Jul</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Aug</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Sep</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Oct</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Nov</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Dec</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Boarding House</label>
+                        <select class="text-sm border border-gray-300 rounded px-3 py-1">
+                            <option>Main Campus Dormitory</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Quick Select</label>
+                        <div class="flex gap-1">
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q1</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q2</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q3</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q4</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">H1</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">H2</button>
+                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Full Year</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Report Table -->
         <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
             <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-                <table class="w-full divide-y divide-gray-200" id="expensesTable">
-                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                <table class="w-full" id="expensesTable">
+                    <thead class="bg-gray-50 sticky top-0 z-10">
                         <tr>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Date
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-200">
+                                Account
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Expense Details
+                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
+                                Jan
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Category
+                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
+                                Feb
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Amount
+                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
+                                Mar
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Status
+                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
+                                Apr
                             </th>
-                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Actions
+                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
+                                May
+                            </th>
+                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
+                                Jun
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="expensesTableBody">
-                    {% for expense in expenses %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-200" 
-                            data-expense-category="{{ expense.category }}" 
-                            data-expense-status="{% if expense.approved_by %}approved{% else %}pending{% endif %}"
-                            data-expense-title="{{ expense.title|lower }}"
-                            data-expense-description="{{ expense.description|lower }}">
-                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">{{ expense.expense_date|date:"M d, Y" }}</td>
-                            <td class="px-3 py-1 whitespace-nowrap">
-                                <button type="button"
-                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
-                                        onclick="viewExpenseDetails('{{ expense.id }}')">
-                                    <div class="flex-shrink-0 h-8 w-8">
-                                        <div class="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
-                                            <span class="text-orange-600 font-medium text-xs">{{ expense.title|first|upper }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-2">
-                                        <div class="text-xs font-medium text-gray-900">
-                                            <span>{{ expense.title|truncatechars:30 }}</span>
-                                        </div>
-                                        {% if expense.description %}
-                                        <div class="text-xs text-gray-500">
-                                            <span>{{ expense.description|truncatechars:40 }}</span>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                </button>
-                            </td>
-                            <td class="px-3 py-1 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                    {{ expense.get_category_display }}
-                                </span>
-                            </td>
-                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">${{ expense.amount|floatformat:2 }}</td>
-                            <td class="px-3 py-1 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                    {% if expense.approved_by %}bg-green-100 text-green-800
-                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                                    {% if expense.approved_by %}Approved{% else %}Pending{% endif %}
-                                </span>
-                            </td>
-                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
-                                <div class="flex space-x-2">
-                                    <!-- View Details -->
-                                    <button type="button"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                            title="View Expense"
-                                            onclick="viewExpenseDetails('{{ expense.id }}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
-                                        </svg>
-                                    </button>
-                                    <!-- Edit -->
-                                    <button type="button"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                            title="Edit Expense"
-                                            onclick="editExpense('{{ expense.id }}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
-                                        </svg>
-                                    </button>
-                                    <!-- Approve/Reject -->
-                                    {% if not expense.approved_by %}
-                                    <button type="button"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                            title="Approve Expense"
-                                            onclick="approveExpense('{{ expense.id }}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
-                                        </svg>
-                                    </button>
-                                    {% endif %}
-                                </div>
+                    <tbody class="bg-white">
+                        <!-- EXPENSES Section -->
+                        <tr class="bg-gray-100">
+                            <td class="px-4 py-2 font-bold text-gray-900 border-b border-gray-200" colspan="7">
+                                EXPENSES
                             </td>
                         </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-receipt text-4xl text-gray-400 mb-4"></i>
-                                    <h3 class="text-xs font-medium text-gray-900 mb-1">No expenses found</h3>
-                                    <p class="text-xs text-gray-500">Get started by recording your first expense.</p>
-                                    <button type="button"
-                                            class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-                                            onclick="openNewExpenseModal()">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                        </svg>
-                                        Record Your First Expense
-                                    </button>
-                                </div>
-                            </td>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Utilities - Electricity</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$7,800</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$7,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,800</td>
                         </tr>
-                    {% endfor %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Utilities - Water</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,100</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,900</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,100</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,300</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Internet & Cable</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Maintenance & Repairs</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,800</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,800</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,900</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Cleaning Supplies</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$800</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$850</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$900</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$750</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$800</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$850</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Security Services</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Insurance</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Property Tax</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$0</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$0</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$0</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$0</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Staff Salaries</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$12,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$12,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$12,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$12,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$13,000</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$13,000</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Food & Kitchen Supplies</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,800</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$9,200</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$9,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$9,800</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$10,200</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Office Supplies</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$600</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$450</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$700</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$550</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$650</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Professional Fees</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
+                        </tr>
+                        <tr class="bg-gray-50 font-semibold">
+                            <td class="px-4 py-2 text-gray-900 border-b border-gray-200">Total Expenses</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$42,500</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$42,750</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$40,050</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$43,650</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$42,650</td>
+                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$45,200</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
