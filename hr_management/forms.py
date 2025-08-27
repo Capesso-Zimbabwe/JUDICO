@@ -1,5 +1,5 @@
 from django import forms
-from .models import Employee, LeaveRequest, PerformanceReview, Department, LeaveType
+from .models import Employee, LeaveRequest, PerformanceReview, Department, LeaveType, TimeEntry
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -84,6 +84,37 @@ class PerformanceReviewForm(forms.ModelForm):
             'comments': forms.Textarea(attrs={'rows': 3}),
         }
 
+class TimeEntryForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add styling to all fields
+        for field_name, field in self.fields.items():
+            if field_name in ['description', 'notes']:
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                    'rows': 3
+                })
+            elif field_name in ['start_time', 'end_time']:
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                    'type': 'time'
+                })
+            else:
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                })
+    
+    class Meta:
+        model = TimeEntry
+        fields = ['employee', 'date', 'start_time', 'end_time', 'activity_type', 
+                 'description', 'client_case', 'hours_worked', 'is_billable', 
+                 'billable_rate', 'notes', 'tags']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'hours_worked': forms.NumberInput(attrs={'step': '0.25', 'min': '0'}),
+            'billable_rate': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+        }
+
 class UserCreationForm(UserCreationForm):
     USER_TYPE_CHOICES = [
         ('', 'Select User Type'),
@@ -114,52 +145,36 @@ class UserCreationForm(UserCreationForm):
             'placeholder': 'Enter last name'
         })
     )
+    username = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'placeholder': 'Enter username'
+        })
+    )
+    password1 = forms.CharField(
+        required=True,
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'placeholder': 'Enter password'
+        })
+    )
+    password2 = forms.CharField(
+        required=True,
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'placeholder': 'Confirm password'
+        })
+    )
     user_type = forms.ChoiceField(
         choices=USER_TYPE_CHOICES,
         required=True,
-        label="User Type",
         widget=forms.Select(attrs={
             'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
         })
     )
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Add styling to inherited fields
-        self.fields['username'].widget.attrs.update({
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-            'placeholder': 'Enter username'
-        })
-        self.fields['password1'].widget.attrs.update({
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-            'placeholder': 'Enter password'
-        })
-        self.fields['password2'].widget.attrs.update({
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-            'placeholder': 'Confirm password'
-        })
-    
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if email and User.objects.filter(email=email).exists():
-            raise forms.ValidationError("A user with this email already exists.")
-        return email
-    
-    def clean_user_type(self):
-        user_type = self.cleaned_data.get('user_type')
-        if not user_type:
-            raise forms.ValidationError("Please select a user type.")
-        return user_type
-    
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
-        if commit:
-            user.save()
-        return user
-    
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
+        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2']

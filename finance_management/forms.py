@@ -13,9 +13,14 @@ class AccountFilterForm(forms.Form):
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
-        fields = ['code', 'name', 'account_type', 'parent_account', 'status', 'description']
+        fields = ['code', 'name', 'account_type', 'parent_account', 'status', 'balance', 'description']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
+            'balance': forms.NumberInput(attrs={
+                'step': '0.01',
+                'min': '0',
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm'
+            }),
         }
 
 class InvoiceForm(forms.ModelForm):
@@ -63,12 +68,90 @@ class ExpenseFilterForm(forms.Form):
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
-        fields = ['title', 'description', 'amount', 'category', 'expense_date', 
-                 'receipt']
+        fields = [
+            'title', 'description', 'amount', 'category', 'expense_date',
+            'case_number', 'matter_type',
+            'account', 'tax_amount', 'tax_rate',
+            'approval_level', 'billable_status', 'billable_amount',
+            'invoice_number', 'vendor_name', 'vendor_tax_id',
+            'receipt', 'supporting_documents', 'compliance_notes'
+        ]
         widgets = {
             'expense_date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Detailed description of the expense...'}),
+            'amount': forms.NumberInput(attrs={'step': '0.01', 'min': '0.01', 'placeholder': '0.00'}),
+            'tax_amount': forms.NumberInput(attrs={'step': '0.01', 'min': '0.00', 'placeholder': '0.00'}),
+            'tax_rate': forms.NumberInput(attrs={'step': '0.01', 'min': '0.00', 'max': '100.00', 'placeholder': '0.00'}),
+            'billable_amount': forms.NumberInput(attrs={'step': '0.01', 'min': '0.00', 'placeholder': '0.00'}),
+            'case_number': forms.TextInput(attrs={'placeholder': 'Case number if applicable...'}),
+            'matter_type': forms.TextInput(attrs={'placeholder': 'Type of legal matter...'}),
+            'invoice_number': forms.TextInput(attrs={'placeholder': 'Vendor invoice number...'}),
+            'vendor_name': forms.TextInput(attrs={'placeholder': 'Vendor/Supplier name...'}),
+            'vendor_tax_id': forms.TextInput(attrs={'placeholder': 'Vendor tax ID...'}),
+            'compliance_notes': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Any compliance notes or special considerations...'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Make certain fields required
+        self.fields['title'].required = True
+        self.fields['amount'].required = True
+        self.fields['category'].required = True
+        self.fields['expense_date'].required = True
+        
+        # Add help text
+        self.fields['title'].help_text = 'Enter a clear, descriptive title for the expense'
+        self.fields['amount'].help_text = 'Enter the total amount before tax'
+        self.fields['tax_amount'].help_text = 'Enter any applicable tax amount'
+        self.fields['billable_amount'].help_text = 'Enter the amount that can be billed to the client'
+        
+        # Customize field labels
+        self.fields['case_number'].label = 'Case Number'
+        self.fields['matter_type'].label = 'Matter Type'
+        self.fields['billable_amount'].label = 'Billable Amount'
+        self.fields['supporting_documents'].label = 'Supporting Documents'
+        self.fields['compliance_notes'].label = 'Compliance Notes'
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        amount = cleaned_data.get('amount')
+        tax_amount = cleaned_data.get('tax_amount', 0)
+        billable_amount = cleaned_data.get('billable_amount', 0)
+        
+        # Validate amount
+        if amount and amount <= 0:
+            raise forms.ValidationError('Amount must be greater than zero.')
+        
+        # Validate tax amount
+        if tax_amount and tax_amount < 0:
+            raise forms.ValidationError('Tax amount cannot be negative.')
+        
+        # Validate billable amount
+        if billable_amount and billable_amount < 0:
+            raise forms.ValidationError('Billable amount cannot be negative.')
+        
+        if billable_amount and amount and billable_amount > amount:
+            raise forms.ValidationError('Billable amount cannot exceed the total amount.')
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        expense = super().save(commit=False)
+        
+        # Auto-calculate net amount
+        if expense.amount and expense.tax_amount:
+            expense.net_amount = expense.amount - expense.tax_amount
+        
+        # Set billable amount based on billable status
+        if expense.billable_status == 'BILLABLE':
+            expense.billable_amount = expense.amount
+        elif expense.billable_status == 'NON_BILLABLE':
+            expense.billable_amount = 0.00
+        
+        if commit:
+            expense.save()
+        return expense
 
 class JournalEntryFilterForm(forms.Form):
     search = forms.CharField(widget=forms.TextInput(

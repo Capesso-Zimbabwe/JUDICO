@@ -1,9 +1,23 @@
 {% extends 'components/modals/base-form-modal.html' %}
 
+{% block modal_size %}max-w-4xl{% endblock %}
+
 {% block modal_content %}
     <div id="new-modal-container">
-        {% include "transaction_support/transaction_form_modal.html" %}
+        <!-- Transaction form will be loaded here via HTMX when modal is opened -->
     </div>
 {% endblock %}
 
 {% block modal_title %}New Transaction{% endblock %}
+
+{% block modal_body_classes %}max-h-[60vh] overflow-y-auto{% endblock %}
+
+{% block modal_footer %}
+<!-- Modal footer -->
+<div class="flex items-center p-4 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+    <button type="button" 
+            onclick="document.getElementById('newTransactionForm').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));"
+            class="w-full text-xs bg-blue-900 text-white py-2 px-3 font-medium hover:bg-blue-700 transition-all duration-200 shadow-sm disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed submit-btn rounded-none">Create Transaction</button>
+    <button data-modal-hide="new-modal" type="button" class="w-full text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 py-2 px-3 font-medium transition-all duration-200 rounded-none">Cancel</button>
+</div>
+{% endblock %}

@@ -1,0 +1,195 @@
+<form hx-post="{% url 'hr_management:create_time_entry_modal' %}" hx-target="#time-entry-new-modal-container" hx-swap="innerHTML"
+      class="space-y-4 p-4" id="newTimeEntryForm">
+    {% csrf_token %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Employee -->
+        <div>
+            <label for="{{ form.employee.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Employee <span class="text-red-500">*</span>
+            </label>
+            {{ form.employee }}
+            {% if form.employee.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.employee.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Date -->
+        <div>
+            <label for="{{ form.date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Date <span class="text-red-500">*</span>
+            </label>
+            {{ form.date }}
+            {% if form.date.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.date.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Start Time -->
+        <div>
+            <label for="{{ form.start_time.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Start Time <span class="text-red-500">*</span>
+            </label>
+            {{ form.start_time }}
+            {% if form.start_time.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.start_time.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- End Time -->
+        <div>
+            <label for="{{ form.end_time.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                End Time <span class="text-red-500">*</span>
+            </label>
+            {{ form.end_time }}
+            {% if form.end_time.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.end_time.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Hours Worked -->
+        <div>
+            <label for="{{ form.hours_worked.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Hours Worked <span class="text-red-500">*</span>
+            </label>
+            {{ form.hours_worked }}
+            {% if form.hours_worked.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.hours_worked.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Activity Type -->
+        <div>
+            <label for="{{ form.activity_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Activity Type <span class="text-red-500">*</span>
+            </label>
+            {{ form.activity_type }}
+            {% if form.activity_type.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.activity_type.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Client/Case -->
+        <div>
+            <label for="{{ form.client_case.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Client/Case
+            </label>
+            {{ form.client_case }}
+            {% if form.client_case.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.client_case.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div>
+        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            Description <span class="text-red-500">*</span>
+        </label>
+        {{ form.description }}
+        {% if form.description.errors %}
+            <div class="text-red-500 text-xs mt-1">
+                {% for error in form.description.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Billable Rate -->
+        <div>
+            <label for="{{ form.billable_rate.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Billable Rate ($/hr)
+            </label>
+            {{ form.billable_rate }}
+            {% if form.billable_rate.errors %}
+                <div class="text-red-500 text-xs mt-1">
+                    {% for error in form.billable_rate.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Is Billable -->
+        <div class="flex items-center space-x-2">
+            <label for="{{ form.is_billable.id_for_label }}" class="flex items-center">
+                {{ form.is_billable }}
+                <span class="ml-2 text-sm font-medium text-gray-700">Billable</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div>
+        <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            Notes
+        </label>
+        {{ form.notes }}
+        {% if form.notes.errors %}
+            <div class="text-red-500 text-xs mt-1">
+                {% for error in form.notes.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Tags -->
+    <div>
+        <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            Tags
+        </label>
+        {{ form.tags }}
+        <p class="text-xs text-gray-500 mt-1">Comma-separated tags for categorization</p>
+        {% if form.tags.errors %}
+            <div class="text-red-500 text-xs mt-1">
+                {% for error in form.tags.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Non-field errors -->
+    {% if form.non_field_errors %}
+        <div class="text-red-500 text-sm">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+</form>

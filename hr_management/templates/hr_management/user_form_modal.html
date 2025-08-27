@@ -1,5 +1,5 @@
 <form hx-post="{% url 'hr_management:create_user_modal' %}" hx-target="#user-new-modal-container" hx-swap="innerHTML"
-      class="space-y-4 p-4">
+      class="space-y-4 p-4" id="newUserForm">
     {% csrf_token %}
     
     <!-- First Name -->
@@ -115,16 +115,4 @@
             {% endfor %}
         </div>
     {% endif %}
-
-    <!-- Form Actions -->
-    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-        <button type="button" data-modal-hide="user-new-modal"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Cancel
-        </button>
-        <button type="submit"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Create User
-        </button>
-    </div>
 </form>

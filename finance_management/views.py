@@ -313,7 +313,7 @@ class ChartOfAccountsView(LoginRequiredMixin, TemplateView):
                 journal_entry__status='POSTED'
             ).aggregate(total=Sum('credit'))['total'] or Decimal('0.00')
             
-            # Calculate net balance based on account type
+            # Calculate net balance from journal entries
             if account.account_type in ['ASSET', 'EXPENSE']:
                 # Debit accounts: positive balance = debit > credit
                 account.calculated_balance = debit_total - credit_total
@@ -321,8 +321,10 @@ class ChartOfAccountsView(LoginRequiredMixin, TemplateView):
                 # Credit accounts: positive balance = credit > debit
                 account.calculated_balance = credit_total - debit_total
             
-            # Update the account balance field with calculated balance
-            account.balance = account.calculated_balance
+            # Only update balance if there are journal entries
+            if debit_total > 0 or credit_total > 0:
+                account.balance = account.calculated_balance
+                account.save()
         
         # Initialize search form
         initial = {}
@@ -419,6 +421,31 @@ class AccountDetailAPIView(LoginRequiredMixin, View):
                 'created_date': account.created_at.strftime('%Y-%m-%d'),
             }
             return JsonResponse(data)
+        except Account.DoesNotExist:
+            return JsonResponse({'error': 'Account not found'}, status=404)
+
+class AccountTransactionsAPIView(LoginRequiredMixin, View):
+    """API view to return account transactions as JSON"""
+    
+    def get(self, request, code):
+        try:
+            account = get_object_or_404(Account, code=code)
+            transactions = JournalEntryLine.objects.filter(
+                account=account,
+                journal_entry__status='POSTED'
+            ).select_related('journal_entry').order_by('journal_entry__date')
+
+            data = []
+            for transaction in transactions:
+                data.append({
+                    'date': transaction.journal_entry.date.strftime('%Y-%m-%d'),
+                    'reference': transaction.journal_entry.entry_number,
+                    'description': transaction.description or transaction.journal_entry.description,
+                    'debit': str(transaction.debit),
+                    'credit': str(transaction.credit),
+                    'status': transaction.journal_entry.get_status_display(),
+                })
+            return JsonResponse(data, safe=False)
         except Account.DoesNotExist:
             return JsonResponse({'error': 'Account not found'}, status=404)
 
@@ -1126,6 +1153,23 @@ class ReportDownloadView(LoginRequiredMixin, View):
         except Report.DoesNotExist:
             return JsonResponse({'error': 'Report not found'}, status=404)
 
+class AccountDeleteView(LoginRequiredMixin, View):
+    """View to handle account deletion"""
+    
+    def post(self, request, code):
+        try:
+            account = get_object_or_404(Account, code=code)
+            account_name = account.name
+            account.delete()
+            
+            messages.success(request, f'Account "{account_name}" has been deleted successfully.')
+            response = HttpResponse(status=204)
+            response['HX-Redirect'] = reverse_lazy('finance_management:chart_of_accounts')
+            return response
+            
+        except Account.DoesNotExist:
+            return JsonResponse({'error': 'Account not found'}, status=404)
+
 class ReportDeleteView(LoginRequiredMixin, View):
     """View to handle report deletion"""
     
@@ -1142,3 +1186,75 @@ class ReportDeleteView(LoginRequiredMixin, View):
             
         except Report.DoesNotExist:
             return JsonResponse({'error': 'Report not found'}, status=404)
+
+class ExpenseReportView(LoginRequiredMixin, TemplateView):
+    template_name = 'finance_management/expense_report.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get date range from request parameters
+        from_date = self.request.GET.get('from_date')
+        to_date = self.request.GET.get('to_date')
+        
+        # Default to current month if no dates specified
+        if not from_date or not to_date:
+            today = timezone.now()
+            from_date = today.replace(day=1).date()
+            to_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        else:
+            from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+            to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+        
+        # Get expenses for the date range
+        expenses = Expense.objects.filter(
+            expense_date__range=[from_date, to_date]
+        ).select_related('client_case', 'account', 'submitted_by', 'approved_by')
+        
+        # Calculate summary statistics
+        total_expenses = expenses.aggregate(total=Sum('amount'))['total'] or 0
+        billable_expenses = expenses.filter(billable_status='BILLABLE').aggregate(total=Sum('amount'))['total'] or 0
+        non_billable_expenses = expenses.filter(billable_status='NON_BILLABLE').aggregate(total=Sum('amount'))['total'] or 0
+        pending_expenses = expenses.filter(status__in=['SUBMITTED', 'UNDER_REVIEW']).count()
+        
+        # Calculate expenses by category
+        category_expenses = {}
+        for expense in expenses:
+            category = expense.get_category_display()
+            if category not in category_expenses:
+                category_expenses[category] = {
+                    'amount': 0,
+                    'billable': 0,
+                    'non_billable': 0,
+                    'count': 0
+                }
+            
+            category_expenses[category]['amount'] += expense.amount
+            category_expenses[category]['count'] += 1
+            
+            if expense.billable_status == 'BILLABLE':
+                category_expenses[category]['billable'] += expense.amount
+            else:
+                category_expenses[category]['non_billable'] += expense.amount
+        
+        # Calculate compliance statistics
+        compliant_expenses = expenses.filter(is_compliant=True).count()
+        total_expense_count = expenses.count()
+        compliance_rate = (compliant_expenses / total_expense_count * 100) if total_expense_count > 0 else 0
+        
+        # Add context data
+        context.update({
+            'from_date': from_date,
+            'to_date': to_date,
+            'total_expenses': total_expenses,
+            'billable_expenses': billable_expenses,
+            'non_billable_expenses': non_billable_expenses,
+            'pending_expenses': pending_expenses,
+            'category_expenses': category_expenses,
+            'compliance_rate': compliance_rate,
+            'compliant_expenses': compliant_expenses,
+            'total_expense_count': total_expense_count,
+            'expenses': expenses,
+        })
+        
+        return context

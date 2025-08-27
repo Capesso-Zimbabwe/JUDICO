@@ -13,6 +13,7 @@ from .forms import EmployeeForm, LeaveRequestForm, PerformanceReviewForm, UserCr
 from lawyer_portal.models import LawyerProfile
 from client_management.models import Client
 from client_portal.models import ClientProfile
+from hr_management.forms import TimeEntryForm
 
 @login_required
 def hr_dashboard(request):
@@ -798,6 +799,29 @@ def create_review_modal(request):
         form = PerformanceReviewForm()
     
     return render(request, 'hr_management/review_form_modal.html', {'form': form})
+
+@login_required
+def create_time_entry_modal(request):
+    if request.method == 'POST':
+        form = TimeEntryForm(request.POST)
+        if form.is_valid():
+            time_entry = form.save(commit=False)
+            time_entry.submitted_by = request.user
+            time_entry.save()
+            messages.success(request, f'Time entry for {time_entry.employee} created successfully!')
+            
+            # Return success response for HTMX
+            from django.http import HttpResponse
+            return HttpResponse(
+                '<script>'
+                'document.querySelector("[data-modal-hide=\'time-entry-new-modal\']").click(); '
+                'window.location.reload();'
+                '</script>'
+            )
+    else:
+        form = TimeEntryForm()
+    
+    return render(request, 'hr_management/time_entry_form_modal.html', {'form': form})
 
 @login_required
 def delete_user(request, user_id):

@@ -9,12 +9,12 @@
             <form action="" class="flex-1 max-w-sm" id="search-form">
                 {% include "components/field.html" with hide_label=True field=filter_form.search %}
             </form>
-            <a hx-get="{% url 'transaction_support:transaction_create_cbv' %}"
+            <a hx-get="{% url 'transaction_support:transaction_create_modal' %}"
                hx-target="#new-modal-container"
                hx-indicator="#new-modal-overlay"
                hx-trigger="click"
                data-modal-target="new-modal" data-modal-toggle="new-modal"
-               href="{% url 'transaction_support:transaction_create_cbv' %}" class="p-2 flex gap-1">
+               href="{% url 'transaction_support:transaction_create_modal' %}" class="p-2 flex gap-1">
                 <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                      height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

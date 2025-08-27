@@ -1,5 +1,5 @@
 <!-- Modal body -->
-<div class="p-6 space-y-6">
+<div class="p-4 space-y-4">
     <form id="{% if employee %}updateEmployeeForm{% else %}newEmployeeForm{% endif %}" method="post" novalidate="novalidate"
           {% if employee %}
           hx-post="{% url 'hr_management:employee_update' employee.id %}{% querystring %}"
@@ -11,26 +11,39 @@
           hx-encoding="multipart/form-data">
         {% csrf_token %}
         {% include 'components/non-field-errors.html' %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="{{ form.first_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First Name</label>
-                <input type="text" id="{{ form.first_name.id_for_label }}" name="{{ form.first_name.name }}" value="{{ form.first_name.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter first name" required>
+                <label for="{{ form.first_name.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">First Name</label>
+                <input type="text" id="{{ form.first_name.id_for_label }}" name="{{ form.first_name.name }}" value="{{ form.first_name.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter first name" required>
             </div>
             <div>
-                <label for="{{ form.last_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last Name</label>
-                <input type="text" id="{{ form.last_name.id_for_label }}" name="{{ form.last_name.name }}" value="{{ form.last_name.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter last name" required>
+                <label for="{{ form.last_name.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Last Name</label>
+                <input type="text" id="{{ form.last_name.id_for_label }}" name="{{ form.last_name.name }}" value="{{ form.last_name.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter last name" required>
             </div>
             <div>
-                <label for="{{ form.email.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-                <input type="email" id="{{ form.email.id_for_label }}" name="{{ form.email.name }}" value="{{ form.email.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter email address" required>
+                <label for="{{ form.email.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                <input type="email" id="{{ form.email.id_for_label }}" name="{{ form.email.name }}" value="{{ form.email.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter email address" required>
             </div>
             <div>
-                <label for="{{ form.phone.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone</label>
-                <input type="tel" id="{{ form.phone.id_for_label }}" name="{{ form.phone.name }}" value="{{ form.phone.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter phone number">
+                <label for="{{ form.phone.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Phone</label>
+                <input type="tel" id="{{ form.phone.id_for_label }}" name="{{ form.phone.name }}" value="{{ form.phone.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter phone number">
             </div>
             <div>
-                <label for="{{ form.department.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Department</label>
-                <select id="{{ form.department.id_for_label }}" name="{{ form.department.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                <label for="{{ form.date_of_birth.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Date of Birth</label>
+                <input type="date" id="{{ form.date_of_birth.id_for_label }}" name="{{ form.date_of_birth.name }}" value="{{ form.date_of_birth.value|date:'Y-m-d'|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+            </div>
+            <div>
+                <label for="{{ form.profile_picture.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Profile Picture</label>
+                <input type="file" id="{{ form.profile_picture.id_for_label }}" name="{{ form.profile_picture.name }}" accept="image/*" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                {% if employee.profile_picture %}
+                <div class="mt-1">
+                    <img src="{{ employee.profile_picture.url }}" alt="Current profile picture" class="h-16 w-16 rounded-full object-cover">
+                </div>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.department.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Department</label>
+                <select id="{{ form.department.id_for_label }}" name="{{ form.department.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
                     <option value="">Select Department</option>
                     {% for choice in form.department.field.queryset %}
                         <option value="{{ choice.pk }}" {% if form.department.value == choice.pk|stringformat:'s' %}selected{% endif %}>{{ choice.name }}</option>
@@ -38,25 +51,25 @@
                 </select>
             </div>
             <div>
-                <label for="{{ form.position.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Position</label>
-                <input type="text" id="{{ form.position.id_for_label }}" name="{{ form.position.name }}" value="{{ form.position.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter position">
+                <label for="{{ form.position.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Position</label>
+                <input type="text" id="{{ form.position.id_for_label }}" name="{{ form.position.name }}" value="{{ form.position.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter position">
             </div>
             <div>
-                <label for="{{ form.hire_date.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Hire Date</label>
-                <input type="date" id="{{ form.hire_date.id_for_label }}" name="{{ form.hire_date.name }}" value="{{ form.hire_date.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                <label for="{{ form.hire_date.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Hire Date</label>
+                <input type="date" id="{{ form.hire_date.id_for_label }}" name="{{ form.hire_date.name }}" value="{{ form.hire_date.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
             </div>
             <div>
-                <label for="{{ form.salary.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Salary</label>
-                <input type="number" step="0.01" id="{{ form.salary.id_for_label }}" name="{{ form.salary.name }}" value="{{ form.salary.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="0.00">
+                <label for="{{ form.salary.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Salary</label>
+                <input type="number" step="0.01" id="{{ form.salary.id_for_label }}" name="{{ form.salary.name }}" value="{{ form.salary.value|default:'' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="0.00">
             </div>
             <div class="md:col-span-2">
-                <label for="{{ form.address.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address</label>
-                <textarea id="{{ form.address.id_for_label }}" name="{{ form.address.name }}" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter address...">{{ form.address.value|default:'' }}</textarea>
+                <label for="{{ form.address.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Address</label>
+                <textarea id="{{ form.address.id_for_label }}" name="{{ form.address.name }}" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Enter address...">{{ form.address.value|default:'' }}</textarea>
             </div>
             {% if employee %}
             <div>
-                <label for="{{ form.is_active.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Status</label>
-                <select id="{{ form.is_active.id_for_label }}" name="{{ form.is_active.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                <label for="{{ form.is_active.id_for_label }}" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Status</label>
+                <select id="{{ form.is_active.id_for_label }}" name="{{ form.is_active.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
                     <option value="True" {% if form.is_active.value %}selected{% endif %}>Active</option>
                     <option value="False" {% if not form.is_active.value %}selected{% endif %}>Inactive</option>
                 </select>
@@ -64,11 +77,4 @@
             {% endif %}
         </div>
     </form>
-</div>
-<!-- Modal footer -->
-<div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-    <button type="button" 
-            onclick="document.getElementById('{% if employee %}updateEmployeeForm{% else %}newEmployeeForm{% endif %}').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));"
-            class="w-full text-xs bg-blue-900 text-white py-2 px-3 font-medium hover:bg-blue-700 transition-all duration-200 shadow-sm disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed submit-btn rounded-none">{% if employee %}Update Employee{% else %}Create Employee{% endif %}</button>
-    <button data-modal-hide="{% if employee %}update-modal{% else %}new-modal{% endif %}" type="button" class="w-full text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 py-2 px-3 font-medium transition-all duration-200 rounded-none">Cancel</button>
 </div>

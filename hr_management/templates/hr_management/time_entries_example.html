@@ -1,0 +1,36 @@
+{% extends 'hr_management/base.html' %}
+
+{% block hr_content %}
+    <!-- Time Entries Management -->
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">Time Entries</h2>
+            <button type="button" data-modal-target="time-entry-new-modal" data-modal-toggle="time-entry-new-modal"
+                    hx-get="{% url 'hr_management:create_time_entry_modal' %}" hx-target="#time-entry-new-modal-container"
+                    class="p-2 flex gap-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                     height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M5 12h14m-7 7V5"></path>
+                </svg>
+                <span class="font-bold">Add Time Entry</span>
+            </button>
+        </div>
+        
+        <div class="p-6">
+            <p class="text-gray-600">Click the "Add Time Entry" button above to create a new time entry.</p>
+            <p class="text-gray-600 mt-2">The modal will open with a form to enter time details including:</p>
+            <ul class="list-disc list-inside mt-2 text-gray-600 space-y-1">
+                <li>Employee selection</li>
+                <li>Date and time (start/end)</li>
+                <li>Activity type (Legal Research, Client Consultation, etc.)</li>
+                <li>Description and client/case reference</li>
+                <li>Billing information</li>
+                <li>Notes and tags</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Include the time entry modal -->
+    {% include 'hr_management/time_entry_new_modal.html' %}
+{% endblock %}

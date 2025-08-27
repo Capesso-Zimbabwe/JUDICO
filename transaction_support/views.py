@@ -183,6 +183,39 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
         messages.error(self.request, 'Please correct the errors below.')
         return super().form_invalid(form)
 
+@login_required
+def transaction_create_modal(request):
+    """Modal-specific view for creating transactions"""
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.created_by = request.user
+            transaction.save()
+            
+            # Create audit log
+            TransactionAuditLog.objects.create(
+                transaction=transaction,
+                user=request.user,
+                action='created',
+                description=f'Transaction "{transaction.title}" created'
+            )
+            
+            messages.success(request, f'Transaction "{transaction.title}" created successfully!')
+            
+            # Return success response for HTMX
+            from django.http import HttpResponse
+            return HttpResponse(
+                '<script>'
+                'document.querySelector("[data-modal-hide=\'new-modal\']").click(); '
+                'window.location.reload();'
+                '</script>'
+            )
+    else:
+        form = TransactionForm()
+    
+    return render(request, 'transaction_support/transaction_form_modal_only.html', {'form': form})
+
 
 class TransactionUpdateView(LoginRequiredMixin, UpdateView):
     """Update existing transaction"""

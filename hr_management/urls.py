@@ -15,6 +15,7 @@ urlpatterns = [
     path('leave/create-modal/', views.leave_create_modal, name='leave_create_modal'),
     path('performance/', views.performance_reviews, name='performance_reviews'),
     path('performance/create-modal/', views.create_review_modal, name='create_review_modal'),
+    path('time-entries/create-modal/', views.create_time_entry_modal, name='create_time_entry_modal'),
     path('manage-users/', views.manage_users, name='manage_users'),
     path('users/create/', views.create_user, name='create_user'),
     path('users/create-modal/', views.create_user_modal, name='create_user_modal'),

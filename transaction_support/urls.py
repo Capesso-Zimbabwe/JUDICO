@@ -13,6 +13,7 @@ urlpatterns = [
     path('transactions/', views.TransactionListView.as_view(), name='transaction_list_cbv'),
     path('transactions/list/', views.transaction_list, name='transaction_list'),  # Legacy redirect
     path('transactions/create/', views.TransactionCreateView.as_view(), name='transaction_create_cbv'),
+    path('transactions/create-modal/', views.transaction_create_modal, name='transaction_create_modal'),
     path('transactions/new/', views.transaction_create, name='transaction_create'),  # Legacy redirect
     path('transactions/<int:pk>/', views.TransactionDetailView.as_view(), name='transaction_detail'),
     path('transactions/<int:pk>/edit/', views.TransactionUpdateView.as_view(), name='transaction_update'),

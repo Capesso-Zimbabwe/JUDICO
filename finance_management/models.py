@@ -88,29 +88,241 @@ class Payment(models.Model):
         return f'Payment {self.reference_number} for Invoice {self.invoice.invoice_number}'
 
 class Expense(models.Model):
+    # Legal Accounting Standard Categories
     CATEGORY_CHOICES = [
+        # Office & Administrative
         ('OFFICE_SUPPLIES', 'Office Supplies'),
-        ('UTILITIES', 'Utilities'),
-        ('RENT', 'Rent'),
-        ('TRAVEL', 'Travel'),
-        ('PROFESSIONAL_FEES', 'Professional Fees'),
-        ('MARKETING', 'Marketing'),
-        ('OTHER', 'Other')
+        ('OFFICE_EQUIPMENT', 'Office Equipment'),
+        ('OFFICE_RENT', 'Office Rent'),
+        ('OFFICE_MAINTENANCE', 'Office Maintenance'),
+        ('OFFICE_INSURANCE', 'Office Insurance'),
+        ('OFFICE_SECURITY', 'Office Security'),
+        
+        # Utilities & Services
+        ('UTILITIES_ELECTRICITY', 'Electricity'),
+        ('UTILITIES_WATER', 'Water'),
+        ('UTILITIES_GAS', 'Gas'),
+        ('UTILITIES_INTERNET', 'Internet & Communications'),
+        ('UTILITIES_PHONE', 'Phone Services'),
+        ('UTILITIES_CABLE', 'Cable & TV'),
+        
+        # Professional Services
+        ('LEGAL_FEES', 'Legal Fees'),
+        ('ACCOUNTING_FEES', 'Accounting Fees'),
+        ('CONSULTING_FEES', 'Consulting Fees'),
+        ('PROFESSIONAL_DEVELOPMENT', 'Professional Development'),
+        ('BAR_ASSOCIATION_FEES', 'Bar Association Fees'),
+        ('CONTINUING_EDUCATION', 'Continuing Legal Education'),
+        
+        # Client Matter Expenses
+        ('COURT_FILING_FEES', 'Court Filing Fees'),
+        ('PROCESS_SERVING', 'Process Serving'),
+        ('EXPERT_WITNESS_FEES', 'Expert Witness Fees'),
+        ('INVESTIGATION_COSTS', 'Investigation Costs'),
+        ('TRAVEL_EXPENSES', 'Travel Expenses'),
+        ('MEAL_EXPENSES', 'Meal Expenses'),
+        ('ACCOMMODATION', 'Accommodation'),
+        ('TRANSPORTATION', 'Transportation'),
+        
+        # Marketing & Business Development
+        ('MARKETING_ADVERTISING', 'Marketing & Advertising'),
+        ('BUSINESS_DEVELOPMENT', 'Business Development'),
+        ('NETWORKING_EVENTS', 'Networking Events'),
+        ('PUBLICATIONS', 'Publications & Subscriptions'),
+        
+        # Technology & Software
+        ('SOFTWARE_LICENSES', 'Software Licenses'),
+        ('TECHNOLOGY_MAINTENANCE', 'Technology Maintenance'),
+        ('DATA_BACKUP', 'Data Backup & Security'),
+        ('CLOUD_SERVICES', 'Cloud Services'),
+        
+        # Staff & HR
+        ('STAFF_SALARIES', 'Staff Salaries'),
+        ('STAFF_BENEFITS', 'Staff Benefits'),
+        ('STAFF_TRAINING', 'Staff Training'),
+        ('STAFF_EQUIPMENT', 'Staff Equipment'),
+        
+        # Compliance & Regulatory
+        ('COMPLIANCE_FEES', 'Compliance Fees'),
+        ('REGULATORY_FILINGS', 'Regulatory Filings'),
+        ('AUDIT_FEES', 'Audit Fees'),
+        ('LICENSING_FEES', 'Licensing Fees'),
+        
+        # Other
+        ('OTHER', 'Other Expenses'),
     ]
-
+    
+    STATUS_CHOICES = [
+        ('DRAFT', 'Draft'),
+        ('SUBMITTED', 'Submitted'),
+        ('UNDER_REVIEW', 'Under Review'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+        ('PAID', 'Paid'),
+        ('RECONCILED', 'Reconciled'),
+    ]
+    
+    APPROVAL_LEVEL_CHOICES = [
+        ('STAFF', 'Staff Level'),
+        ('SUPERVISOR', 'Supervisor Level'),
+        ('MANAGER', 'Manager Level'),
+        ('PARTNER', 'Partner Level'),
+        ('EXECUTIVE', 'Executive Level'),
+    ]
+    
+    BILLABLE_CHOICES = [
+        ('BILLABLE', 'Billable to Client'),
+        ('NON_BILLABLE', 'Non-Billable'),
+        ('PARTIALLY_BILLABLE', 'Partially Billable'),
+    ]
+    
+    # Basic Information
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES)
     expense_date = models.DateField(default=timezone.now)
+    
+    # Legal System Integration
+    client_case = models.ForeignKey('client_management.Case', on_delete=models.SET_NULL, null=True, blank=True, related_name='expenses')
+    case_number = models.CharField(max_length=100, blank=True)
+    matter_type = models.CharField(max_length=100, blank=True)
+    
+    # Accounting Integration
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='expenses', null=True, blank=True)
+    journal_entry = models.ForeignKey('JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, related_name='expenses')
+    tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    net_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    
+    # Approval & Status
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
+    approval_level = models.CharField(max_length=20, choices=APPROVAL_LEVEL_CHOICES, default='STAFF')
+    billable_status = models.CharField(max_length=20, choices=BILLABLE_CHOICES, default='NON_BILLABLE')
+    billable_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    
+    # Approval Chain
+    submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submitted_expenses')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_expenses')
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_expenses')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    
+    # Documentation
     receipt = models.FileField(upload_to='expenses/receipts/', blank=True)
-    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='approved_expenses')
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submitted_expenses')
+    supporting_documents = models.FileField(upload_to='expenses/supporting_docs/', blank=True)
+    invoice_number = models.CharField(max_length=100, blank=True)
+    vendor_name = models.CharField(max_length=255, blank=True)
+    vendor_tax_id = models.CharField(max_length=50, blank=True)
+    
+    # Compliance & Audit
+    compliance_notes = models.TextField(blank=True)
+    audit_trail = models.JSONField(default=dict, blank=True)
+    is_compliant = models.BooleanField(default=True)
+    compliance_review_date = models.DateField(null=True, blank=True)
+    
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-expense_date', '-created_at']
+        verbose_name_plural = 'Expenses'
+        indexes = [
+            models.Index(fields=['expense_date']),
+            models.Index(fields=['status']),
+            models.Index(fields=['category']),
+            models.Index(fields=['client_case']),
+            models.Index(fields=['billable_status']),
+        ]
+    
     def __str__(self):
-        return f'{self.title} - {self.amount}'
+        return f'{self.title} - ${self.amount} - {self.get_status_display()}'
+    
+    def save(self, *args, **kwargs):
+        # Calculate net amount if tax is applied
+        if self.tax_amount > 0:
+            self.net_amount = self.amount - self.tax_amount
+        else:
+            self.net_amount = self.amount
+        
+        # Set billable amount based on billable status
+        if self.billable_status == 'BILLABLE':
+            self.billable_amount = self.amount
+        elif self.billable_status == 'PARTIALLY_BILLABLE':
+            # This would be set manually or through form
+            pass
+        else:
+            self.billable_amount = 0.00
+        
+        super().save(*args, **kwargs)
+    
+    @property
+    def is_approved(self):
+        return self.status in ['APPROVED', 'PAID', 'RECONCILED']
+    
+    @property
+    def is_billable(self):
+        return self.billable_status in ['BILLABLE', 'PARTIALLY_BILLABLE']
+    
+    @property
+    def total_cost(self):
+        return self.amount + self.tax_amount
+    
+    def approve(self, approved_by_user):
+        self.status = 'APPROVED'
+        self.approved_by = approved_by_user
+        self.approved_at = timezone.now()
+        self.save()
+    
+    def reject(self, rejected_by_user, reason):
+        self.status = 'REJECTED'
+        self.compliance_notes = f"Rejected by {rejected_by_user.get_full_name()}: {reason}"
+        self.save()
+    
+    def mark_as_paid(self):
+        self.status = 'PAID'
+        self.save()
+    
+    def create_journal_entry(self):
+        """Create a journal entry for this expense"""
+        if not self.account:
+            return None
+        
+        # Create journal entry
+        je = JournalEntry.objects.create(
+            entry_number=f"EXP-{self.id:06d}",
+            date=self.expense_date,
+            description=f"Expense: {self.title}",
+            reference=self.invoice_number or f"EXP-{self.id}",
+            status='POSTED',
+            created_by=self.submitted_by
+        )
+        
+        # Create journal entry lines
+        JournalEntryLine.objects.create(
+            journal_entry=je,
+            account=self.account,
+            description=self.description,
+            debit=self.amount,
+            credit=0.00
+        )
+        
+        # Credit cash/bank account (assuming account 1000 is cash)
+        cash_account = Account.objects.filter(code='1000').first()
+        if cash_account:
+            JournalEntryLine.objects.create(
+                journal_entry=je,
+                account=cash_account,
+                description=f"Payment for {self.title}",
+                debit=0.00,
+                credit=self.amount
+            )
+        
+        self.journal_entry = je
+        self.save()
+        
+        return je
 
 class JournalEntry(models.Model):
     STATUS_CHOICES = [

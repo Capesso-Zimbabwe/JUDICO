@@ -22,9 +22,6 @@
         <a href="{% url 'transaction_support:transaction_list_cbv' %}" class="{% if 'transaction_list' in request.resolver_match.url_name or 'transaction_detail' in request.resolver_match.url_name %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             All Transactions
         </a>
-        <a href="{% url 'transaction_support:transaction_create_cbv' %}" class="{% if 'transaction_create' in request.resolver_match.url_name %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
-            New Transaction
-        </a>
         <a href="{% url 'transaction_support:monitoring' %}" class="{% if request.resolver_match.url_name == 'monitoring' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
             Monitoring
         </a>

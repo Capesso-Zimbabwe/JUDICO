@@ -112,3 +112,101 @@ class PerformanceReview(models.Model):
     
     def __str__(self):
         return f"Review for {self.employee} - {self.review_date}"
+
+class TimeEntry(models.Model):
+    """Model for tracking employee time entries"""
+    
+    ACTIVITY_TYPES = [
+        ('legal_research', 'Legal Research'),
+        ('client_consultation', 'Client Consultation'),
+        ('court_appearance', 'Court Appearance'),
+        ('document_preparation', 'Document Preparation'),
+        ('case_management', 'Case Management'),
+        ('meeting', 'Meeting'),
+        ('administrative', 'Administrative'),
+        ('training', 'Training'),
+        ('other', 'Other'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('billed', 'Billed'),
+    ]
+    
+    # Employee and basic info
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='time_entries')
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    
+    # Activity details
+    activity_type = models.CharField(max_length=30, choices=ACTIVITY_TYPES)
+    description = models.TextField()
+    client_case = models.CharField(max_length=200, blank=True, help_text="Client name or case reference")
+    
+    # Time tracking
+    hours_worked = models.DecimalField(max_digits=5, decimal_places=2, help_text="Hours worked (e.g., 7.5)")
+    
+    # Billing and approval
+    is_billable = models.BooleanField(default=True)
+    billable_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    billable_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    
+    # Approval chain
+    submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submitted_time_entries')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_time_entries')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    
+    # Additional fields
+    notes = models.TextField(blank=True)
+    tags = models.CharField(max_length=200, blank=True, help_text="Comma-separated tags for categorization")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-date', '-start_time']
+        verbose_name_plural = 'Time Entries'
+    
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.date} ({self.hours_worked}h) - {self.get_activity_type_display()}"
+    
+    def save(self, *args, **kwargs):
+        # Calculate hours worked if start and end time are provided
+        if self.start_time and self.end_time:
+            from datetime import datetime, timedelta
+            start_dt = datetime.combine(self.date, self.start_time)
+            end_dt = datetime.combine(self.date, self.end_time)
+            
+            # Handle overnight entries
+            if end_dt < start_dt:
+                end_dt += timedelta(days=1)
+            
+            time_diff = end_dt - start_dt
+            self.hours_worked = round(time_diff.total_seconds() / 3600, 2)
+        
+        # Calculate billable amount if rate and hours are provided
+        if self.billable_rate and self.hours_worked and self.is_billable:
+            self.billable_amount = self.billable_rate * self.hours_worked
+        
+        super().save(*args, **kwargs)
+    
+    @property
+    def duration_formatted(self):
+        """Return formatted duration string"""
+        hours = int(self.hours_worked)
+        minutes = int((self.hours_worked - hours) * 60)
+        return f"{hours}h {minutes}m"
+    
+    @property
+    def is_approved(self):
+        return self.status == 'approved'
+    
+    @property
+    def is_billed(self):
+        return self.status == 'billed'

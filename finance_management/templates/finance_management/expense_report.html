@@ -1,0 +1,426 @@
+{% extends 'finance_management/base.html' %}
+{% load humanize %}
+
+{% block title %}Legal Expense Report - Finance Management{% endblock %}
+
+{% block header_title %}Legal Expense Report{% endblock %}
+
+{% block finance_content %}
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        
+        <!-- Header Section -->
+        <div class="bg-white px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-lg font-semibold text-gray-900">Legal Expense Report</h1>
+                    <p class="text-sm text-gray-600" id="reportScope">Expense Report</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="editReport()" class="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Edit
+                    </button>
+                    <button onclick="exportReport()" class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Filter Controls -->
+        <div class="bg-white px-6 py-4 border-b border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Month Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Months</label>
+                    <div class="grid grid-cols-3 gap-1">
+                        <button onclick="selectMonth('jan')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="jan">Jan</button>
+                        <button onclick="selectMonth('feb')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="feb">Feb</button>
+                        <button onclick="selectMonth('mar')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="mar">Mar</button>
+                        <button onclick="selectMonth('apr')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="apr">Apr</button>
+                        <button onclick="selectMonth('may')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="may">May</button>
+                        <button onclick="selectMonth('jun')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="jun">Jun</button>
+                        <button onclick="selectMonth('jul')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="jul">Jul</button>
+                        <button onclick="selectMonth('aug')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="aug">Aug</button>
+                        <button onclick="selectMonth('sep')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="sep">Sep</button>
+                        <button onclick="selectMonth('oct')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="oct">Oct</button>
+                        <button onclick="selectMonth('nov')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="nov">Nov</button>
+                        <button onclick="selectMonth('dec')" class="month-btn px-2 py-1 text-xs border rounded hover:bg-gray-50" data-month="dec">Dec</button>
+                    </div>
+                </div>
+                
+
+                
+                <!-- Quick Select -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quick Select</label>
+                    <div class="flex flex-wrap gap-1">
+                        <button onclick="quickSelect('q1')" class="quick-btn px-2 py-1 text-xs border rounded hover:bg-gray-50">Q1</button>
+                        <button onclick="quickSelect('q2')" class="quick-btn px-2 py-1 text-xs border rounded hover:bg-gray-50">Q2</button>
+                        <button onclick="quickSelect('q3')" class="quick-btn px-2 py-1 text-xs border rounded hover:bg-gray-50">Q3</button>
+                        <button onclick="quickSelect('q4')" class="quick-btn px-2 py-1 text-xs border rounded hover:bg-gray-50">Q4</button>
+                        <button onclick="quickSelect('h1')" class="quick-btn px-2 py-1 text-xs border rounded hover:bg-gray-50">H1</button>
+                        <button onclick="quickSelect('h2')" class="quick-btn px-2 py-1 text-xs border rounded hover:bg-gray-50">H2</button>
+                        <button onclick="quickSelect('full_year')" class="quick-btn px-2 py-1 text-xs border rounded hover:bg-gray-50">Full Year</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date Range Controls -->
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                    <input type="date" id="fromDate" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                    <input type="date" id="toDate" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div class="flex items-end">
+                    <button onclick="applyReportFilters()" class="w-full px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Executive Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total Expenses</p>
+                            <p class="text-2xl font-bold text-gray-900" id="totalExpenses">$0.00</p>
+                        </div>
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599 1"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-xs text-gray-500">vs. Previous Period</span>
+                        <span class="text-xs text-green-600 ml-2" id="expenseTrend">+0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Billable Expenses</p>
+                            <p class="text-2xl font-bold text-green-600" id="billableExpenses">$0.00</p>
+                        </div>
+                        <div class="p-2 bg-green-100 rounded-lg">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-xs text-gray-500">Client Recoverable</span>
+                        <span class="text-xs text-green-600 ml-2" id="billableTrend">+0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Non-Billable</p>
+                            <p class="text-2xl font-bold text-red-600" id="nonBillableExpenses">$0.00</p>
+                        </div>
+                        <div class="p-2 bg-red-100 rounded-lg">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-xs text-gray-500">Operational Costs</span>
+                        <span class="text-xs text-red-600 ml-2" id="nonBillableTrend">+0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Pending Approval</p>
+                            <p class="text-2xl font-bold text-yellow-600" id="pendingExpenses">0</p>
+                        </div>
+                        <div class="p-2 bg-yellow-100 rounded-lg">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-xs text-gray-500">Awaiting Review</span>
+                        <span class="text-xs text-yellow-600 ml-2" id="pendingTrend">+0.0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense by Category -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Expenses by Legal Category</h3>
+                <p class="text-sm text-gray-600">Breakdown of expenses by legal accounting standards</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Legal Expense Category</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">% of Total</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Billable to Client</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Firm Operational</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="expenseTableBody">
+                        <!-- Table rows will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        let selectedMonths = [];
+        let currentDateRange = { from: null, to: null };
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeReport();
+            loadExpenseData();
+        });
+        
+        function initializeReport() {
+            // Set default dates to current month
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('toDate').value = lastDay.toISOString().split('T')[0];
+            
+            currentDateRange = { from: firstDay, to: lastDay };
+            
+            // Set current month as selected by default
+            selectMonth(getMonthAbbr(today.getMonth()));
+        }
+        
+        function selectMonth(month) {
+            const monthBtn = document.querySelector(`[data-month="${month}"]`);
+            const allMonthBtns = document.querySelectorAll('.month-btn');
+            
+            // Toggle selection
+            if (monthBtn.classList.contains('bg-blue-600')) {
+                monthBtn.classList.remove('bg-blue-600', 'text-white');
+                monthBtn.classList.add('bg-white', 'text-gray-700');
+                selectedMonths = selectedMonths.filter(m => m !== month);
+            } else {
+                monthBtn.classList.add('bg-blue-600', 'text-white');
+                monthBtn.classList.remove('bg-white', 'text-gray-700');
+                selectedMonths.push(month);
+            }
+            
+            // Update date range based on selected months
+            updateDateRangeFromMonths();
+        }
+        
+        function getMonthAbbr(monthIndex) {
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+            return months[monthIndex];
+        }
+        
+        function updateDateRangeFromMonths() {
+            if (selectedMonths.length === 0) return;
+            
+            const currentYear = new Date().getFullYear();
+            const monthMap = {
+                'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5,
+                'jul': 6, 'aug': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dec': 11
+            };
+            
+            const monthIndices = selectedMonths.map(m => monthMap[m]).sort((a, b) => a - b);
+            const fromMonth = monthIndices[0];
+            const toMonth = monthIndices[monthIndices.length - 1];
+            
+            const fromDate = new Date(currentYear, fromMonth, 1);
+            const toDate = new Date(currentYear, toMonth + 1, 0);
+            
+            document.getElementById('fromDate').value = fromDate.toISOString().split('T')[0];
+            document.getElementById('toDate').value = toDate.toISOString().split('T')[0];
+            
+            currentDateRange = { from: fromDate, to: toDate };
+        }
+        
+
+        
+        function quickSelect(period) {
+            const today = new Date();
+            let fromDate, toDate;
+            
+            switch(period) {
+                case 'q1':
+                    fromDate = new Date(today.getFullYear(), 0, 1);
+                    toDate = new Date(today.getFullYear(), 2, 31);
+                    break;
+                case 'q2':
+                    fromDate = new Date(today.getFullYear(), 3, 1);
+                    toDate = new Date(today.getFullYear(), 5, 30);
+                    break;
+                case 'q3':
+                    fromDate = new Date(today.getFullYear(), 6, 1);
+                    toDate = new Date(today.getFullYear(), 8, 30);
+                    break;
+                case 'q4':
+                    fromDate = new Date(today.getFullYear(), 9, 1);
+                    toDate = new Date(today.getFullYear(), 11, 31);
+                    break;
+                case 'h1':
+                    fromDate = new Date(today.getFullYear(), 0, 1);
+                    toDate = new Date(today.getFullYear(), 5, 30);
+                    break;
+                case 'h2':
+                    fromDate = new Date(today.getFullYear(), 6, 1);
+                    toDate = new Date(today.getFullYear(), 11, 31);
+                    break;
+                case 'full_year':
+                    fromDate = new Date(today.getFullYear(), 0, 1);
+                    toDate = new Date(today.getFullYear(), 11, 31);
+                    break;
+            }
+            
+            document.getElementById('fromDate').value = fromDate.toISOString().split('T')[0];
+            document.getElementById('toDate').value = toDate.toISOString().split('T')[0];
+            currentDateRange = { from: fromDate, to: toDate };
+            
+            // Update month selection
+            updateMonthSelectionFromDateRange(fromDate, toDate);
+        }
+        
+        function updateMonthSelectionFromDateRange(fromDate, toDate) {
+            // Clear all month selections
+            document.querySelectorAll('.month-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-700');
+            });
+            selectedMonths = [];
+            
+            // Select months in the date range
+            const currentDate = new Date(fromDate);
+            while (currentDate <= toDate) {
+                const monthAbbr = getMonthAbbr(currentDate.getMonth());
+                const monthBtn = document.querySelector(`[data-month="${monthAbbr}"]`);
+                if (monthBtn) {
+                    monthBtn.classList.add('bg-blue-600', 'text-white');
+                    monthBtn.classList.remove('bg-white', 'text-gray-700');
+                    selectedMonths.push(monthAbbr);
+                }
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+        }
+        
+        function applyReportFilters() {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            
+            if (!fromDate || !toDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+            
+            if (fromDate > toDate) {
+                alert('Start date cannot be after end date.');
+                return;
+            }
+            
+            currentDateRange = { 
+                from: new Date(fromDate), 
+                to: new Date(toDate) 
+            };
+            
+            // Update month selection based on new date range
+            updateMonthSelectionFromDateRange(currentDateRange.from, currentDateRange.to);
+            
+            // Reload expense data
+            loadExpenseData();
+        }
+        
+        function loadExpenseData() {
+            // This would typically make an AJAX request to get filtered data from the database
+            // For now, we'll show empty data until real data is loaded
+            updateExpenseSummary();
+            updateExpenseTable();
+        }
+        
+        function updateExpenseSummary() {
+            // Initialize with zero values - real data would come from database queries
+            const emptyData = {
+                totalExpenses: '$0.00',
+                billableExpenses: '$0.00',
+                nonBillableExpenses: '$0.00',
+                pendingExpenses: '0',
+                expenseTrend: '+0.0%',
+                billableTrend: '+0.0%',
+                nonBillableTrend: '+0.0%',
+                pendingTrend: '+0.0%'
+            };
+            
+            document.getElementById('totalExpenses').textContent = emptyData.totalExpenses;
+            document.getElementById('billableExpenses').textContent = emptyData.billableExpenses;
+            document.getElementById('nonBillableExpenses').textContent = emptyData.nonBillableExpenses;
+            document.getElementById('pendingExpenses').textContent = emptyData.pendingExpenses;
+            document.getElementById('expenseTrend').textContent = emptyData.expenseTrend;
+            document.getElementById('billableTrend').textContent = emptyData.billableTrend;
+            document.getElementById('nonBillableTrend').textContent = emptyData.nonBillableTrend;
+            document.getElementById('pendingTrend').textContent = emptyData.pendingTrend;
+        }
+        
+        function updateExpenseTable() {
+            // Clear the table body - real data would be populated from database queries
+            const tableBody = document.getElementById('expenseTableBody');
+            tableBody.innerHTML = '';
+            
+            // Show a message that no data is available yet
+            const noDataRow = document.createElement('tr');
+            noDataRow.innerHTML = `
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                    <div class="flex flex-col items-center">
+                        <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="text-sm font-medium">No expense data available</p>
+                        <p class="text-xs">Select a date range and apply filters to view expenses</p>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(noDataRow);
+        }
+        
+        function editReport() {
+            alert('Edit functionality would open a modal or redirect to edit page');
+        }
+        
+        function exportReport() {
+            const dateRange = `${document.getElementById('fromDate').value} to ${document.getElementById('toDate').value}`;
+            
+            alert(`Exporting expense report for ${dateRange}`);
+            // Here you would implement actual export functionality
+        }
+    </script>
+{% endblock %}

@@ -22,8 +22,15 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <div id="review-new-modal-container" class="p-1 md:p-2 max-h-[80vh] overflow-y-auto">
+            <div id="review-new-modal-container" class="p-1 md:p-2 max-h-[60vh] overflow-y-auto">
                 <!-- Content will be loaded here via HTMX -->
+            </div>
+            <!-- Modal footer -->
+            <div class="flex items-center p-4 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+                <button type="button" 
+                        onclick="document.getElementById('newReviewForm').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));"
+                        class="w-full text-xs bg-blue-900 text-white py-2 px-3 font-medium hover:bg-blue-700 transition-all duration-200 shadow-sm disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed submit-btn rounded-none">Create Review</button>
+                <button data-modal-hide="review-new-modal" type="button" class="w-full text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 py-2 px-3 font-medium transition-all duration-200 rounded-none">Cancel</button>
             </div>
         </div>
     </div>

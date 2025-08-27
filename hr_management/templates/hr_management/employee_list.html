@@ -11,19 +11,35 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </form>
+            <div class="flex gap-2">
                 <a hx-get="{% url 'hr_management:employee_create' %}"
                    hx-target="#new-modal-container"
                    hx-indicator="#new-modal-overlay"
                    hx-trigger="click"
                    data-modal-target="new-modal" data-modal-toggle="new-modal"
-                   href="{% url 'hr_management:employee_create' %}" class="p-2 flex gap-1">
-                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                   href="{% url 'hr_management:employee_create' %}" class="p-2 flex gap-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                          height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M5 12h14m-7 7V5"></path>
                     </svg>
                     <span class="font-bold">Add Employee</span>
                 </a>
+                
+                <button type="button" 
+                        data-modal-target="time-entry-new-modal" 
+                        data-modal-toggle="time-entry-new-modal"
+                        hx-get="{% url 'hr_management:create_time_entry_modal' %}" 
+                        hx-target="#time-entry-new-modal-container"
+                        class="p-2 flex gap-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                         height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <span class="font-bold">Add Time Entry</span>
+                </button>
+            </div>
         </div>
         <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
             <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
@@ -174,6 +190,8 @@
                     override: true
                 });
             }
+
+
             
             // Debug HTMX events
              document.body.addEventListener('htmx:beforeRequest', function(evt) {
@@ -187,16 +205,31 @@
              document.body.addEventListener('htmx:responseError', function(evt) {
                  console.log('HTMX Response Error:', evt.detail);
              });
+
+             // Debug modal elements
+             console.log('Time Entry Modal Element:', document.getElementById('time-entry-new-modal'));
+             console.log('Time Entry Modal Container:', document.getElementById('time-entry-new-modal-container'));
+             
+             // Test modal toggle
+             document.addEventListener('click', function(evt) {
+                 if (evt.target.matches('[data-modal-target="time-entry-new-modal"]')) {
+                     console.log('Time Entry Modal Button Clicked');
+                     console.log('Target:', evt.target);
+                     console.log('Modal Element:', document.getElementById('time-entry-new-modal'));
+                 }
+             });
          });
     </script>
 
     <!-- Include Modal Components -->
     {% include "hr_management/new-modal.html" with modal_id="new-modal" %}
     {% include "hr_management/update-modal.html" with modal_id="update-modal" %}
+    {% include "hr_management/time_entry_new_modal.html" %}
 
     <!-- Modal containers -->
     <div id="new-modal-container"></div>
     <div id="update-modal-container"></div>
+    <div id="time-entry-new-modal-container"></div>
     <div id="new-modal-overlay" class="htmx-indicator fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
     </div>

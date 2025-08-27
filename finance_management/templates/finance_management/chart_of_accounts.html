@@ -7,18 +7,11 @@
 {% block finance_content %}
     <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
 
-
         <!-- Professional Header Section -->
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-900">Chart of Accounts</h2>
                 <div class="flex space-x-2">
-                    <button class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                        <i class="fas fa-edit mr-1"></i> Edit
-                    </button>
-                    <button class="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-download mr-1"></i> Export
-                    </button>
                     <a hx-get="{% url 'finance_management:account_create' %}"
                        hx-target="#new-modal-container"
                        hx-indicator="#new-modal-overlay"
@@ -38,14 +31,17 @@
                 </form>
                 
                 <div class="flex gap-2 items-center">
-                    <select name="filter" form="search-form" onchange="filterAccounts(this.value)" class="text-xs border border-gray-300 rounded px-2 py-1">
+                    <select id="typeFilter" name="filter" form="search-form" class="text-xs border border-gray-300 rounded px-2 py-1">
                         <option value="">All Account Types</option>
-                        <option value="asset">Assets</option>
-                        <option value="liability">Liabilities</option>
-                        <option value="equity">Equity</option>
-                        <option value="revenue">Revenue</option>
-                        <option value="expense">Expenses</option>
+                        <option value="ASSET">Assets</option>
+                        <option value="LIABILITY">Liabilities</option>
+                        <option value="EQUITY">Equity</option>
+                        <option value="REVENUE">Revenue</option>
+                        <option value="EXPENSE">Expenses</option>
                     </select>
+                    <button type="button" onclick="clearFilters()" class="text-xs text-gray-600 hover:text-gray-800 px-2 py-1">
+                        Clear Filters
+                    </button>
                 </div>
             </div>
         </div>
@@ -56,22 +52,13 @@
                     <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Account Code
+                                Code
                             </th>
                             <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Account Name
+                                Name
                             </th>
                             <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Account Type
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Debit Balance
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Credit Balance
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Status
+                                Type
                             </th>
                             <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
                                 Actions
@@ -79,119 +66,85 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white" id="accountsTableBody">
-                        <!-- Dynamic accounts from database -->
-                        {% regroup accounts by account_type as account_groups %}
-                        {% for group in account_groups %}
-                            <!-- Account Type Header -->
-                            <tr class="{% if group.grouper == 'ASSET' %}bg-blue-50{% elif group.grouper == 'LIABILITY' %}bg-red-50{% elif group.grouper == 'EQUITY' %}bg-green-50{% elif group.grouper == 'REVENUE' %}bg-purple-50{% elif group.grouper == 'EXPENSE' %}bg-orange-50{% endif %}">
-                                <td class="px-4 py-3 text-sm font-bold {% if group.grouper == 'ASSET' %}text-blue-900{% elif group.grouper == 'LIABILITY' %}text-red-900{% elif group.grouper == 'EQUITY' %}text-green-900{% elif group.grouper == 'REVENUE' %}text-purple-900{% elif group.grouper == 'EXPENSE' %}text-orange-900{% endif %} border-b border-gray-200" colspan="7">
-                                    {% if group.grouper == 'ASSET' %}ASSETS
-                                    {% elif group.grouper == 'LIABILITY' %}LIABILITIES
-                                    {% elif group.grouper == 'EQUITY' %}EQUITY
-                                    {% elif group.grouper == 'REVENUE' %}REVENUE
-                                    {% elif group.grouper == 'EXPENSE' %}EXPENSES
+                        <!-- Dynamic accounts from database - listed continuously without grouping -->
+                        {% for account in accounts %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200" 
+                            data-account-code="{{ account.code }}" 
+                            data-account-name="{{ account.name }}" 
+                            data-account-type="{{ account.account_type }}" 
+                            data-account-status="{{ account.status }}">
+                            <td class="px-4 py-2 text-xs text-gray-900 border-b border-gray-100 font-mono">{{ account.code }}</td>
+                            <td class="px-4 py-2 text-xs text-gray-900 border-b border-gray-100">{{ account.name }}</td>
+                            <td class="px-3 py-2 text-center text-xs text-gray-900 border-b border-gray-100">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if account.account_type == 'ASSET' %}bg-blue-100 text-blue-800
+                                    {% elif account.account_type == 'LIABILITY' %}bg-red-100 text-red-800
+                                    {% elif account.account_type == 'EQUITY' %}bg-green-100 text-green-800
+                                    {% elif account.account_type == 'REVENUE' %}bg-purple-100 text-purple-800
+                                    {% elif account.account_type == 'EXPENSE' %}bg-orange-100 text-orange-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {% if account.account_type == 'ASSET' %}Asset
+                                    {% elif account.account_type == 'LIABILITY' %}Liability
+                                    {% elif account.account_type == 'EQUITY' %}Equity
+                                    {% elif account.account_type == 'REVENUE' %}Revenue
+                                    {% elif account.account_type == 'EXPENSE' %}Expense
                                     {% endif %}
-                                </td>
-                            </tr>
-                            
-                            <!-- Account Rows -->
-                            {% for account in group.list %}
-                            <tr class="hover:bg-gray-50 transition-colors duration-200" 
-                                data-account-code="{{ account.code }}" 
-                                data-account-name="{{ account.name }}" 
-                                data-account-type="{{ account.account_type }}" 
-                                data-account-status="{{ account.status }}">
-                                <td class="px-4 py-2 text-sm text-gray-900 border-b border-gray-100 font-mono">{{ account.code }}</td>
-                                <td class="px-4 py-2 text-sm text-gray-900 border-b border-gray-100">{{ account.name }}</td>
-                                <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                        {% if account.account_type == 'ASSET' %}bg-blue-100 text-blue-800
-                                        {% elif account.account_type == 'LIABILITY' %}bg-red-100 text-red-800
-                                        {% elif account.account_type == 'EQUITY' %}bg-green-100 text-green-800
-                                        {% elif account.account_type == 'REVENUE' %}bg-purple-100 text-purple-800
-                                        {% elif account.account_type == 'EXPENSE' %}bg-orange-100 text-orange-800
-                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                        {% if account.account_type == 'ASSET' %}Asset
-                                        {% elif account.account_type == 'LIABILITY' %}Liability
-                                        {% elif account.account_type == 'EQUITY' %}Equity
-                                        {% elif account.account_type == 'REVENUE' %}Revenue
-                                        {% elif account.account_type == 'EXPENSE' %}Expense
-                                        {% endif %}
-                                    </span>
-                                </td>
-                                <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100 font-mono">
-                                    {% if account.account_type == 'ASSET' or account.account_type == 'EXPENSE' %}
-                                        ${{ account.balance|floatformat:2 }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100 font-mono">
-                                    {% if account.account_type == 'LIABILITY' or account.account_type == 'EQUITY' or account.account_type == 'REVENUE' %}
-                                        ${{ account.balance|floatformat:2 }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td class="px-3 py-2 text-center text-sm border-b border-gray-100">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                        {% if account.status == 'ACTIVE' %}bg-green-100 text-green-800
-                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                        {% if account.status == 'ACTIVE' %}Active{% else %}Inactive{% endif %}
-                                    </span>
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
-                                    <div class="flex space-x-2">
-                                        <!-- View Details -->
-                                        <button type="button"
-                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                                title="View Account"
-                                                data-modal-target="details-modal" 
-                                                data-modal-toggle="details-modal"
-                                                onclick="viewAccountDetails('{{ account.code }}', '{{ account.name }}', '{{ account.account_type }}', '{{ account.balance }}', '{{ account.status }}')">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
-                                            </svg>
-                                        </button>
-                                        <!-- Edit -->
-                                        <button type="button"
-                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                                title="Edit Account"
-                                                data-modal-target="update-modal" 
-                                                data-modal-toggle="update-modal"
-                                                onclick="editAccount('{{ account.code }}', '{{ account.name }}', '{{ account.account_type }}', '{{ account.balance }}', '{{ account.status }}')">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
-                                            </svg>
-                                        </button>
-                                        <!-- Delete -->
-                                        <button type="button"
-                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                                title="Delete Account"
-                                                onclick="deleteAccount('{{ account.code }}', '{{ account.name }}')">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                                </span>
+                            </td>
+                            <td class="px-3 py-1 whitespace-nowrap text-xs font-medium border-b border-gray-100">
+                                <div class="flex space-x-2 justify-center">
+                                    <!-- View Details -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="View Account"
+                                            data-modal-target="details-modal" 
+                                            data-modal-toggle="details-modal"
+                                            onclick="viewAccountDetails('{{ account.code }}', '{{ account.name }}', '{{ account.account_type }}', '{{ account.balance }}', '{{ account.status }}', '{{ account.description }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Edit -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Edit Account"
+                                            data-modal-target="update-modal" 
+                                            data-modal-toggle="update-modal"
+                                            onclick="editAccount('{{ account.code }}', '{{ account.name }}', '{{ account.get_account_type_display }}', '{{ account.balance }}', '{{ account.get_status_display }}', '{{ account.description }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </button>
+                                    <!-- Delete -->
+                                    <button type="button"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            title="Delete Account"
+                                            data-modal-target="delete-modal"
+                                            data-modal-toggle="delete-modal"
+                                            onclick="deleteAccount('{{ account.code }}', '{{ account.name }}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                         {% endfor %}
-
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-
+    <!-- CSRF Token for AJAX requests -->
+    {% csrf_token %}
 
     <!-- Modals -->
     {% include "finance_management/new-modal.html" with modal_id="new-modal" %}
     {% include "finance_management/modals/account_details_modal.html" with modal_id="details-modal" %}
     {% include "finance_management/modals/update_account_modal.html" with modal_id="update-modal" %}
     {% include "finance_management/modals/transactions_modal.html" with modal_id="transactions-modal" %}
+    {% include "finance_management/modals/delete_account_modal.html" %}
 
     <!-- Modal containers -->
     <div id="new-modal-container"></div>
@@ -204,49 +157,155 @@
 {% block extra_js %}
     <script>
         // Global modal functions (must be outside DOMContentLoaded for onclick access)
-        function viewAccountDetails(code, name, type, balance, status) {
-            // Fetch account details from API
-            fetch(`/finance/api/accounts/${code}/`)
-                .then(response => response.json())
-                .then(data => {
-                    // Populate details modal with fetched data
-                    document.getElementById('detailAccountCode').textContent = data.code;
-                    document.getElementById('detailAccountName').textContent = data.name;
-                    document.getElementById('detailAccountType').textContent = data.type;
-                    document.getElementById('detailAccountBalance').textContent = '$' + parseFloat(data.balance).toFixed(2);
-                    document.getElementById('detailAccountStatus').textContent = data.status;
+        function deleteAccount(code, name) {
+            // Set the account name in the delete confirmation modal
+            document.getElementById('deleteAccountName').textContent = name;
+            
+            // Set up the confirm delete button click handler
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            confirmDeleteBtn.onclick = async function() {
+                try {
+                    // Get CSRF token from the page
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                     
-                    // Set status badge color
-                    const statusBadge = document.getElementById('detailAccountStatus');
-                    if (data.status === 'Active') {
-                        statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
+                    const response = await fetch(`/finance/accounts/${code}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    
+                    if (response.ok) {
+                        // Close the modal
+                        const modal = document.getElementById('delete-modal');
+                        if (modal) {
+                            modal.classList.add('hidden');
+                        }
+                        
+                        // Show success message
+                        alert('Account deleted successfully');
+                        
+                        // Reload the page to show the updated list
+                        window.location.reload();
                     } else {
-                        statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
+                        const data = await response.json();
+                        alert(data.error || 'Failed to delete account');
                     }
-                    
-                    // Update action buttons in modal
-                    const editBtn = document.querySelector('#details-modal .bg-blue-700');
-                    const transactionsBtn = document.querySelector('#details-modal .bg-green-700');
-                    
-                    if (editBtn) {
-                        editBtn.onclick = () => editAccount(data.code, data.name, data.type, data.balance, data.status);
-                    }
-                    if (transactionsBtn) {
-                        transactionsBtn.onclick = () => viewTransactions(data.code, data.name);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching account details:', error);
-                    // Fallback to passed parameters
-                    document.getElementById('detailAccountCode').textContent = code;
-                    document.getElementById('detailAccountName').textContent = name;
-                    document.getElementById('detailAccountType').textContent = type;
-                    document.getElementById('detailAccountBalance').textContent = '$' + parseFloat(balance).toFixed(2);
-                    document.getElementById('detailAccountStatus').textContent = status;
-                });
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the account');
+                }
+            };
         }
 
-        function editAccount(code, name, type, balance, status) {
+        function viewAccountDetails(code, name, type, balance, status, description) {
+            // Fetch account details and transactions from API
+            Promise.all([
+                fetch(`/finance/api/accounts/${code}/`).then(response => response.json()),
+                fetch(`/finance/api/accounts/${code}/transactions/`).then(response => response.json())
+            ])
+            .then(([accountData, transactionData]) => {
+                // Populate account summary
+                document.getElementById('detailAccountCode').textContent = accountData.code;
+                document.getElementById('detailAccountName').textContent = accountData.name;
+                document.getElementById('detailAccountType').textContent = accountData.type;
+                document.getElementById('detailAccountBalance').textContent = '$' + parseFloat(accountData.balance || 0).toFixed(2);
+                
+                // Update status
+                document.getElementById('detailAccountStatus').textContent = accountData.status || status;
+                
+                // Populate description
+                document.getElementById('detailAccountDescription').textContent = accountData.description || 'No description available';
+                
+                // Update subtitle
+                document.getElementById('detailAccountSubtitle').textContent = `${accountData.code} - ${accountData.name} (${accountData.type})`;
+
+                // Populate transaction history
+                const transactionBody = document.getElementById('transactionHistory');
+                transactionBody.innerHTML = ''; // Clear existing rows
+
+                if (transactionData && transactionData.length > 0) {
+                    let runningBalance = 0;
+                    transactionData.forEach(transaction => {
+                        const debit = parseFloat(transaction.debit) || 0;
+                        const credit = parseFloat(transaction.credit) || 0;
+                        
+                        // Update running balance based on account type
+                        if (accountData.type === 'Asset' || accountData.type === 'Expense') {
+                            runningBalance += debit - credit;
+                        } else {
+                            runningBalance += credit - debit;
+                        }
+
+                                            const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-3 py-2 text-xs text-gray-900">${new Date(transaction.date).toLocaleDateString()}</td>
+                        <td class="px-3 py-2 text-xs text-gray-900">${transaction.reference || '-'}</td>
+                        <td class="px-3 py-2 text-xs text-gray-900">${transaction.description || '-'}</td>
+                        <td class="px-3 py-2 text-xs text-gray-900 text-right">${debit ? '$' + debit.toFixed(2) : '-'}</td>
+                        <td class="px-3 py-2 text-xs text-gray-900 text-right">${credit ? '$' + credit.toFixed(2) : '-'}</td>
+                        <td class="px-3 py-2 text-xs font-medium text-gray-900 text-right">$${runningBalance.toFixed(2)}</td>
+                        <td class="px-3 py-2 text-center">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                transaction.status === 'Posted' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }">${transaction.status || 'Pending'}</span>
+                        </td>
+                        <td class="px-3 py-2 text-center">
+                            <button type="button" class="text-blue-600 hover:text-blue-900" title="View Details">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                        </td>
+                    `;
+                        transactionBody.appendChild(row);
+                    });
+                } else {
+                    // Show no transactions message
+                    transactionBody.innerHTML = `
+                        <tr class="text-center text-gray-500 py-8">
+                            <td colspan="8" class="py-8">
+                                <div class="flex flex-col items-center">
+                                    <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    <p class="text-sm text-gray-500">No transactions found</p>
+                                    <p class="text-xs text-gray-400">Transactions will appear here when they are posted</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                // Update action buttons in modal
+                const editBtn = document.querySelector('#details-modal button:contains("Edit Account")');
+                if (editBtn) {
+                    editBtn.onclick = () => editAccount(accountData.code, accountData.name, accountData.type, accountData.balance, accountData.status, accountData.description);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching account details:', error);
+                // Fallback to passed parameters
+                document.getElementById('detailAccountCode').textContent = code;
+                document.getElementById('detailAccountName').textContent = name;
+                document.getElementById('detailAccountType').textContent = type;
+                document.getElementById('detailAccountBalance').textContent = '$' + parseFloat(balance || 0).toFixed(2);
+                
+                // Update status
+                document.getElementById('detailAccountStatus').textContent = status || 'Active';
+                
+                // Set description from parameter or default
+                document.getElementById('detailAccountDescription').textContent = description || 'No description available';
+                
+                // Update subtitle
+                document.getElementById('detailAccountSubtitle').textContent = `${code} - ${name} (${type})`;
+            });
+        }
+
+        function editAccount(code, name, type, balance, status, description) {
             // Populate edit modal
             document.getElementById('editAccountCode').value = code;
             document.getElementById('editAccountName').value = name;
@@ -263,6 +322,7 @@
             accountTypeSelect.value = accountTypeMap[type] || type;
             
             document.getElementById('editAccountBalance').value = balance;
+            document.getElementById('editAccountDescription').value = description || '';
             
             // Set status based on the raw value from backend
             const statusSelect = document.getElementById('editAccountStatus');
@@ -272,18 +332,63 @@
             };
             statusSelect.value = statusMap[status] || status;
             
-            // Set form action URL
+            // Set form action URL and add event listener
             const form = document.getElementById('updateAccountForm');
             if (form) {
                 form.action = `/finance/accounts/${code}/update/`;
+                
+                // Remove any existing submit event listener
+                form.removeEventListener('submit', handleUpdateSubmit);
+                
+                // Add new submit event listener
+                form.addEventListener('submit', handleUpdateSubmit);
             }
+        }
+        
+        async function handleUpdateSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
             
-            // Close details modal and open update modal using Flowbite
-            if (window.detailsAccountModal) {
-                window.detailsAccountModal.hide();
-            }
-            if (window.updateAccountModal) {
-                window.updateAccountModal.show();
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: new FormData(form)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Hide the modal
+                    const modal = document.getElementById('update-modal');
+                    if (modal) {
+                        modal.classList.add('hidden');
+                    }
+                    
+                    // Show success message and reload the page
+                    window.location.reload();
+                } else {
+                    // Handle validation errors
+                    if (data.errors) {
+                        Object.keys(data.errors).forEach(field => {
+                            const input = document.getElementById(`editAccount${field.charAt(0).toUpperCase() + field.slice(1)}`);
+                            if (input) {
+                                input.classList.add('border-red-500');
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'text-red-500 text-sm mt-1';
+                                errorDiv.textContent = data.errors[field].join(' ');
+                                input.parentNode.appendChild(errorDiv);
+                            }
+                        });
+                    } else {
+                        alert('Failed to update account. Please try again.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while updating the account');
             }
         }
 
@@ -304,45 +409,20 @@
             // For now, we'll use the sample data already in the modal
         }
 
-        // Initialize all functionality when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Search functionality
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    filterTable();
-                });
-            }
-
-            // Filter functionality
-            const typeFilter = document.getElementById('typeFilter');
-            const statusFilter = document.getElementById('statusFilter');
-            
-            if (typeFilter) {
-                typeFilter.addEventListener('change', filterTable);
-            }
-            if (statusFilter) {
-                statusFilter.addEventListener('change', filterTable);
-            }
-
-        function filterTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const typeFilter = document.getElementById('typeFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+        // Filter accounts by type and search term
+        function filterAccounts(filterValue) {
+            const searchTerm = document.getElementById('searchInput')?.value?.toLowerCase() || '';
             const rows = document.querySelectorAll('#accountsTableBody tr');
 
             rows.forEach(row => {
                 const code = row.getAttribute('data-account-code')?.toLowerCase() || '';
                 const name = row.getAttribute('data-account-name')?.toLowerCase() || '';
                 const type = row.getAttribute('data-account-type') || '';
-                const status = row.getAttribute('data-account-status') || '';
 
                 const matchesSearch = code.includes(searchTerm) || name.includes(searchTerm);
-                const matchesType = !typeFilter || type === typeFilter;
-                const matchesStatus = !statusFilter || status === statusFilter;
+                const matchesType = !filterValue || type === filterValue;
 
-                if (matchesSearch && matchesType && matchesStatus) {
+                if (matchesSearch && matchesType) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
@@ -350,16 +430,60 @@
             });
         }
 
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('typeFilter').value = '';
-            document.getElementById('statusFilter').value = '';
-            filterTable();
-        }
+        // Initialize all functionality when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const currentFilter = document.getElementById('typeFilter')?.value || '';
+                    filterAccounts(currentFilter);
+                });
+            }
 
-        // Modal functions
-
+            // Filter functionality
+            const typeFilter = document.getElementById('typeFilter');
             
+            if (typeFilter) {
+                typeFilter.addEventListener('change', function() {
+                    filterAccounts(this.value);
+                });
+            }
+
+            function filterTable() {
+                const searchTerm = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+                const typeFilterValue = document.getElementById('typeFilter')?.value || '';
+                const rows = document.querySelectorAll('#accountsTableBody tr');
+
+                rows.forEach(row => {
+                    const code = row.getAttribute('data-account-code')?.toLowerCase() || '';
+                    const name = row.getAttribute('data-account-name')?.toLowerCase() || '';
+                    const type = row.getAttribute('data-account-type') || '';
+
+                    const matchesSearch = code.includes(searchTerm) || name.includes(searchTerm);
+                    const matchesType = !typeFilterValue || type === typeFilterValue;
+
+                    if (matchesSearch && matchesType) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            function clearFilters() {
+                const searchInput = document.getElementById('searchInput');
+                const typeFilter = document.getElementById('typeFilter');
+                
+                if (searchInput) searchInput.value = '';
+                if (typeFilter) typeFilter.value = '';
+                
+                filterAccounts('');
+            }
+
+            // Make clearFilters globally accessible
+            window.clearFilters = clearFilters;
+
             // Form submission handler for update account
             const updateForm = document.getElementById('updateAccountForm');
             if (updateForm) {

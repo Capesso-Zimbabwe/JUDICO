@@ -39,7 +39,9 @@
                 </div>
             {% endblock %}
 
-            {% block modal_footer %}{% endblock %}
+            {% block modal_footer %}
+                <!-- Modal footer - can be overridden by child templates -->
+            {% endblock %}
         {% include 'components/modals/loading.html' %}
 
         </div>

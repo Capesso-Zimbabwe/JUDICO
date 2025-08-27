@@ -14,11 +14,12 @@ class Command(BaseCommand):
         with transaction.atomic():
             # ASSETS
             # Current Assets
+            # Current Assets
             cash_checking = Account.objects.create(
                 code='1000',
                 name='Cash - Operating Account',
                 account_type='ASSET',
-                balance=50000.00,
+                balance=0,
                 description='Primary operating checking account for daily transactions'
             )
             
@@ -26,7 +27,7 @@ class Command(BaseCommand):
                 code='1010',
                 name='Client Trust Account',
                 account_type='ASSET',
-                balance=125000.00,
+                balance=0,
                 description='Client funds held in trust - IOLTA compliant account'
             )
             
@@ -34,7 +35,7 @@ class Command(BaseCommand):
                 code='1200',
                 name='Accounts Receivable - Legal Fees',
                 account_type='ASSET',
-                balance=75000.00,
+                balance=0,
                 description='Outstanding legal fees owed by clients'
             )
             
@@ -42,7 +43,7 @@ class Command(BaseCommand):
                 code='1210',
                 name='Unbilled Time and Expenses',
                 account_type='ASSET',
-                balance=25000.00,
+                balance=0,
                 description='Work in progress - time and expenses not yet billed'
             )
             
@@ -50,7 +51,7 @@ class Command(BaseCommand):
                 code='1300',
                 name='Prepaid Expenses',
                 account_type='ASSET',
-                balance=8000.00,
+                balance=0,
                 description='Insurance, rent, and other prepaid expenses'
             )
             
@@ -59,7 +60,7 @@ class Command(BaseCommand):
                 code='1500',
                 name='Office Equipment',
                 account_type='ASSET',
-                balance=35000.00,
+                balance=0,
                 description='Computers, printers, phones, and office equipment'
             )
             
@@ -67,7 +68,7 @@ class Command(BaseCommand):
                 code='1510',
                 name='Furniture and Fixtures',
                 account_type='ASSET',
-                balance=20000.00,
+                balance=0,
                 description='Office furniture, fixtures, and improvements'
             )
             
@@ -75,7 +76,7 @@ class Command(BaseCommand):
                 code='1520',
                 name='Law Library and Software',
                 account_type='ASSET',
-                balance=15000.00,
+                balance=0,
                 description='Legal research materials, books, and software licenses'
             )
             
