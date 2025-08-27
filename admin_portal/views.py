@@ -39,8 +39,9 @@ def admin_dashboard(request):
     from document_repository.models import Document, DocumentCategory
     from governance.models import Policy, Meeting, Report
     from lawyer_portal.models import LawyerProfile
+    from contract_management.models import Contract, ContractTemplate
     import json
-    from django.db.models import Count
+    from django.db.models import Count, Q, Sum
     from datetime import datetime, timedelta
     from django.utils import timezone
     
@@ -55,6 +56,15 @@ def admin_dashboard(request):
     task_in_progress_count = Task.objects.filter(status='in_progress').count()
     task_completed_count = Task.objects.filter(status='completed').count()
     task_on_hold_count = Task.objects.filter(status='on_hold').count()
+    
+    # Contract counts
+    contract_count = Contract.objects.count()
+    active_contracts_count = Contract.objects.filter(status='active').count()
+    pending_contracts_count = Contract.objects.filter(status='pending_signature').count()
+    expired_contracts_count = Contract.objects.filter(status='expired').count()
+    contract_templates_count = ContractTemplate.objects.count()
+    
+
     
     # Document type counts
     client_document_count = Document.objects.filter(category__name__icontains='client').count()
@@ -104,26 +114,64 @@ def admin_dashboard(request):
     # Recent items
     recent_tasks = Task.objects.all().order_by('-created_at')[:5]
     recent_documents = Document.objects.all().order_by('-uploaded_at')[:5]
+    recent_contracts = Contract.objects.all().order_by('-created_at')[:5]
+    
+    # Overdue and urgent items
+    overdue_tasks = Task.objects.filter(
+        Q(status__in=['pending', 'in_progress']) & 
+        Q(due_date__lt=today)
+    ).count()
+    
+    due_this_week = Task.objects.filter(
+        Q(status__in=['pending', 'in_progress']) & 
+        Q(due_date__gte=today) & 
+        Q(due_date__lte=today + timedelta(days=7))
+    ).count()
+    
+
     
     context = {
         'client_count': client_count,
         'lawyer_count': lawyer_count,
         'task_count': task_count,
         'document_count': document_count,
+        'contract_count': contract_count,
+        
+        # Task data
         'task_pending_count': task_pending_count,
         'task_in_progress_count': task_in_progress_count,
         'task_completed_count': task_completed_count,
         'task_on_hold_count': task_on_hold_count,
+        'overdue_tasks': overdue_tasks,
+        'due_this_week': due_this_week,
+        
+        # Contract data
+        'active_contracts_count': active_contracts_count,
+        'pending_contracts_count': pending_contracts_count,
+        'expired_contracts_count': expired_contracts_count,
+        'contract_templates_count': contract_templates_count,
+        
+
+        
+        # Document data
         'client_document_count': client_document_count,
         'lawyer_document_count': lawyer_document_count,
         'case_document_count': case_document_count,
         'admin_document_count': admin_document_count,
+        
+        # Charts data
         'client_growth_labels': json.dumps(months),
         'client_growth_data': json.dumps(client_growth_data),
+
         'lawyer_specialization_labels': json.dumps(lawyer_specialization_labels),
         'lawyer_specialization_data': json.dumps(lawyer_specialization_data),
+        
+        # Recent items
         'recent_tasks': recent_tasks,
         'recent_documents': recent_documents,
+        'recent_contracts': recent_contracts,
+        
+        # Governance data
         'active_policies_count': active_policies_count,
         'scheduled_meetings_count': scheduled_meetings_count,
         'pending_reviews_count': pending_reviews_count,
@@ -344,42 +392,146 @@ def delete_user(request, user_id):
 @user_passes_test(is_staff)
 def reports(request):
     # Get filter parameters from request
+    module_filter = request.GET.get('module', '')
     report_type = request.GET.get('report_type', '')
     status = request.GET.get('status', '')
     date_from = request.GET.get('date_from', '')
     date_to = request.GET.get('date_to', '')
     
-    # Start with all reports
-    reports_queryset = Report.objects.all()
+    # Import all report models from different modules
+    from governance.models import Report as GovernanceReport
+    from finance_management.models import Report as FinanceReport
+    from transaction_support.models import TransactionReport
+    from kyc_app.models import KYCReport
     
-    # Apply filters if provided
+    # Collect all reports from different modules
+    all_reports = []
+    
+    # Governance Reports
+    governance_reports = GovernanceReport.objects.all()
+    for report in governance_reports:
+        all_reports.append({
+            'id': report.id,
+            'title': report.title,
+            'module': 'Governance',
+            'report_type': report.get_report_type_display(),
+            'status': report.get_status_display(),
+            'created_at': report.created_at,
+            'generated_by': report.generated_by.username if report.generated_by else 'System',
+            'period': report.period_display if hasattr(report, 'period_display') else '',
+            'file_path': report.file_path,
+            'description': report.description,
+            'module_slug': 'governance',
+            'status_value': report.status,
+            'report_type_value': report.report_type
+        })
+    
+    # Finance Reports
+    finance_reports = FinanceReport.objects.all()
+    for report in finance_reports:
+        all_reports.append({
+            'id': report.id,
+            'title': report.name,
+            'module': 'Finance',
+            'report_type': report.get_report_type_display(),
+            'status': report.get_status_display(),
+            'created_at': report.created_at,
+            'generated_by': report.generated_by.username if report.generated_by else 'System',
+            'period': f"{report.start_date.strftime('%b %Y')} - {report.end_date.strftime('%b %Y')}" if report.start_date and report.end_date else '',
+            'file_path': report.file_path,
+            'description': report.description,
+            'module_slug': 'finance',
+            'status_value': report.status,
+            'report_type_value': report.report_type
+        })
+    
+    # Transaction Reports
+    transaction_reports = TransactionReport.objects.all()
+    for report in transaction_reports:
+        all_reports.append({
+            'id': report.id,
+            'title': report.title,
+            'module': 'Transaction Support',
+            'report_type': report.get_report_type_display(),
+            'status': 'Completed' if report.report_file else 'Pending',
+            'created_at': report.generated_at,
+            'generated_by': report.generated_by.username if report.generated_by else 'System',
+            'period': '',
+            'file_path': report.report_file.path if report.report_file else '',
+            'description': report.description,
+            'module_slug': 'transaction',
+            'status_value': 'completed' if report.report_file else 'pending',
+            'report_type_value': report.report_type
+        })
+    
+    # KYC Reports
+    kyc_reports = KYCReport.objects.all()
+    for report in kyc_reports:
+        all_reports.append({
+            'id': report.id,
+            'title': f"KYC Report #{report.report_id}",
+            'module': 'KYC',
+            'report_type': report.get_report_type_display(),
+            'status': 'Completed' if report.pdf_report else 'Pending',
+            'created_at': report.generated_at,
+            'generated_by': report.generated_by,
+            'period': '',
+            'file_path': report.pdf_report.path if report.pdf_report else '',
+            'description': report.summary,
+            'module_slug': 'kyc',
+            'status_value': 'completed' if report.pdf_report else 'pending',
+            'report_type_value': report.report_type
+        })
+    
+    # Apply filters
+    if module_filter:
+        all_reports = [r for r in all_reports if r['module'].lower() == module_filter.lower()]
+    
     if report_type:
-        reports_queryset = reports_queryset.filter(report_type=report_type)
+        all_reports = [r for r in all_reports if report_type.lower() in r['report_type_value'].lower()]
+    
     if status:
-        reports_queryset = reports_queryset.filter(status=status)
+        all_reports = [r for r in all_reports if status.lower() in r['status_value'].lower()]
+    
     if date_from:
         try:
             date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
-            reports_queryset = reports_queryset.filter(created_at__gte=date_from_obj)
+            all_reports = [r for r in all_reports if r['created_at'].date() >= date_from_obj]
         except ValueError:
             pass
+    
     if date_to:
         try:
             date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
-            reports_queryset = reports_queryset.filter(created_at__lte=date_to_obj)
+            all_reports = [r for r in all_reports if r['created_at'].date() <= date_to_obj]
         except ValueError:
             pass
     
-    # Order by most recent first
-    reports_queryset = reports_queryset.order_by('-created_at')
+    # Sort by creation date (most recent first)
+    all_reports.sort(key=lambda x: x['created_at'], reverse=True)
     
     # Paginate the results
-    paginator = Paginator(reports_queryset, 10)  # Show 10 reports per page
+    paginator = Paginator(all_reports, 10)  # Show 10 reports per page
     page_number = request.GET.get('page', 1)
     reports_page = paginator.get_page(page_number)
     
+    # Get unique modules and report types for filters
+    modules = list(set([r['module'] for r in all_reports]))
+    report_types = list(set([r['report_type'] for r in all_reports]))
+    statuses = list(set([r['status'] for r in all_reports]))
+    
     context = {
         'reports': reports_page,
+        'modules': modules,
+        'report_types': report_types,
+        'statuses': statuses,
+        'current_filters': {
+            'module': module_filter,
+            'report_type': report_type,
+            'status': status,
+            'date_from': date_from,
+            'date_to': date_to,
+        }
     }
     
     return render(request, 'admin_portal/reports.html', context)
@@ -455,26 +607,89 @@ def view_report(request, report_id):
 @login_required
 @user_passes_test(is_staff)
 def download_report(request, report_id):
-    report = get_object_or_404(Report, id=report_id)
+    # Try to find the report in different models
+    report = None
+    report_type = None
     
-    # Check if report is completed and has a file path
-    if report.status != 'completed' or not report.file_path:
-        messages.error(request, 'Report is not available for download')
+    # Check governance reports
+    try:
+        from governance.models import Report as GovernanceReport
+        report = GovernanceReport.objects.get(id=report_id)
+        report_type = 'governance'
+    except:
+        pass
+    
+    # Check finance reports
+    if not report:
+        try:
+            from finance_management.models import Report as FinanceReport
+            report = FinanceReport.objects.get(id=report_id)
+            report_type = 'finance'
+        except:
+            pass
+    
+    # Check transaction reports
+    if not report:
+        try:
+            from transaction_support.models import TransactionReport
+            report = TransactionReport.objects.get(id=report_id)
+            report_type = 'transaction'
+        except:
+            pass
+    
+    # Check KYC reports
+    if not report:
+        try:
+            from kyc_app.models import KYCReport
+            report = KYCReport.objects.get(id=report_id)
+            report_type = 'kyc'
+        except:
+            pass
+    
+    if not report:
+        messages.error(request, 'Report not found')
         return redirect('admin_portal:reports')
     
-    # In a real application, you would serve the actual file
-    # For this example, we'll create a simple text file with report information
+    # Generate filename based on report type and title
+    if report_type == 'governance':
+        filename = f"{report.title.replace(' ', '_')}_{report.id}.pdf"
+        title = report.title
+        report_type_name = report.get_report_type_display()
+        period = f"{report.period_start} to {report.period_end}" if hasattr(report, 'period_start') and hasattr(report, 'period_end') else 'N/A'
+        generated_by = getattr(report, 'generator', 'System')
+        created_at = report.created_at
+    elif report_type == 'finance':
+        filename = f"Finance_Report_{report.id}.pdf"
+        title = report.name
+        report_type_name = report.get_report_type_display()
+        period = f"{report.start_date.strftime('%b %Y')} - {report.end_date.strftime('%b %Y')}" if hasattr(report, 'start_date') and hasattr(report, 'end_date') else 'N/A'
+        generated_by = report.generated_by.username if report.generated_by else 'System'
+        created_at = report.created_at
+    elif report_type == 'transaction':
+        filename = f"Transaction_Report_{report.id}.pdf"
+        title = report.title
+        report_type_name = report.get_report_type_display()
+        period = 'N/A'
+        generated_by = report.generated_by.username if report.generated_by else 'System'
+        created_at = report.generated_at
+    elif report_type == 'kyc':
+        filename = f"KYC_Report_{report.report_id}.pdf"
+        title = f"KYC Report #{report.report_id}"
+        report_type_name = report.get_report_type_display()
+        period = 'N/A'
+        generated_by = report.generated_by if hasattr(report, 'generated_by') else 'System'
+        created_at = report.generated_at
     
-    # Create a response with a dummy PDF content
+    # Create a response with PDF content type
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{os.path.basename(report.file_path)}"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
-    # Write some dummy content to the response
-    response.write(f"Report: {report.title}\n")
-    response.write(f"Type: {report.report_type}\n")
-    response.write(f"Period: {report.period_start} to {report.period_end}\n")
-    response.write(f"Generated by: {report.generator}\n")
-    response.write(f"Generated at: {report.created_at}\n")
+    # Write report content to the response
+    response.write(f"Report: {title}\n")
+    response.write(f"Type: {report_type_name}\n")
+    response.write(f"Period: {period}\n")
+    response.write(f"Generated by: {generated_by}\n")
+    response.write(f"Generated at: {created_at}\n")
     response.write(f"\nThis is a sample report content. In a real application, this would be a PDF document.")
     
     return response

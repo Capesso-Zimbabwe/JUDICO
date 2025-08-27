@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block header_title %}Admin Portal{% endblock %}
+
+{% block content %}
+<!-- Welcome Note with Time-based Greeting -->
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-4 mb-4">
+    <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0">
+            <svg class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        </div>
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">
+                {% now "H" as current_hour %}
+                {% if current_hour|add:"0" < 12 %}
+                    Good morning
+                {% elif current_hour|add:"0" < 17 %}
+                    Good afternoon
+                {% else %}
+                    Good evening
+                {% endif %}
+                {{ request.user | title }}!
+            </h2>
+            <p class="text-sm text-gray-600">Welcome to the System Dashboard</p>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation header with blue line effect like task management module -->
+<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
+    <nav class="flex space-x-2 px-6 pt-3">
+        <a href="{% url 'admin_portal:admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            Dashboard
+        </a>
+        <a href="{% url 'admin_portal:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+            All Reports
+        </a>
+    </nav>
+</div>
+
+{% block admin_content %}{% endblock %}
+{% endblock %}
