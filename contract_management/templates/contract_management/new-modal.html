@@ -1,0 +1,188 @@
+{% extends 'components/modals/base-form-modal.html' %}
+
+{% block modal_content %}
+<div class="min-h-[500px] p-4">
+    <form id="contract-create-form" method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        
+        <div>
+            <label for="contract_title" class="block text-sm font-medium text-gray-700 mb-1">Contract Title *</label>
+            <input type="text" id="contract_title" name="title" required 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                   placeholder="Enter contract title">
+        </div>
+        
+        <div>
+            <label for="contract_client" class="block text-sm font-medium text-gray-700 mb-1">Client *</label>
+            <select id="contract_client" name="client" required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select Client</option>
+                {% for client in clients %}
+                <option value="{{ client.id }}">{{ client.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div>
+            <label for="contract_type" class="block text-sm font-medium text-gray-700 mb-1">Contract Type *</label>
+            <select id="contract_type" name="contract_type" required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select Contract Type</option>
+                <option value="service_agreement">Service Agreement</option>
+                <option value="retainer_agreement">Retainer Agreement</option>
+                <option value="settlement_agreement">Settlement Agreement</option>
+                <option value="employment_contract">Employment Contract</option>
+                <option value="partnership_agreement">Partnership Agreement</option>
+                <option value="nda">Non-Disclosure Agreement</option>
+                <option value="licensing_agreement">Licensing Agreement</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="contract_description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea id="contract_description" name="description" rows="3"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter contract description"></textarea>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="contract_start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <input type="date" id="contract_start_date" name="start_date"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="contract_end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <input type="date" id="contract_end_date" name="end_date"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        </div>
+        
+        <div>
+            <label for="contract_value" class="block text-sm font-medium text-gray-700 mb-1">Contract Value</label>
+            <div class="relative">
+                <span class="absolute left-3 top-2 text-gray-500 text-sm">$</span>
+                <input type="number" id="contract_value" name="contract_value" step="0.01" min="0"
+                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="0.00">
+            </div>
+        </div>
+        
+        <div>
+            <label for="contract_document" class="block text-sm font-medium text-gray-700 mb-1">Contract Document (Optional)</label>
+            <input type="file" id="contract_document" name="contract_document" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                   accept=".pdf,.doc,.docx">
+            <div class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX files accepted</div>
+        </div>
+        
+        <div class="flex gap-3 pt-4">
+            <button type="submit" 
+                    class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Create Contract
+            </button>
+            <button type="button" onclick="closeModal()"
+                    class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Use IIFE to avoid variable conflicts when modal is loaded multiple times
+    (function() {
+        // Check if already initialized to prevent duplicate event listeners
+        if (window.contractCreateInitialized) return;
+        window.contractCreateInitialized = true;
+
+        // Handle contract creation form submission
+        const form = document.getElementById('contract-create-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                
+                // Show loading state
+                submitBtn.textContent = 'Creating...';
+                submitBtn.disabled = true;
+                
+                fetch('{% url "contract_management:contract_create" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        // Success - redirect to contract list
+                        window.location.href = response.url;
+                    } else {
+                        return response.text();
+                    }
+                })
+                .then(html => {
+                    if (html) {
+                        // Check if there are form errors
+                        if (html.includes('error') || html.includes('Error')) {
+                            showNotification('Error creating contract. Please check the form.', 'error');
+                        } else {
+                            showNotification('Contract created successfully!', 'success');
+                            // Close modal and reload page
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('An error occurred while creating the contract.', 'error');
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Make closeModal available globally
+        window.closeModal = function() {
+            // Close the modal using Flowbite
+            const modal = document.getElementById('new-modal');
+            if (modal) {
+                const modalInstance = window.newModal;
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }
+        };
+    })();
+</script>
+{% endblock %}
+
+{% block modal_title %}New Contract{% endblock %}

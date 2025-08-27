@@ -48,6 +48,72 @@
         background-color: rgba(243, 244, 246, 0.7);
     }
     
+    /* Fix table column overlap */
+    #contractsTable {
+        table-layout: fixed;
+    }
+    
+    #contractsTable th:nth-child(1),
+    #contractsTable td:nth-child(1) {
+        width: 35%;
+        max-width: 35%;
+    }
+    
+    #contractsTable th:nth-child(2),
+    #contractsTable td:nth-child(2) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #contractsTable th:nth-child(3),
+    #contractsTable td:nth-child(3) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #contractsTable th:nth-child(4),
+    #contractsTable td:nth-child(4) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #contractsTable th:nth-child(5),
+    #contractsTable td:nth-child(5) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #contractsTable th:nth-child(6),
+    #contractsTable td:nth-child(6) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #contractsTable th:nth-child(7),
+    #contractsTable td:nth-child(7) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #contractsTable th:nth-child(8),
+    #contractsTable td:nth-child(8) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    /* Prevent text overflow */
+    .contract-title-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .client-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
     /* Scrollbar styling */
     .scrollbar-thin::-webkit-scrollbar {
         width: 6px;
@@ -113,13 +179,31 @@
             </div>
         </form>
 
-        <!-- Create Contract Button -->
-        <a href="{% url 'contract_management:contract_create' %}" class="inline-flex items-center px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Add New Contract
-        </a>
+        <!-- Action Buttons -->
+        <div class="flex gap-2">
+            <!-- Upload Template Button -->
+            <button type="button"
+                    class="p-2 flex gap-1 items-center bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200"
+                    data-modal-target="upload-template-modal" data-modal-toggle="upload-template-modal">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <span class="font-bold text-xs">Upload Contract Template</span>
+            </button>
+            
+            <!-- Create Contract Button -->
+            <a hx-get="{% url 'contract_management:contract_create' %}"
+               hx-target="#new-modal-container"
+               hx-indicator="#new-modal-overlay"
+               hx-trigger="click"
+               data-modal-target="new-modal" data-modal-toggle="new-modal"
+               href="{% url 'contract_management:contract_create' %}" class="p-2 flex gap-1 items-center">
+                <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"></path>
+                </svg>
+                <span class="font-bold text-xs">Add New Contract</span>
+            </a>
+        </div>
     </div>
     
     <!-- Filters -->
@@ -204,14 +288,14 @@
                                     </div>
                                 </div>
                                 <div class="ml-2">
-                                        <div class="text-xs font-medium text-gray-900">
-                                            <span>{{ contract.title|truncatechars:30 }}</span>
-                                        </div>
+                                    <div class="text-xs font-medium text-gray-900">
+                                        <span>{{ contract.title|truncatechars:30 }}</span>
                                     </div>
-                                </button>
-                            </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ contract.client.name|truncatechars:20 }}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                </div>
+                            </button>
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ contract.client.name|truncatechars:20 }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                             {% if contract.assigned_lawyer %}
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-6 w-6">
@@ -230,21 +314,21 @@
                             {% endif %}
                         </td>
                         <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ contract.get_contract_type_display }}</td>
-                            <td class="px-3 py-2 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium status-{{ contract.status }}">
-                                    {{ contract.get_status_display }}
-                                </span>
-                            </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
-                                {% if contract.contract_value %}
-                                    <span class="text-green-600">${{ contract.contract_value|floatformat:2 }}</span>
-                                {% else %}
-                                    <span class="text-gray-500">-</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ contract.created_at|date:"M d, Y" }}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
-                                <div class="flex space-x-2">
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium status-{{ contract.status }}">
+                                {{ contract.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                            {% if contract.contract_value %}
+                                <span class="text-green-600">${{ contract.contract_value|floatformat:2 }}</span>
+                            {% else %}
+                                <span class="text-gray-500">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ contract.created_at|date:"M d, Y" }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                            <div class="flex space-x-2">
                                 <a href="{% url 'contract_management:contract_detail' contract.pk %}" 
                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-150 shadow-sm hover:shadow-md"
                                    title="View Contract">
@@ -293,6 +377,10 @@
         {% include 'components/paginator.html' with page_obj=page_obj %}
     </div>
 </div>
+
+<!-- Include Contract Modals -->
+{% include "contract_management/new-modal.html" with modal_id="new-modal" %}
+{% include "contract_management/upload-template-modal.html" with modal_id="upload-template-modal" %}
 {% endblock %}
 
 {% block extra_js %}
@@ -302,6 +390,19 @@
         select.addEventListener('change', function() {
             this.form.submit();
         });
+    });
+
+    // Initialize Flowbite modals
+    const newModalElement = document.getElementById('new-modal');
+    window.newModal = new Modal(newModalElement, modalOptions, {
+        id: 'new-modal',
+        override: true
+    });
+
+    const uploadTemplateModalElement = document.getElementById('upload-template-modal');
+    window.uploadTemplateModal = new Modal(uploadTemplateModalElement, modalOptions, {
+        id: 'upload-template-modal',
+        override: true
     });
 </script>
 {% endblock %}

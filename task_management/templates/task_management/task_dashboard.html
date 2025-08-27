@@ -28,7 +28,7 @@
     <div class="bg-white rounded-lg shadow p-3 task-card">
         <div class="flex items-center justify-between">
             <div>
-                <h3 class="font-semibold text-gray-700">Pending Tasks</h3>
+                <h3 class="text-xs font-semibold text-gray-700">Pending Tasks</h3>
                 <p class="text-2xl font-bold">{{ pending_tasks }}</p>
             </div>
             <div class="bg-yellow-100 p-2 rounded-full">
@@ -42,7 +42,7 @@
     <div class="bg-white rounded-lg shadow p-3 task-card">
         <div class="flex items-center justify-between">
             <div>
-                <h3 class="font-semibold text-gray-700">In Progress</h3>
+                <h3 class="text-xs font-semibold text-gray-700">In Progress</h3>
                 <p class="text-2xl font-bold">{{ in_progress_tasks }}</p>
             </div>
             <div class="bg-indigo-100 p-2 rounded-full">
@@ -56,7 +56,7 @@
     <div class="bg-white rounded-lg shadow p-3 task-card">
         <div class="flex items-center justify-between">
             <div>
-                <h3 class="font-semibold text-gray-700">Completed Tasks</h3>
+                <h3 class="text-xs font-semibold text-gray-700">Completed Tasks</h3>
                 <p class="text-2xl font-bold">{{ completed_tasks }}</p>
             </div>
             <div class="bg-green-100 p-2 rounded-full">
@@ -68,102 +68,127 @@
     </div>
 </div>
 
-<!-- Charts Section -->
+<!-- Critical Alerts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            Urgent Alerts
+        </h3>
+        <div class="space-y-2">
+            {% if overdue_tasks > 0 %}
+            <div class="flex items-center justify-between p-2 bg-red-50 rounded">
+                <span class="text-sm text-red-700">Overdue Tasks</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">{{ overdue_tasks }}</span>
+            </div>
+            {% endif %}
+            {% if due_today_tasks > 0 %}
+            <div class="flex items-center justify-between p-2 bg-yellow-50 rounded">
+                <span class="text-sm text-yellow-700">Due Today</span>
+                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">{{ due_today_tasks }}</span>
+            </div>
+            {% endif %}
+            {% if due_this_week_tasks > 0 %}
+            <div class="flex items-center justify-between p-2 bg-blue-50 rounded">
+                <span class="text-sm text-blue-700">Due This Week</span>
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">{{ due_this_week_tasks }}</span>
+            </div>
+            {% endif %}
+            {% if overdue_tasks == 0 and due_today_tasks == 0 and due_this_week_tasks == 0 %}
+            <div class="text-center py-4 text-gray-500">
+                <svg class="mx-auto h-8 w-8 text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-sm">All tasks are on track!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Quick Actions
+        </h3>
+        <div class="space-y-2">
+            <a href="{% url 'task_management:task_create' %}" class="flex items-center justify-center w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Create New Task
+            </a>
+            <a href="{% url 'task_management:task_list' %}" class="flex items-center justify-center w-full bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                View All Tasks
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Essential Charts -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <!-- Task Status Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Task Status Distribution</h3>
-        <div class="h-64">
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Task Status Overview</h3>
+        <div class="h-48">
             <canvas id="taskStatusChart"></canvas>
         </div>
     </div>
     
     <!-- Task Priority Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Priority Distribution</h3>
-        <div class="h-64">
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Priority Distribution</h3>
+        <div class="h-48">
             <canvas id="taskPriorityChart"></canvas>
         </div>
     </div>
 </div>
 
-<!-- Second Row of Charts -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <!-- Task Timeline Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Task Creation Timeline</h3>
-        <div class="h-64">
-            <canvas id="taskTimelineChart"></canvas>
+<!-- Recent Tasks -->
+<div class="bg-white rounded-lg shadow p-4">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Recent Tasks
+        <a href="{% url 'task_management:task_list' %}" class="ml-auto text-xs bg-white border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-50">View All</a>
+    </h3>
+    <div class="space-y-3 max-h-64 overflow-y-auto">
+        {% for task in recent_tasks %}
+        <div class="flex items-start space-x-3 p-2 {% if not forloop.last %}border-b border-gray-100{% endif %}">
+            <div class="w-2 h-2 {% if task.status == 'pending' %}bg-yellow-400{% elif task.status == 'in_progress' %}bg-blue-400{% elif task.status == 'completed' %}bg-green-400{% elif task.status == 'on_hold' %}bg-gray-400{% endif %} rounded-full mt-2"></div>
+            <div class="flex-1">
+                <p class="text-xs font-medium">
+                    <a href="{% url 'task_management:task_detail' task.pk %}" class="text-blue-600 hover:text-blue-800">
+                        {{ task.title }}
+                    </a>
+                </p>
+                <p class="text-xs text-gray-600">{{ task.client.name }}</p>
+                <div class="flex justify-between items-center mt-1">
+                    <span class="text-xs text-gray-500">{{ task.due_date|date:"M d, Y" }}</span>
+                    <span class="px-2 py-1 text-xs rounded-full {% if task.priority == 'urgent' %}bg-red-100 text-red-800{% elif task.priority == 'high' %}bg-orange-100 text-orange-800{% elif task.priority == 'medium' %}bg-yellow-100 text-yellow-800{% elif task.priority == 'low' %}bg-green-100 text-green-800{% endif %}">{{ task.get_priority_display }}</span>
+                </div>
+            </div>
         </div>
-    </div>
-    
-    <!-- Client Tasks Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Top Clients by Tasks</h3>
-        <div class="h-64">
-            <canvas id="clientTasksChart"></canvas>
+        {% empty %}
+        <div class="text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+            </svg>
+            <p class="text-sm text-gray-500">No tasks found.</p>
+            <a href="{% url 'task_management:task_create' %}" class="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Create First Task
+            </a>
         </div>
-    </div>
-</div>
-
-<!-- Third Row of Charts -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <!-- Lawyer Performance Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Top Lawyers by Assigned Tasks</h3>
-        <div class="h-64">
-            <canvas id="lawyerTasksChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Task Completion Rate Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Task Completion Rate</h3>
-        <div class="h-64">
-            <canvas id="completionRateChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<!-- Fourth Row of Charts -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <!-- Monthly Task Distribution -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Monthly Task Distribution</h3>
-        <div class="h-64">
-            <canvas id="monthlyTaskChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Task Status Trend -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Task Status Trends</h3>
-        <div class="h-64">
-            <canvas id="statusTrendChart"></canvas>
-        </div>
+        {% endfor %}
     </div>
 </div>
-
-<!-- Fifth Row of Charts -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <!-- Priority vs Status Heatmap -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Priority vs Status Matrix</h3>
-        <div class="h-64">
-            <canvas id="priorityStatusChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Overdue Tasks Analysis -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="font-semibold text-gray-700 mb-2">Task Due Date Analysis</h3>
-        <div class="h-64">
-            <canvas id="dueDateChart"></canvas>
-        </div>
-    </div>
-</div>
-
-{% endblock %}
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -184,11 +209,10 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right',
+                        position: 'bottom',
                         labels: {
-                            font: {
-                                size: 12
-                            }
+                            font: { size: 11 },
+                            usePointStyle: true
                         }
                     }
                 }
@@ -198,7 +222,7 @@
         // Priority Distribution Chart
         const taskPriorityCtx = document.getElementById('taskPriorityChart').getContext('2d');
         const taskPriorityChart = new Chart(taskPriorityCtx, {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: ['Low', 'Medium', 'High', 'Urgent'],
                 datasets: [{
@@ -212,400 +236,15 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right',
-                        labels: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Task Timeline Chart
-        const taskTimelineCtx = document.getElementById('taskTimelineChart').getContext('2d');
-        const taskTimelineChart = new Chart(taskTimelineCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Tasks Created',
-                    data: [12, 19, 15, 25, 22, 30],
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                            font: {
-                                size: 12
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Tasks',
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                }
-            }
-        });
-        
-        // Client Tasks Chart
-        const clientTasksCtx = document.getElementById('clientTasksChart').getContext('2d');
-        const clientTasksChart = new Chart(clientTasksCtx, {
-            type: 'bar',
-            data: {
-                labels: {{ client_labels|safe }},
-                datasets: [{
-                    label: 'Tasks',
-                    data: {{ client_tasks_data|safe }},
-                    backgroundColor: '#8B5CF6',
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: 'y',
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    y: {
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-        
-        // Lawyer Tasks Chart
-        const lawyerTasksCtx = document.getElementById('lawyerTasksChart').getContext('2d');
-        const lawyerTasksChart = new Chart(lawyerTasksCtx, {
-            type: 'doughnut',
-            data: {
-                labels: {{ lawyer_labels|safe }},
-                datasets: [{
-                    data: {{ lawyer_tasks_data|safe }},
-                    backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Task Completion Rate Chart
-        const completionRateCtx = document.getElementById('completionRateChart').getContext('2d');
-        const completionRate = {{ completed_tasks }} / {{ total_tasks }} * 100;
-        const completionRateChart = new Chart(completionRateCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Completed', 'Remaining'],
-                datasets: [{
-                    data: [completionRate, 100 - completionRate],
-                    backgroundColor: ['#10B981', '#E5E7EB'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            },
-            plugins: [{
-                beforeDraw: function(chart) {
-                    const width = chart.width,
-                          height = chart.height,
-                          ctx = chart.ctx;
-                    ctx.restore();
-                    const fontSize = (height / 114).toFixed(2);
-                    ctx.font = fontSize + "em sans-serif";
-                    ctx.textBaseline = "middle";
-                    const text = Math.round(completionRate) + "%",
-                          textX = Math.round((width - ctx.measureText(text).width) / 2),
-                          textY = height / 2;
-                    ctx.fillText(text, textX, textY);
-                    ctx.save();
-                }
-            }]
-        });
-        
-        // Monthly Task Distribution Chart
-        const monthlyTaskCtx = document.getElementById('monthlyTaskChart').getContext('2d');
-        const monthlyTaskChart = new Chart(monthlyTaskCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{
-                    label: 'Tasks Created',
-                    data: {{ monthly_task_data|safe }},
-                    backgroundColor: '#3B82F6',
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-        
-        // Task Status Trend Chart
-        const statusTrendCtx = document.getElementById('statusTrendChart').getContext('2d');
-        const statusTrendChart = new Chart(statusTrendCtx, {
-            type: 'line',
-            data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                datasets: [{
-                    label: 'Completed',
-                    data: [8, 12, 15, 18],
-                    borderColor: '#10B981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }, {
-                    label: 'In Progress',
-                    data: [5, 8, 6, 9],
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }, {
-                    label: 'Pending',
-                    data: [10, 8, 12, 7],
-                    borderColor: '#F59E0B',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        stacked: true,
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Priority vs Status Matrix Chart
-        const priorityStatusCtx = document.getElementById('priorityStatusChart').getContext('2d');
-        const priorityStatusChart = new Chart(priorityStatusCtx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Low Priority',
-                    data: [{x: 1, y: {{ pending_tasks }}}, {x: 2, y: {{ in_progress_tasks }}}, {x: 3, y: {{ completed_tasks }}}],
-                    backgroundColor: '#10B981',
-                    pointRadius: 8
-                }, {
-                    label: 'Medium Priority',
-                    data: [{x: 1, y: {{ medium_priority_tasks }}}, {x: 2, y: 8}, {x: 3, y: 12}],
-                    backgroundColor: '#F59E0B',
-                    pointRadius: 8
-                }, {
-                    label: 'High Priority',
-                    data: [{x: 1, y: {{ high_priority_tasks }}}, {x: 2, y: 6}, {x: 3, y: 9}],
-                    backgroundColor: '#EF4444',
-                    pointRadius: 8
-                }, {
-                    label: 'Urgent Priority',
-                    data: [{x: 1, y: {{ urgent_priority_tasks }}}, {x: 2, y: 3}, {x: 3, y: 5}],
-                    backgroundColor: '#DC2626',
-                    pointRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        type: 'linear',
                         position: 'bottom',
-                        min: 0.5,
-                        max: 3.5,
-                        ticks: {
-                            stepSize: 1,
-                            callback: function(value) {
-                                const labels = ['', 'Pending', 'In Progress', 'Completed'];
-                                return labels[value];
-                            },
-                            font: {
-                                size: 12
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Status'
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Tasks'
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
                         labels: {
-                            font: {
-                                size: 11
-                            }
+                            font: { size: 11 },
+                            usePointStyle: true
                         }
-                    }
-                }
-            }
-        });
-        
-        // Due Date Analysis Chart
-        const dueDateCtx = document.getElementById('dueDateChart').getContext('2d');
-        const dueDateChart = new Chart(dueDateCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Overdue', 'Due Today', 'Due This Week', 'Due Next Week', 'Future'],
-                datasets: [{
-                    label: 'Tasks',
-                    data: [{{ overdue_tasks }}, {{ due_today_tasks }}, {{ due_this_week_tasks }}, {{ due_next_week_tasks }}, {{ future_tasks }}],
-                    backgroundColor: ['#DC2626', '#F59E0B', '#3B82F6', '#10B981', '#6B7280'],
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
                     }
                 }
             }
         });
     });
 </script>
+{% endblock %}

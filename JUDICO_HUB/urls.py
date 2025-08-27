@@ -12,7 +12,7 @@ urlpatterns = [
     path('admin-portal/', include('admin_portal.urls', namespace='admin_portal')),
     path('lawyer/', include('lawyer_portal.urls', namespace='lawyer_portal')),
     path('client-portal/', include('client_portal.urls', namespace='client_portal')),
-    path('task/', include('task_management.urls')),
+    path('task/', include('task_management.urls', namespace='task_management')),
     path('finance/', include('finance_management.urls', namespace='finance_management')),
     path('hr/', include('hr_management.urls', namespace='hr_management')),
     path('transaction/', include('transaction_support.urls', namespace='transaction_support')),

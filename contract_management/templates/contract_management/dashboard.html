@@ -6,6 +6,7 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
 <script>
     // Chart data for contract types
     var contractTypeLabels = [{% for contract_type in contracts_by_type %}'{{ contract_type.contract_type|title }}'{% if not forloop.last %},{% endif %}{% endfor %}];
@@ -16,6 +17,26 @@
     var contractStatusData = [{{ draft_contracts }}, {{ pending_contracts }}, {{ signed_contracts|default:0 }}, {{ executed_contracts|default:0 }}, {{ terminated_contracts|default:0 }}, {{ expired_contracts|default:0 }}];
 </script>
 <script src="{% static 'contract_management/js/contract_dashboard.js' %}"></script>
+
+<script>
+    // Initialize Flowbite modal for upload template
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalOptions = {
+            placement: 'center',
+            backdrop: 'dynamic',
+            onShow: () => {},
+            onHide: () => {}
+        };
+
+        const uploadTemplateModalElement = document.getElementById('upload-template-modal');
+        if (uploadTemplateModalElement) {
+            window.uploadTemplateModal = new Modal(uploadTemplateModalElement, modalOptions, {
+                id: 'upload-template-modal',
+                override: true
+            });
+        }
+    });
+</script>
 {% endblock %}
 
 {% block contract_content %}
@@ -186,6 +207,14 @@
                         </svg>
                         New Contract
                     </a>
+                    <button type="button" 
+                            class="flex items-center justify-center w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm"
+                            data-modal-target="upload-template-modal" data-modal-toggle="upload-template-modal">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Upload Contract Template
+                    </button>
                     <a href="{% url 'contract_management:template_list' %}" class="flex items-center justify-center w-full bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 text-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
@@ -225,4 +254,7 @@
         </div>
     </div>
 </div>
+
+<!-- Include Upload Template Modal -->
+{% include "contract_management/upload-template-modal.html" with modal_id="upload-template-modal" %}
 {% endblock %}

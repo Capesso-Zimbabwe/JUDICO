@@ -24,12 +24,14 @@ def get_task_data():
     pending_tasks = Task.objects.filter(status='pending').count()
     in_progress_tasks = Task.objects.filter(status='in_progress').count()
     completed_tasks = Task.objects.filter(status='completed').count()
+    on_hold_tasks = Task.objects.filter(status='on_hold').count()
     
     return {
         'tasks': tasks,
         'pending_tasks': pending_tasks,
         'in_progress_tasks': in_progress_tasks,
         'completed_tasks': completed_tasks,
+        'on_hold_tasks': on_hold_tasks,
     }
 
 @login_required

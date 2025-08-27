@@ -22,6 +22,9 @@ urlpatterns = [
     # Template management
     path('templates/', views.template_list, name='template_list'),
     path('templates/create/', views.template_create, name='template_create'),
+    path('templates/create-modal/', views.template_create_modal, name='template_create_modal'),
+    path('templates/upload/', views.template_upload, name='template_upload'),
+    path('templates/upload-modal/', views.template_upload_modal, name='template_upload_modal'),
     
     # Amendment management
     path('<int:contract_pk>/add-amendment/', views.add_amendment, name='add_amendment'),

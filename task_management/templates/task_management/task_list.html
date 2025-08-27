@@ -35,12 +35,12 @@
         <form action="" class="flex-1 max-w-sm" id="search-form">
             {% include "components/field.html" with hide_label=True field=search_form.search %}
         </form>
-        <a hx-get="{% url 'task_create' %}"
-           hx-target="#new-modal-container"
-           hx-indicator="#new-modal-overlay"
-           hx-trigger="click"
-           data-modal-target="new-modal" data-modal-toggle="new-modal"
-           href="{% url 'task_create' %}" class="p-2 flex gap-1">
+                <a hx-get="{% url 'task_management:task_create' %}"
+            hx-target="#new-modal-container"
+            hx-indicator="#new-modal-overlay"
+            hx-trigger="click"
+            data-modal-target="new-modal" data-modal-toggle="new-modal"
+            href="{% url 'task_management:task_create' %}" class="p-2 flex gap-1">
             <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                  height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -86,7 +86,7 @@
                                     class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
                                     hx-target="#details-modal-container"
                                     hx-trigger="click"
-                                    hx-get="{% url 'task_detail' task.id %}"
+                                    hx-get="{% url 'task_management:task_detail' task.id %}"
                                     hx-indicator="#details-modal-overlay"
                                     onclick="window.detailsModal.show()"
                             >
@@ -144,7 +144,7 @@
                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">{{ task.due_date|date:"M d, Y" }}</td>
                         <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
                             <div class="flex space-x-2">
-                                <a href="{% url 'task_detail' task.id %}" 
+                                <a href="{% url 'task_management:task_detail' task.id %}" 
                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                    title="View Task">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
@@ -152,7 +152,7 @@
                                         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
                                     </svg>
                                 </a>
-                                <a href="{% url 'task_update' task.id %}"
+                                <a href="{% url 'task_management:task_update' task.id %}"
                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                    title="Edit Task">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
@@ -170,12 +170,12 @@
             <!-- Empty state with consistent styling -->
             <div class="bg-white p-8 text-center">
                 <p class="text-gray-500 text-sm mb-4">No tasks found.</p>
-                <a hx-get="{% url 'task_create' %}"
-                   hx-target="#new-modal-container"
-                   hx-indicator="#new-modal-overlay"
-                   hx-trigger="click"
-                   data-modal-target="new-modal" data-modal-toggle="new-modal"
-                   href="{% url 'task_create' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                                <a hx-get="{% url 'task_management:task_create' %}"
+                    hx-target="#new-modal-container"
+                    hx-indicator="#new-modal-overlay"
+                    hx-trigger="click"
+                    data-modal-target="new-modal" data-modal-toggle="new-modal"
+                    href="{% url 'task_management:task_create' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
                     Create your first task
                 </a>
             </div>

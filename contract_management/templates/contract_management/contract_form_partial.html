@@ -1,0 +1,63 @@
+<form
+        novalidate="novalidate"
+        method="post"
+        {% if contract %}
+        hx-post="{% url 'contract_management:contract_update' contract.id %}{% querystring %}"
+        hx-target="#update-modal-container"
+        {% else %}
+        hx-post="{% url 'contract_management:contract_create' %}{% querystring %}"
+        hx-target="#new-modal-container"
+        {% endif %}
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
+            
+            <!-- Contract Title -->
+            {% include 'components/field.html' with field=form.title field_widget_class="col-span-2" %}
+
+            <!-- Contract Type -->
+            {% include 'components/field.html' with field=form.contract_type %}
+
+            <!-- Client -->
+            {% include 'components/field.html' with field=form.client %}
+
+            <!-- Assigned Lawyer -->
+            {% include 'components/field.html' with field=form.assigned_lawyer %}
+
+            <!-- Status -->
+            {% include 'components/field.html' with field=form.status %}
+
+            <!-- Priority -->
+            {% include 'components/field.html' with field=form.priority %}
+
+            <!-- Contract Value -->
+            {% include 'components/field.html' with field=form.contract_value %}
+
+            <!-- Start Date -->
+            {% include 'components/field.html' with field=form.start_date %}
+
+            <!-- End Date -->
+            {% include 'components/field.html' with field=form.end_date %}
+
+            <!-- Description -->
+            {% include 'components/field.html' with field=form.description field_widget_class="col-span-2" %}
+
+            <!-- Terms and Conditions -->
+            {% include 'components/field.html' with field=form.terms_and_conditions field_widget_class="col-span-2" %}
+
+            <!-- Document -->
+            {% include 'components/field.html' with field=form.document field_widget_class="col-span-2" %}
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <div>
+            {% if not contract %}
+            {% include 'components/submit-button.html' with button_text="Create Contract" loading_text="Creating...." %}
+            {% else %}
+            {% include 'components/submit-button.html' with button_text="Update Contract" loading_text="Updating...." %}
+            {% endif %}
+        </div>
+    </div>
+</form>

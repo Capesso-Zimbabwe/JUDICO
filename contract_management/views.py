@@ -12,6 +12,8 @@ import json
 import base64
 from io import BytesIO
 from PIL import Image
+from django.urls import reverse_lazy
+import os
 
 from .models import Contract, ContractSignature, ContractTemplate, ContractAmendment
 from .forms import (
@@ -54,6 +56,10 @@ def contract_dashboard(request):
     # Get pending signatures
     pending_signatures = ContractSignature.objects.filter(status='pending').count()
     
+    # Get clients for the contract creation modal
+    from client_management.models import Client
+    clients = Client.objects.all().order_by('name')
+    
     context = {
         'total_contracts': total_contracts,
         'active_contracts': active_contracts,
@@ -63,6 +69,7 @@ def contract_dashboard(request):
         'recent_contracts': recent_contracts,
         'expiring_contracts': expiring_contracts,
         'pending_signatures': pending_signatures,
+        'clients': clients,
     }
     
     return render(request, 'contract_management/dashboard.html', context)
@@ -99,10 +106,15 @@ def contract_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # Get clients for the contract creation modal
+    from client_management.models import Client
+    clients = Client.objects.all().order_by('name')
+    
     context = {
         'page_obj': page_obj,
         'filter_form': filter_form,
         'search_query': search_query,
+        'clients': clients,
     }
     
     return render(request, 'contract_management/contract_list.html', context)
@@ -138,7 +150,9 @@ def contract_create(request):
             contract.created_by = request.user
             contract.save()
             messages.success(request, 'Contract created successfully!')
-            return redirect('contract_management:contract_detail', pk=contract.pk)
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = reverse_lazy('contract_management:contract_list')
+            return response
     else:
         form = ContractForm()
     
@@ -147,7 +161,7 @@ def contract_create(request):
         'title': 'Create New Contract'
     }
     
-    return render(request, 'contract_management/contract_form.html', context)
+    return render(request, 'contract_management/contract_form_partial.html', context)
 
 # Contract update view
 @login_required
@@ -286,6 +300,12 @@ def template_list(request):
 
 @login_required
 @user_passes_test(is_staff_or_lawyer_or_client)
+def template_create_modal(request):
+    """Render template create modal"""
+    return render(request, 'contract_management/template_create_modal.html')
+
+@login_required
+@user_passes_test(is_staff_or_lawyer_or_client)
 def template_create(request):
     if request.method == 'POST':
         form = ContractTemplateForm(request.POST, request.FILES)
@@ -373,3 +393,80 @@ def contract_statistics(request):
         stats['by_type'][type_name] = Contract.objects.filter(contract_type=type_code).count()
     
     return JsonResponse(stats)
+
+@login_required
+@user_passes_test(is_staff_or_lawyer_or_client)
+def template_upload_modal(request):
+    """Render template upload modal"""
+    return render(request, 'contract_management/template_upload_modal.html')
+
+@login_required
+@user_passes_test(is_staff_or_lawyer_or_client)
+@require_POST
+def template_upload(request):
+    """Handle template file upload"""
+    try:
+        # Get form data
+        name = request.POST.get('name')
+        category = request.POST.get('category')
+        description = request.POST.get('description')
+        template_file = request.FILES.get('template_file')
+        
+        # Validate required fields
+        if not all([name, category, template_file]):
+            return JsonResponse({
+                'success': False,
+                'message': 'All fields are required.'
+            })
+        
+        # Validate file type
+        allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
+        file_extension = os.path.splitext(template_file.name)[1].lower()
+        if file_extension not in allowed_extensions:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid file type. Only PDF, DOC, DOCX, and TXT files are allowed.'
+            })
+        
+        # Validate file size (10MB limit)
+        if template_file.size > 10 * 1024 * 1024:
+            return JsonResponse({
+                'success': False,
+                'message': 'File size too large. Maximum size is 10MB.'
+            })
+        
+        # Map category to contract_type (you may need to adjust this mapping)
+        category_mapping = {
+            'Employment': 'employment_contract',
+            'Service': 'service_agreement',
+            'Sales': 'service_agreement',
+            'Partnership': 'partnership_agreement',
+            'NDA': 'nda',
+            'Lease': 'other',
+            'Other': 'other'
+        }
+        
+        contract_type = category_mapping.get(category, 'other')
+        
+        # Create template
+        template = ContractTemplate.objects.create(
+            name=name,
+            description=description or '',
+            contract_type=contract_type,
+            template_content=f'Template: {name}\nCategory: {category}\nDescription: {description or "No description"}',
+            template_file=template_file,
+            created_by=request.user,
+            is_active=True
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Template uploaded successfully!',
+            'template_id': template.id
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        })

@@ -14,7 +14,7 @@
     </div>
     <!-- Modal body -->
     <div class="p-4 md:p-5 space-y-4">
-        <form method="post" action="{% if task %}{% url 'task_update' task.id %}{% else %}{% url 'task_create' %}{% endif %}" class="space-y-4">
+        <form method="post" action="{% if task %}{% url 'task_management:task_update' task.id %}{% else %}{% url 'task_management:task_create' %}{% endif %}" class="space-y-4">
             {% csrf_token %}
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

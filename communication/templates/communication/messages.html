@@ -461,6 +461,179 @@
         background-color: #f9fafb;
         color: #6b7280;
     }
+    
+    /* Enhanced form elements */
+    .form-input {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 0;
+        padding: 8px 12px;
+        font-size: 12px;
+        background-color: #ffffff;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+    
+    .form-input:focus {
+        border-color: #1e3a8a;
+    }
+    
+    .form-textarea {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 0;
+        padding: 8px 12px;
+        font-size: 12px;
+        background-color: #ffffff;
+        outline: none;
+        transition: border-color 0.2s ease;
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    .form-textarea:focus {
+        border-color: #1e3a8a;
+    }
+    
+    .form-file {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 0;
+        padding: 6px 10px;
+        font-size: 12px;
+        background-color: #ffffff;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+    
+    .form-file:focus {
+        border-color: #1e3a8a;
+    }
+    
+    /* User info display */
+    .user-info-display {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0;
+        padding: 12px;
+        margin-top: 8px;
+    }
+    
+    .user-avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #1e3a8a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 14px;
+        border: 2px solid #e5e7eb;
+    }
+    
+    /* Loading states */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        margin: -8px 0 0 -8px;
+        border: 2px solid #1e3a8a;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* Enhanced button states */
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn.loading {
+        position: relative;
+        color: transparent;
+    }
+    
+    /* File input styling */
+    .file-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .file-clear-btn {
+        background-color: #f3f4f6;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+        border-radius: 0;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    
+    .file-clear-btn:hover {
+        background-color: #e5e7eb;
+        color: #374151;
+    }
+    
+    /* Notification styling */
+    .notification {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        padding: 12px 16px;
+        border-radius: 0;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .notification.success {
+        background-color: #10b981;
+    }
+    
+    .notification.error {
+        background-color: #ef4444;
+    }
+    
+    .notification.info {
+        background-color: #1e3a8a;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -739,35 +912,147 @@ function hideNewConversationModal() {
 }
 
 function loadUsers() {
-    const userType = document.getElementById('userTypeSelect').value;
-    if (!userType) return;
+    const userSelect = document.getElementById('userSelect');
     
-    fetch(`/communication/api/users/${userType}/`)
-        .then(response => response.json())
-        .then(data => {
-            const userSelect = document.getElementById('userSelect');
-            userSelect.innerHTML = '<option value="">Choose a user...</option>';
-            
-            data.users.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = user.name;
-                userSelect.appendChild(option);
+    // Show loading state
+    userSelect.innerHTML = '<option value="">Loading users...</option>';
+    userSelect.disabled = true;
+    
+    // Load all users (both clients and lawyers)
+    Promise.all([
+        fetch('/communication/api/users/client/'),
+        fetch('/communication/api/users/lawyer/')
+    ])
+    .then(responses => Promise.all(responses.map(r => r.json())))
+    .then(data => {
+        userSelect.innerHTML = '<option value="">Choose a user...</option>';
+        
+        const allUsers = [];
+        
+        // Add clients
+        if (data[0].users) {
+            data[0].users.forEach(user => {
+                allUsers.push({
+                    ...user,
+                    type: 'client'
+                });
             });
-            
-            userSelect.disabled = false;
-        })
-        .catch(error => {
-            console.error('Error loading users:', error);
+        }
+        
+        // Add lawyers
+        if (data[1].users) {
+            data[1].users.forEach(user => {
+                allUsers.push({
+                    ...user,
+                    type: 'lawyer'
+                });
+            });
+        }
+        
+        // Sort users by name
+        allUsers.sort((a, b) => a.name.localeCompare(b.name));
+        
+        // Populate dropdown
+        allUsers.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = `${user.name} (${user.type === 'lawyer' ? 'Lawyer' : 'Client'})`;
+            option.dataset.userType = user.type;
+            option.dataset.specialization = user.specialization || '';
+            userSelect.appendChild(option);
         });
+        
+        userSelect.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error loading users:', error);
+        userSelect.innerHTML = '<option value="">Error loading users</option>';
+        userSelect.disabled = true;
+    });
+}
+
+function updateUserInfo() {
+    const userSelect = document.getElementById('userSelect');
+    const userInfo = document.getElementById('userInfo');
+    const startBtn = document.getElementById('startConversationBtn');
+    
+    if (userSelect.value) {
+        const selectedOption = userSelect.selectedOptions[0];
+        const userName = selectedOption.textContent.split(' (')[0]; // Remove the type suffix
+        const userType = selectedOption.dataset.userType;
+        const specialization = selectedOption.dataset.specialization;
+        
+        // Update user info display
+        document.getElementById('selectedUserAvatar').textContent = userName.charAt(0).toUpperCase();
+        document.getElementById('selectedUserName').textContent = userName;
+        document.getElementById('selectedUserType').textContent = 
+            userType === 'lawyer' ? `Lawyer - ${specialization || 'General Practice'}` : 'Client';
+        
+        userInfo.classList.remove('hidden');
+        startBtn.disabled = false;
+    } else {
+        userInfo.classList.add('hidden');
+        startBtn.disabled = true;
+    }
 }
 
 function startNewConversation() {
-    const userId = document.getElementById('userSelect').value;
-    if (!userId) return;
+    const userSelect = document.getElementById('userSelect');
     
-    hideNewConversationModal();
-    selectConversation(userId, document.getElementById('userSelect').selectedOptions[0].textContent);
+    if (!userSelect.value) {
+        showNotification('Please select a user to start a conversation with.', 'error');
+        return;
+    }
+    
+    const startBtn = document.getElementById('startConversationBtn');
+    const originalText = startBtn.textContent;
+    
+    // Show loading state
+    startBtn.disabled = true;
+    startBtn.textContent = 'Starting...';
+    
+    // Get selected user info
+    const selectedOption = userSelect.selectedOptions[0];
+    const recipientId = userSelect.value;
+    const recipientName = selectedOption.textContent.split(' (')[0]; // Remove the type suffix
+    
+    // Create a simple message to start the conversation
+    const messageData = {
+        recipient_id: recipientId,
+        content: `Started a new conversation with ${recipientName}.`
+    };
+    
+    // Send the initial message
+    fetch('/communication/api/messages/send/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Conversation started successfully!', 'success');
+            hideNewConversationModal();
+            // Optionally refresh the conversation list or redirect to the new conversation
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message || 'Failed to start conversation.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error starting conversation:', error);
+        showNotification('An error occurred while starting the conversation.', 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        startBtn.disabled = false;
+        startBtn.textContent = originalText;
+    });
 }
 
 // Event listeners
