@@ -16,7 +16,9 @@ urlpatterns = [
     path('transactions/create-modal/', views.transaction_create_modal, name='transaction_create_modal'),
     path('transactions/new/', views.transaction_create, name='transaction_create'),  # Legacy redirect
     path('transactions/<int:pk>/', views.TransactionDetailView.as_view(), name='transaction_detail'),
+    path('transactions/<int:pk>/modal/', views.transaction_details_modal, name='transaction_details_modal'),
     path('transactions/<int:pk>/edit/', views.TransactionUpdateView.as_view(), name='transaction_update'),
+    path('transactions/<int:pk>/edit-modal/', views.transaction_edit_modal, name='transaction_edit_modal'),
     path('transactions/<int:pk>/delete/', views.transaction_delete, name='transaction_delete'),
     
     # Transaction Entity Management

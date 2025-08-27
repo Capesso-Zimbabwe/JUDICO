@@ -3,172 +3,288 @@
 
 {% block transaction_content %}
 
-<div class="space-y-6">
-    <!-- Header -->
-    <div class="bg-white rounded-sm shadow-md overflow-hidden">
-        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-xs font-bold text-white">Transaction Monitoring</h1>
-        <p class="text-purple-100 text-xs mt-1">Real-time tracking of transaction progress and workflow status</p>
-                </div>
+    <!-- Transaction Monitoring Dashboard -->
+    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        
+        <!-- Header with Search and Filters -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+            <div class="flex items-center space-x-4">
+                <h6 class="text-black font-bold text-xs m-0">Transaction Monitoring Dashboard</h6>
                 <div class="flex items-center space-x-2">
-                    <button onclick="refreshData()" class="bg-white text-purple-600 px-4 py-2 rounded-md text-xs font-medium hover:bg-gray-50">
-                        <i class="bi bi-arrow-clockwise mr-1"></i> Refresh
-                    </button>
+                    <span class="text-xs text-gray-500">Active:</span>
+                    <span class="text-xs font-bold text-blue-600">{{ stats.active_transactions }}</span>
+                    <span class="text-xs text-gray-500">|</span>
+                    <span class="text-xs text-gray-500">Pending Tasks:</span>
+                    <span class="text-xs font-bold text-yellow-600">{{ stats.pending_tasks }}</span>
+                    <span class="text-xs text-gray-500">|</span>
+                    <span class="text-xs text-gray-500">Overdue:</span>
+                    <span class="text-xs font-bold text-red-600">{{ stats.overdue_tasks }}</span>
                 </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="refreshData()" class="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 hover:text-gray-800 transition-all duration-200">
+                    <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Key Metrics Cards -->
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-700">Total</p>
+                            <p class="text-lg font-bold text-gray-900">{{ stats.total_transactions }}</p>
+                        </div>
+                        <div class="bg-blue-100 p-2 rounded-full">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
             </div>
         </div>
     </div>
 
-    <!-- Key Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <div class="bg-white rounded-lg shadow p-3">
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-xs font-semibold text-gray-700">Active Transactions</h3>
-                    <p class="text-xs font-bold">{{ stats.active_transactions }}</p>
+                            <p class="text-xs font-semibold text-gray-700">Active</p>
+                            <p class="text-lg font-bold text-green-600">{{ stats.active_transactions }}</p>
+                        </div>
+                        <div class="bg-green-100 p-2 rounded-full">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-700">Completed</p>
+                            <p class="text-lg font-bold text-blue-600">{{ stats.completed_transactions }}</p>
                 </div>
                 <div class="bg-blue-100 p-2 rounded-full">
-                    <i class="bi bi-briefcase text-blue-600 h-5 w-5"></i>
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-3">
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-xs font-semibold text-gray-700">Pending Tasks</h3>
-                    <p class="text-xs font-bold">{{ stats.pending_tasks }}</p>
+                            <p class="text-xs font-semibold text-gray-700">Pending Tasks</p>
+                            <p class="text-lg font-bold text-yellow-600">{{ stats.pending_tasks }}</p>
                 </div>
                 <div class="bg-yellow-100 p-2 rounded-full">
-                    <i class="bi bi-clock text-yellow-600 h-5 w-5"></i>
+                            <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-3">
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-xs font-semibold text-gray-700">Overdue Tasks</h3>
-                    <p class="text-xs font-bold">{{ stats.overdue_tasks }}</p>
+                            <p class="text-xs font-semibold text-gray-700">Overdue</p>
+                            <p class="text-lg font-bold text-red-600">{{ stats.overdue_tasks }}</p>
                 </div>
                 <div class="bg-red-100 p-2 rounded-full">
-                    <i class="bi bi-exclamation-triangle text-red-600 h-5 w-5"></i>
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-3">
+                <div class="bg-white rounded-lg p-3 border border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-xs font-semibold text-gray-700">Completed This Week</h3>
-                    <p class="text-xs font-bold">{{ stats.completed_this_week }}</p>
-                </div>
-                <div class="bg-green-100 p-2 rounded-full">
-                    <i class="bi bi-check-circle text-green-600 h-5 w-5"></i>
+                            <p class="text-xs font-semibold text-gray-700">High Priority</p>
+                            <p class="text-lg font-bold text-purple-600">{{ stats.high_priority_tasks }}</p>
+                        </div>
+                        <div class="bg-purple-100 p-2 rounded-full">
+                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <form method="get" class="flex flex-wrap items-center gap-4">
-            <div class="flex-1 min-w-64">
-                <input type="text" name="search" value="{{ request.GET.search }}" 
-                       placeholder="Search transactions..." 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-            </div>
-            <div>
-                <select name="status" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option value="">All Statuses</option>
-                    <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
-                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
-                    <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
-                    <option value="on_hold" {% if request.GET.status == 'on_hold' %}selected{% endif %}>On Hold</option>
-                </select>
-            </div>
-            <div>
-                <select name="priority" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option value="">All Priorities</option>
-                    <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>High</option>
-                    <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Medium</option>
-                    <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Low</option>
-                </select>
-            </div>
-            <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">
-                Filter
-            </button>
-        </form>
-    </div>
-
-    <!-- Transaction Progress -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-xs font-medium text-gray-900">Transaction Progress</h3>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Next Deadline</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead Lawyer</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        <!-- Transaction Progress Table -->
+        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+                <table class="w-full divide-y divide-gray-200" id="monitoringTable">
+                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Transaction
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Progress
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Status
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Next Deadline
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Tasks
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Lead Lawyer
+                            </th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                                Actions
+                            </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    {% for transaction in transactions %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div>
-                                <div class="text-xs font-medium text-gray-900">{{ transaction.title }}</div>
-                <div class="text-xs text-gray-500">{{ transaction.transaction_type }}</div>
+                        {% for transaction in active_transactions %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-3 py-1 whitespace-nowrap">
+                                    <button type="button"
+                                            class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                            hx-target="#details-modal-container"
+                                            hx-trigger="click"
+                                            hx-get="{% url 'transaction_support:transaction_details_modal' transaction.id %}"
+                                            hx-indicator="#details-modal-overlay"
+                                            onclick="window.detailsModal.show()"
+                                    >
+                                        <div class="flex-shrink-0 h-8 w-8">
+                                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <span class="text-blue-600 font-medium text-xs">{{ transaction.title|first|upper }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-2">
+                                            <div class="text-xs font-medium text-gray-900">
+                                                <span>{{ transaction.title|truncatechars:20 }}</span>
+                                            </div>
+                                            <div class="text-xs text-gray-500">{{ transaction.get_transaction_type_display }}</div>
                             </div>
+                                    </button>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-purple-600 h-2 rounded-full" style="width: {{ transaction.progress_percentage }}%"></div>
+                                <td class="px-3 py-1 whitespace-nowrap">
+                                    <div class="w-full bg-gray-200 rounded-full h-2 mb-1">
+                                        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: {{ transaction.progress_percentage }}%"></div>
                             </div>
-                            <div class="text-xs text-gray-500 mt-1">{{ transaction.progress_percentage }}% complete</div>
+                                    <div class="text-xs text-gray-600">{{ transaction.progress_percentage }}% complete</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                {% if transaction.status == 'active' %}bg-green-100 text-green-800
-                                {% elif transaction.status == 'pending' %}bg-yellow-100 text-yellow-800
-                                {% elif transaction.status == 'completed' %}bg-blue-100 text-blue-800
-                                {% elif transaction.status == 'on_hold' %}bg-red-100 text-red-800
+                                <td class="px-3 py-1 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                        {% if transaction.status == 'planning' %}bg-gray-100 text-gray-800
+                                        {% elif transaction.status == 'due_diligence' %}bg-blue-100 text-blue-800
+                                        {% elif transaction.status == 'negotiation' %}bg-yellow-100 text-yellow-800
+                                        {% elif transaction.status == 'documentation' %}bg-purple-100 text-purple-800
+                                        {% elif transaction.status == 'regulatory_approval' %}bg-indigo-100 text-indigo-800
+                                        {% elif transaction.status == 'closing' %}bg-green-100 text-green-800
+                                        {% elif transaction.status == 'post_closing' %}bg-teal-100 text-teal-800
                                 {% else %}bg-gray-100 text-gray-800{% endif %}">
                                 {{ transaction.get_status_display }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
                             {% if transaction.next_deadline %}
                                 <div class="{% if transaction.is_deadline_approaching %}text-red-600 font-medium{% endif %}">
                                     {{ transaction.next_deadline|date:"M d, Y" }}
                                 </div>
-                                <div class="text-xs text-gray-500">{{ transaction.next_deadline_task }}</div>
+                                        <div class="text-xs text-gray-500">{{ transaction.next_deadline_task|truncatechars:25 }}</div>
                             {% else %}
                                 <span class="text-gray-400">No upcoming deadlines</span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">
-                            {{ transaction.lead_lawyer.get_full_name|default:transaction.lead_lawyer.username }}
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                    {% with transaction_tasks=transaction.tasks.all %}
+                                        {% if transaction_tasks %}
+                                            <div class="relative">
+                                                <button onclick="openTasksModal('{{ transaction.id }}', '{{ transaction.title|escapejs }}', {{ transaction_tasks|length }}); window.tasksModal.show();" class="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 hover:text-gray-800 transition-all duration-200 shadow-sm hover:shadow-md border border-gray-300">
+                                                    <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                                    </svg>
+                                                    {{ transaction_tasks.count }} task{{ transaction_tasks.count|pluralize }}
+                                                </button>
+                                            </div>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                                </svg>
+                                                No tasks
+                                            </span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                                    {% if transaction.lead_lawyer %}
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-6 w-6">
+                                                <div class="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                                    <span class="text-green-600 font-medium text-xs">{{ transaction.lead_lawyer.get_full_name|first|upper }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="ml-1">
+                                                <span class="text-xs font-medium text-gray-900">{{ transaction.lead_lawyer.get_full_name|truncatechars:15 }}</span>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            Unassigned
+                                        </span>
+                                    {% endif %}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs font-medium">
-                            <a href="{% url 'transaction_support:transaction_detail' transaction.pk %}" 
-                               class="text-purple-600 hover:text-purple-900 mr-3">View</a>
-                            <a href="{% url 'transaction_support:transaction_update' transaction.pk %}" 
-                               class="text-blue-600 hover:text-blue-900">Edit</a>
+                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
+                                    <div class="flex space-x-2">
+                                        <button type="button"
+                                                hx-target="#details-modal-container"
+                                                hx-trigger="click"
+                                                hx-get="{% url 'transaction_support:transaction_details_modal' transaction.id %}"
+                                                hx-indicator="#details-modal-overlay"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                                title="View Transaction"
+                                                onclick="window.detailsModal.show()"
+                                        >
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                            </svg>
+                                        </button>
+                                        <button
+                                                hx-get="{% url 'transaction_support:transaction_update' transaction.id %}{% querystring %}"
+                                                hx-indicator="#update-modal-overlay"
+                                                hx-target="#update-modal-container"
+                                                hx-trigger="click"
+                                                type="button"
+                                                onclick="window.updateModal.show()"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                                title="Edit Transaction">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                            No transactions found matching your criteria.
+                                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                        <p class="text-xs font-medium">No active transactions found</p>
+                                        <p class="text-xs">All transactions are either completed or cancelled.</p>
+                                    </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -176,25 +292,75 @@
             </table>
         </div>
     </div>
+    </div>
 
-    <!-- Workflow Status -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Pending Tasks -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-xs font-medium text-gray-900">Pending Tasks</h3>
+    <!-- Additional Monitoring Sections -->
+    <div class="mt-6 space-y-6">
+        
+        <!-- Overdue Tasks Section -->
+        {% if overdue_tasks %}
+        <div class="bg-white rounded-sm shadow-md overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200 bg-red-50">
+                <h3 class="text-xs font-medium text-red-900 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    Overdue Tasks ({{ overdue_tasks|length }})
+                </h3>
             </div>
-            <div class="max-h-96 overflow-y-auto">
-                {% for task in pending_tasks %}
-                <div class="px-6 py-4 border-b border-gray-100 last:border-b-0">
+            <div class="max-h-64 overflow-y-auto">
+                {% for task in overdue_tasks %}
+                <div class="px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="text-xs font-medium text-gray-900">{{ task.title }}</div>
+                            <div class="text-xs text-gray-500">{{ task.transaction.title }}</div>
+                            <div class="text-xs text-red-600 font-medium mt-1">
+                                Overdue by {{ task.due_date|timesince }}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                {% if task.priority == 'high' %}bg-red-100 text-red-800
+                                {% elif task.priority == 'medium' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ task.get_priority_display }}
+                            </span>
+                            {% if task.assigned_to %}
+                            <div class="text-xs text-gray-500">
+                                Assigned to: {{ task.assigned_to.get_full_name }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Upcoming Deadlines Section -->
+        {% if upcoming_deadlines %}
+        <div class="bg-white rounded-sm shadow-md overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200 bg-yellow-50">
+                <h3 class="text-xs font-medium text-yellow-900 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Upcoming Deadlines (Next 30 Days)
+                </h3>
+            </div>
+            <div class="max-h-64 overflow-y-auto">
+                {% for task in upcoming_deadlines %}
+                <div class="px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
                             <div class="text-xs font-medium text-gray-900">{{ task.title }}</div>
                 <div class="text-xs text-gray-500">{{ task.transaction.title }}</div>
-                            <div class="text-xs text-gray-400 mt-1">
+                            <div class="text-xs text-gray-600 mt-1">
                                 Due: {{ task.due_date|date:"M d, Y" }}
-                                {% if task.is_overdue %}
-                                    <span class="text-red-600 font-medium">(Overdue)</span>
+                                {% if task.due_date|date:"U" <= "now"|date:"U"|add:"259200" %}
+                                    <span class="text-yellow-600 font-medium">(Approaching)</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -205,107 +371,114 @@
                                 {% else %}bg-green-100 text-green-800{% endif %}">
                                 {{ task.get_priority_display }}
                             </span>
-                            <button onclick="markTaskComplete({{ task.id }})" 
-                                    class="text-green-600 hover:text-green-800">
-                                <i class="bi bi-check-circle"></i>
-                            </button>
                         </div>
                     </div>
-                </div>
-                {% empty %}
-                <div class="px-6 py-4 text-center text-gray-500">
-                    No pending tasks.
                 </div>
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
 
-        <!-- Recent Activity -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-xs font-medium text-gray-900">Recent Activity</h3>
+        <!-- Recent Activity Section -->
+        {% if recent_activities %}
+        <div class="bg-white rounded-sm shadow-md overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200 bg-blue-50">
+                <h3 class="text-xs font-medium text-blue-900 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Recent Activity
+                </h3>
             </div>
-            <div class="max-h-96 overflow-y-auto">
+            <div class="max-h-64 overflow-y-auto">
                 {% for activity in recent_activities %}
-                <div class="px-6 py-4 border-b border-gray-100 last:border-b-0">
+                <div class="px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                <i class="bi bi-{{ activity.icon }} text-gray-600"></i>
+                            <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                                <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
                             </div>
                         </div>
                         <div class="ml-3 flex-1">
                             <div class="text-xs text-gray-900">{{ activity.description }}</div>
                             <div class="text-xs text-gray-500 mt-1">
-                                {{ activity.timestamp|timesince }} ago
+                                {{ activity.timestamp|timesince }} ago by {{ activity.user.get_full_name|default:activity.user.username }}
                             </div>
                         </div>
                     </div>
                 </div>
-                {% empty %}
-                <div class="px-6 py-4 text-center text-gray-500">
-                    No recent activity.
-                </div>
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
     </div>
-</div>
 
+    <!-- Include Modals -->
+    {% include "transaction_support/details-modal.html" with modal_id="details-modal" %}
+    {% include "transaction_support/update-modal.html" with modal_id="update-modal" %}
+    {% include "transaction_support/tasks-modal.html" with modal_id="tasks-modal" %}
+
+{% endblock %}
+
+{% block extra_js %}
 <script>
 function refreshData() {
     location.reload();
 }
 
-function markTaskComplete(taskId) {
-    if (confirm('Mark this task as complete?')) {
-        fetch(`/transaction-support/tasks/${taskId}/complete/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error completing task: ' + data.error);
+        function openTasksModal(transactionId, transactionTitle, taskCount) {
+            const transactionData = document.querySelector(`[data-transaction-id="${transactionId}"]`);
+            
+            // Update modal title and task count
+            const modalTitleElement = document.querySelector('#tasks-modal h3');
+            if (modalTitleElement) {
+                modalTitleElement.textContent = `${transactionTitle} Tasks (${taskCount})`;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error completing task');
-        });
-    }
+            
+            // Update task count badge
+            const taskCountBadge = document.getElementById('taskCountBadge');
+            if (taskCountBadge) {
+                taskCountBadge.textContent = taskCount;
+            }
+            
+            // Store current transaction data for task creation
+            window.currentTransactionData = {
+                id: transactionId,
+                title: transactionTitle,
+                taskCount: taskCount
+            };
 }
 
 // Auto-refresh every 5 minutes
 setInterval(refreshData, 300000);
 
-// Filter form auto-submit
+        // Initialize modals
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const selects = form.querySelectorAll('select');
-    
-    selects.forEach(select => {
-        select.addEventListener('change', function() {
-            form.submit();
-        });
-    });
-    
-    // Search input debouncing
-    const searchInput = form.querySelector('input[name="search"]');
-    let searchTimeout;
-    
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            form.submit();
-        }, 500);
-    });
+            const detailsModalElement = document.getElementById('details-modal');
+            if (detailsModalElement) {
+                window.detailsModal = new Modal(detailsModalElement, modalOptions, {
+                    id: 'details-modal',
+                    override: true
+                });
+            }
+
+            const updateModalElement = document.getElementById('update-modal');
+            if (updateModalElement) {
+                window.updateModal = new Modal(updateModalElement, modalOptions, {
+                    id: 'update-modal',
+                    override: true
+                });
+            }
+
+            const tasksModalElement = document.getElementById('tasks-modal');
+            if (tasksModalElement) {
+                window.tasksModal = new Modal(tasksModalElement, modalOptions, {
+                    id: 'tasks-modal',
+                    override: true
+                });
+            }
 });
 </script>
-
 {% endblock %}

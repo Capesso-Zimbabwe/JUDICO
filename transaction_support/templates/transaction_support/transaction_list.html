@@ -58,14 +58,15 @@
                 {% for transaction in transactions %}
                     <tr class="hover:bg-gray-50 transition-colors duration-200">
                         <td class="px-3 py-1 whitespace-nowrap">
-                            <button type="button"
-                                    class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
-                                    hx-target="#details-modal-container"
-                                    hx-trigger="click"
-                                    hx-get="{% url 'transaction_support:transaction_detail' transaction.id %}{% querystring %}"
-                                    hx-indicator="#details-modal-overlay"
-                                    onclick="window.detailsModal.show()"
-                            >
+                                                            <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        hx-target="#details-modal-container"
+                                        hx-trigger="click"
+                                        hx-get="{% url 'transaction_support:transaction_details_modal' transaction.id %}"
+                                        hx-indicator="#details-modal-overlay"
+                                        hx-swap="innerHTML"
+                                        hx-on::after-request="setTimeout(showDetailsModal, 100)"
+                                >
                                 <div class="flex-shrink-0 h-8 w-8">
                                     <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
                                         <span class="text-blue-600 font-medium text-xs">{{ transaction.title|first|upper }}</span>
@@ -153,11 +154,13 @@
                                 <button type="button"
                                         hx-target="#details-modal-container"
                                         hx-trigger="click"
-                                        hx-get="{% url 'transaction_support:transaction_detail' transaction.id %}{% querystring %}"
+                                        hx-get="{% url 'transaction_support:transaction_details_modal' transaction.id %}"
                                         hx-indicator="#details-modal-overlay"
+                                        hx-swap="innerHTML"
+                                        hx-on::after-request="setTimeout(showDetailsModal, 100)"
                                         class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                         title="View Transaction"
-                                        onclick="window.detailsModal.show()"
+
                                 >
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
                                          xmlns="http://www.w3.org/2000/svg">
@@ -165,12 +168,13 @@
                                     </svg>
                                 </button>
                                 <button
-                                        hx-get="{% url 'transaction_support:transaction_update' transaction.id %}{% querystring %}"
-                                        hx-indicator="#update-modal-overlay"
-                                        hx-target="#update-modal-container"
+                                        hx-get="{% url 'transaction_support:transaction_edit_modal' transaction.id %}"
+                                        hx-indicator="#edit-modal-overlay"
+                                        hx-target="#edit-modal-form-container"
                                         hx-trigger="click"
+                                        hx-swap="innerHTML"
                                         type="button"
-                                        onclick="window.updateModal.show()"
+                                        onclick="window.editModal.show()"
                                         class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                         title="Edit Transaction">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
@@ -203,28 +207,209 @@
 
     <!-- Flowbite Transaction Details Modal -->
     {% include "transaction_support/new-modal.html" with modal_id="new-modal" %}
-    {% include "transaction_support/details-modal.html" with modal_id="details-modal" %}
-    {% include "transaction_support/update-modal.html" with modal_id="update-modal" %}
     {% include "transaction_support/document-modal.html" with modal_id="document-modal" %}
 
     {% include "transaction_support/tasks-modal.html" with modal_id="tasks-modal" %}
     {% include "transaction_support/task_new_modal.html" with modal_id="task-new-modal" %}
+    
+    <!-- Flowbite Transaction Edit Modal -->
+    {% include "transaction_support/edit-modal.html" with modal_id="edit-modal" %}
+    
+    <!-- Transaction Details Modal Container for HTMX -->
+    <div id="details-modal-container"></div>
+    
+    <!-- Transaction Edit Modal Container for HTMX -->
+    <div id="edit-modal-container"></div>
+    
+    <!-- Loading Overlay for Details Modal -->
+    <div id="details-modal-overlay" class="htmx-indicator fixed inset-0 bg-gray-50/60 flex items-center justify-center shadow-xl backdrop-blur-sm z-50">
+        <div class="bg-white rounded-md p-12 shadow-xl max-w-sm mx-4">
+            <div class="flex items-center space-x-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div class="text-gray-900">
+                    <div class="font-medium">Loading...</div>
+                    <div class="text-sm text-gray-500">Please wait</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay for Edit Modal -->
+    <div id="edit-modal-overlay" class="htmx-indicator fixed inset-0 bg-gray-50/60 flex items-center justify-center shadow-xl backdrop-blur-sm z-50">
+        <div class="bg-white rounded-md p-12 shadow-xl max-w-sm mx-4">
+            <div class="flex items-center space-x-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div class="text-gray-900">
+                    <div class="font-medium">Loading...</div>
+                    <div class="text-sm text-gray-500">Please wait</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
 
 {% block extra_js %}
     <script>
-        const detailsModalElement = document.getElementById('details-modal');
-        window.detailsModal = new Modal(detailsModalElement, modalOptions, {
-            id: 'details-modal',
-            override: true
+        // Initialize details modal after HTMX loads content
+        window.detailsModal = null;
+        
+        // Function to initialize and show details modal
+        function showDetailsModal() {
+            // Check if modal content exists
+            const container = document.getElementById('details-modal-container');
+            if (!container || container.children.length === 0) {
+                console.log('No modal content to show');
+                return;
+            }
+            
+            // Get the modal element from the container
+            const detailsModalElement = container.querySelector('[id*="details-modal"]');
+            if (!detailsModalElement) {
+                console.log('Modal element not found in container');
+                return;
+            }
+            
+            // Always reinitialize modal for fresh state
+            if (window.detailsModal) {
+                window.detailsModal.hide();
+                window.detailsModal = null;
+            }
+            
+            // Initialize new modal instance
+            window.detailsModal = new Modal(detailsModalElement, modalOptions, {
+                id: 'details-modal',
+                override: true
+            });
+            
+            // Show the modal
+            window.detailsModal.show();
+        }
+        
+        // Function to close details modal
+        function closeDetailsModal() {
+            if (window.detailsModal) {
+                window.detailsModal.hide();
+            }
+        }
+        
+        // Function to reset modal state
+        function resetModalState() {
+            // Clear the modal container
+            const container = document.getElementById('details-modal-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+            // Don't reset modal instance here - let showDetailsModal handle it
+        }
+        
+        // Initialize edit modal after HTMX loads content
+        window.editModal = null;
+        
+        // Function to initialize and show edit modal
+        function showEditModal() {
+            console.log('showEditModal called');
+            
+            // Check if modal content exists
+            const container = document.getElementById('edit-modal-container');
+            console.log('Container:', container);
+            if (!container || container.children.length === 0) {
+                console.log('No edit modal content to show');
+                return;
+            }
+            
+            console.log('Container children:', container.children);
+            console.log('Container HTML:', container.innerHTML);
+            
+            // Get the modal element from the container
+            const editModalElement = container.querySelector('#edit-modal');
+            console.log('Edit modal element:', editModalElement);
+            if (!editModalElement) {
+                console.log('Edit modal element not found in container');
+                return;
+            }
+            
+            // Show the modal using Flowbite (same as client update modal)
+            if (window.editModal) {
+                window.editModal.show();
+            } else {
+                // Fallback: show the modal directly
+                editModalElement.classList.remove('hidden');
+                editModalElement.style.display = 'block';
+            }
+            
+            console.log('Modal shown successfully');
+        }
+        
+        // Function to close edit modal
+        function closeEditModal() {
+            // Use Flowbite modal close (same as client update modal)
+            if (window.editModal) {
+                window.editModal.hide();
+            } else {
+                // Fallback: hide the modal directly
+                const modal = document.getElementById('edit-modal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                }
+            }
+            
+            // Clear the form container
+            const container = document.getElementById('edit-modal-form-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+        }
+        
+
+        
+
+        
+        // Function to reset edit modal state
+        function resetEditModalState() {
+            // Clear the edit modal container
+            const container = document.getElementById('edit-modal-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+        }
+        
+        // Add event listener for modal close to reset state
+        document.addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.target.id === 'details-modal-container') {
+                // Modal content loaded, ensure it's visible
+                setTimeout(() => {
+                    const container = event.detail.target;
+                    if (container.children.length > 0) {
+                        container.style.display = 'block';
+                    }
+                }, 50);
+            }
+            if (event.detail.target.id === 'edit-modal-container') {
+                // Edit modal content loaded, ensure it's visible
+                setTimeout(() => {
+                    const container = event.detail.target;
+                    if (container.children.length > 0) {
+                        container.style.display = 'block';
+                    }
+                }, 50);
+            }
+        });
+        
+        // Add event listener for modal hide to reset state
+        document.addEventListener('htmx:beforeRequest', function(event) {
+            if (event.detail.target.id === 'details-modal-container') {
+                // Reset modal state before loading new content
+                resetModalState();
+            }
+            if (event.detail.target.id === 'edit-modal-container') {
+                // Reset edit modal state before loading new content
+                resetEditModalState();
+            }
         });
 
-        const updateModalElement = document.getElementById('update-modal');
-        window.updateModal = new Modal(updateModalElement, modalOptions, {
-            id: 'update-modal',
-            override: true
-        });
+
 
         const documentModalElement = document.getElementById('document-modal');
         window.documentModal = new Modal(documentModalElement, modalOptions, {
@@ -247,6 +432,15 @@
                 override: true
             });
         }
+        
+        // Initialize edit modal
+        const editModalElement = document.getElementById('edit-modal');
+        if (editModalElement) {
+            window.editModal = new Modal(editModalElement, modalOptions, {
+                id: 'edit-modal',
+                override: true
+            });
+        }
 
         {% if request.GET.transaction_id %}
             htmx.ajax('GET', "{% url 'transaction_support:transaction_detail' request.GET.transaction_id %}", {
@@ -254,7 +448,7 @@
                 indicator: '#details-modal-overlay'
             }).then(function (response) {
                 console.log("Here")
-                window.detailsModal.show()
+                setTimeout(showDetailsModal, 100)
             })
 
         {% endif %}

@@ -34,18 +34,28 @@ def transaction_dashboard(request):
     
     # Get transaction statistics
     total_transactions = Transaction.objects.count()
-    active_transactions = Transaction.objects.filter(status__in=['planning', 'due_diligence', 'negotiation', 'documentation']).count()
+    active_transactions = Transaction.objects.filter(status__in=['planning', 'due_diligence', 'negotiation', 'documentation', 'regulatory_approval', 'closing', 'post_closing']).count()
     completed_transactions = Transaction.objects.filter(status='completed').count()
+    cancelled_transactions = Transaction.objects.filter(status='cancelled').count()
+    
+    # Get task statistics
+    total_tasks = TransactionTask.objects.count()
+    pending_tasks = TransactionTask.objects.filter(status__in=['pending', 'in_progress']).count()
+    completed_tasks = TransactionTask.objects.filter(status='completed').count()
+    high_priority_tasks = TransactionTask.objects.filter(priority__in=['high', 'critical'], status__in=['pending', 'in_progress']).count()
     
     # Recent transactions
-    recent_transactions = Transaction.objects.order_by('-created_at')[:5]
+    recent_transactions = Transaction.objects.select_related('lead_lawyer', 'primary_client').order_by('-created_at')[:5]
     
     # Upcoming deadlines
     upcoming_deadlines = TransactionTask.objects.filter(
         due_date__gte=timezone.now(),
         due_date__lte=timezone.now() + timedelta(days=7),
         status__in=['pending', 'in_progress']
-    ).order_by('due_date')[:10]
+    ).select_related('transaction', 'assigned_to').order_by('due_date')[:10]
+    
+    # Recent activities from audit logs
+    recent_activities = TransactionAuditLog.objects.select_related('user').order_by('-timestamp')[:10]
     
     # Transaction value by type
     transaction_values = Transaction.objects.values('transaction_type').annotate(
@@ -53,20 +63,117 @@ def transaction_dashboard(request):
         count=Count('id')
     )
     
-    # High priority tasks
-    high_priority_tasks = TransactionTask.objects.filter(
-        priority='high',
+    # Transaction status distribution
+    status_distribution = Transaction.objects.values('status').annotate(
+        count=Count('id')
+    ).order_by('status')
+    
+    # Transaction types distribution
+    types_distribution = Transaction.objects.values('transaction_type').annotate(
+        count=Count('id')
+    ).order_by('transaction_type')
+    
+    # Task priority distribution
+    priority_distribution = TransactionTask.objects.values('priority').annotate(
+        count=Count('id')
+    ).order_by('priority')
+    
+    # Monthly transaction volume (last 6 months)
+    monthly_volume = []
+    monthly_labels = []
+    
+    for i in range(6):
+        date = timezone.now() - timedelta(days=30*i)
+        month_start = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(seconds=1)
+        
+        volume = Transaction.objects.filter(
+            created_at__gte=month_start,
+            created_at__lte=month_end
+        ).aggregate(total=Sum('transaction_value'))['total'] or 0
+        
+        monthly_volume.append(float(volume))
+        monthly_labels.append(month_start.strftime('%b'))
+    
+    monthly_volume.reverse()
+    monthly_labels.reverse()
+    
+    # Calculate processing success rate
+    total_processed = Transaction.objects.filter(status__in=['completed', 'cancelled']).count()
+    successful_processed = Transaction.objects.filter(status='completed').count()
+    processing_success_rate = int((successful_processed / total_processed * 100) if total_processed > 0 else 0)
+    
+    # Calculate average processing time (simplified)
+    completed_transactions_with_dates = Transaction.objects.filter(
+        status='completed',
+        created_at__isnull=False,
+        actual_closing_date__isnull=False
+    )
+    
+    if completed_transactions_with_dates.exists():
+        # Calculate average processing time in days using Python
+        total_days = 0
+        count = 0
+        for transaction in completed_transactions_with_dates:
+            if transaction.actual_closing_date and transaction.created_at:
+                delta = transaction.actual_closing_date - transaction.created_at.date()
+                total_days += delta.days
+                count += 1
+        
+        if count > 0:
+            avg_processing_days = total_days / count
+            avg_processing_time = f"{avg_processing_days:.1f} days"
+        else:
+            avg_processing_time = "N/A"
+    else:
+        avg_processing_time = "N/A"
+    
+    # Get total documents
+    total_documents = TransactionDocument.objects.count()
+    
+    # Get flagged transactions (transactions with high priority or overdue tasks)
+    flagged_transactions = Transaction.objects.filter(
+        Q(priority='high') | 
+        Q(tasks__due_date__lt=timezone.now(), tasks__status__in=['pending', 'in_progress'])
+    ).distinct().count()
+    
+    # Compliance status
+    overdue_compliance_tasks = TransactionTask.objects.filter(
+        task_type='approval',
+        due_date__lt=timezone.now(),
         status__in=['pending', 'in_progress']
     ).count()
     
+    if overdue_compliance_tasks == 0:
+        compliance_status = "All compliance checks completed"
+    else:
+        compliance_status = f"{overdue_compliance_tasks} compliance tasks overdue"
+    
     context = {
-        'total_transactions': total_transactions,
-        'active_transactions': active_transactions,
-        'completed_transactions': completed_transactions,
+        'stats': {
+            'total_transactions': total_transactions,
+            'active_transactions': active_transactions,
+            'completed_transactions': completed_transactions,
+            'cancelled_transactions': cancelled_transactions,
+            'total_tasks': total_tasks,
+            'pending_tasks': pending_tasks,
+            'completed_tasks': completed_tasks,
+            'high_priority_tasks': high_priority_tasks,
+        },
         'recent_transactions': recent_transactions,
-        'upcoming_deadlines': upcoming_deadlines,
+        'upcoming_tasks': upcoming_deadlines,
+        'recent_activities': recent_activities,
         'transaction_values': transaction_values,
-        'high_priority_tasks': high_priority_tasks,
+        'status_distribution': status_distribution,
+        'types_distribution': types_distribution,
+        'priority_distribution': priority_distribution,
+        'monthly_volume': monthly_volume,
+        'monthly_labels': monthly_labels,
+        'processing_success_rate': processing_success_rate,
+        'avg_processing_time': avg_processing_time,
+        'total_documents': total_documents,
+        'flagged_transactions': flagged_transactions,
+        'compliance_status': compliance_status,
     }
     
     return render(request, 'transaction_support/dashboard.html', context)
@@ -242,6 +349,45 @@ class TransactionUpdateView(LoginRequiredMixin, UpdateView):
         messages.error(self.request, 'Please correct the errors below.')
         return super().form_invalid(form)
 
+
+@login_required
+def transaction_edit_modal(request, pk):
+    """Modal view for editing transaction"""
+    transaction = get_object_or_404(Transaction, pk=pk)
+    
+    if request.method == 'POST':
+        form = TransactionForm(request.POST, instance=transaction)
+        if form.is_valid():
+            form.save()
+            
+            # Create audit log
+            TransactionAuditLog.objects.create(
+                transaction=transaction,
+                user=request.user,
+                action='updated',
+                description=f'Transaction "{transaction.title}" updated'
+            )
+            
+            messages.success(request, f'Transaction "{transaction.title}" updated successfully.')
+            
+            # Return success response for HTMX with redirect (same as client update)
+            messages.success(request, f'Transaction "{transaction.title}" updated successfully.')
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = reverse_lazy('transaction_support:transaction_list')
+            return response
+        else:
+            # Return form with errors
+            return render(request, 'transaction_support/edit_form_modal.html', {
+                'form': form,
+                'transaction': transaction
+            })
+    else:
+        # GET request - show edit form
+        form = TransactionForm(instance=transaction)
+        return render(request, 'transaction_support/edit_form_modal.html', {
+            'form': form,
+            'transaction': transaction
+        })
 
 @login_required
 @user_passes_test(is_staff)
@@ -540,77 +686,220 @@ def task_update_status(request, task_pk):
 
 
 @login_required
+def transaction_details_modal(request, pk):
+    """Modal view for transaction details"""
+    transaction = get_object_or_404(Transaction, pk=pk)
+    
+    # Get related data for the modal
+    context = {
+        'transaction': transaction,
+        'documents_count': transaction.documents.count(),
+        'tasks_count': transaction.tasks.count(),
+        'completed_tasks_count': transaction.tasks.filter(status='completed').count(),
+        'recent_activities': transaction.audit_logs.order_by('-timestamp')[:5],
+    }
+    
+    return render(request, 'transaction_support/details-modal.html', context)
+
+
+@login_required
 def transaction_reports(request):
-    """Generate transaction reports"""
-    if request.method == 'POST':
-        form = TransactionReportForm(request.POST)
-        if form.is_valid():
-            report = form.save(commit=False)
-            report.generated_by = request.user
-            report.save()
-            
-            # Generate report data based on type
-            report_data = _generate_report_data(report)
-            
-            return render(request, 'transaction_support/report_result.html', {
-                'report': report,
-                'report_data': report_data
-            })
-    else:
-        form = TransactionReportForm()
+    """Generate transaction reports with comprehensive data and download functionality"""
     
-    return render(request, 'transaction_support/reports.html', {
-        'form': form
-    })
-
-
-def _generate_report_data(report):
-    """Generate report data based on report type"""
-    data = {}
+    # Check if this is a download request
+    download_format = request.GET.get('download')
+    if download_format:
+        return _handle_report_download(request, download_format)
     
-    # Base queryset
+    # Get filter parameters
+    date_range = request.GET.get('date_range', '30')
+    transaction_type = request.GET.get('transaction_type', '')
+    status = request.GET.get('status', '')
+    priority = request.GET.get('priority', '')
+    report_type = request.GET.get('report_type', 'summary')
+    
+    # Build base queryset
     transactions = Transaction.objects.all()
     
     # Apply date filters
-    if report.date_from:
-        transactions = transactions.filter(created_at__gte=report.date_from)
-    if report.date_to:
-        transactions = transactions.filter(created_at__lte=report.date_to)
+    if date_range != 'all':
+        days = int(date_range)
+        start_date = timezone.now() - timedelta(days=days)
+        transactions = transactions.filter(created_at__gte=start_date)
     
-    # Apply confidentiality filter
-    if not report.include_confidential:
-        transactions = transactions.filter(is_confidential=False)
+    # Apply transaction type filter
+    if transaction_type:
+        transactions = transactions.filter(transaction_type=transaction_type)
     
-    if report.report_type == 'summary':
-        data = {
-            'total_transactions': transactions.count(),
-            'by_status': transactions.values('status').annotate(count=Count('id')),
-            'by_type': transactions.values('transaction_type').annotate(count=Count('id')),
-            'total_value': transactions.aggregate(total=Sum('transaction_value'))['total'] or 0,
+    # Apply status filter
+    if status:
+        transactions = transactions.filter(status=status)
+    
+    # Apply priority filter
+    if priority:
+        transactions = transactions.filter(priority=priority)
+    
+    # Generate comprehensive report data
+    report_data = _generate_comprehensive_report_data(transactions, report_type)
+    
+    return render(request, 'transaction_support/reports.html', {
+        'report_data': report_data,
+        'filters': {
+            'date_range': date_range,
+            'transaction_type': transaction_type,
+            'status': status,
+            'priority': priority,
+            'report_type': report_type,
         }
+    })
+
+
+def _generate_comprehensive_report_data(transactions, report_type):
+    """Generate comprehensive report data based on report type"""
+    data = {}
     
-    elif report.report_type == 'detailed':
-        data = {
-            'transactions': transactions.select_related('client', 'lead_lawyer').order_by('-created_at'),
-            'total_count': transactions.count(),
-        }
+    # Common statistics
+    total_transactions = transactions.count()
+    completed_transactions = transactions.filter(status='completed')
+    cancelled_transactions = transactions.filter(status='cancelled')
     
-    elif report.report_type == 'performance':
-        # Calculate performance metrics
-        completed_transactions = transactions.filter(status='completed')
-        data = {
-            'completion_rate': (completed_transactions.count() / transactions.count() * 100) if transactions.count() > 0 else 0,
-            'avg_completion_time': completed_transactions.aggregate(
-                avg_time=Count('id')  # This would need more complex calculation
-            ),
-            'overdue_tasks': TransactionTask.objects.filter(
-                workflow__transaction__in=transactions,
-                due_date__lt=timezone.now(),
-                status__in=['pending', 'in_progress']
-            ).count(),
-        }
+    # Calculate total value
+    total_value = transactions.aggregate(total=Sum('transaction_value'))['total'] or 0
+    
+    # Calculate average deal size
+    avg_deal_size = (total_value / total_transactions) if total_transactions > 0 else 0
+    
+    # Calculate completion rate
+    completion_rate = (completed_transactions.count() / total_transactions * 100) if total_transactions > 0 else 0
+    
+    # Calculate average completion time
+    avg_completion_time = "N/A"
+    if completed_transactions.exists():
+        total_days = 0
+        count = 0
+        for transaction in completed_transactions:
+            if transaction.actual_closing_date and transaction.created_at:
+                delta = transaction.actual_closing_date - transaction.created_at.date()
+                total_days += delta.days
+                count += 1
+        
+        if count > 0:
+            avg_days = total_days / count
+            avg_completion_time = f"{avg_days:.1f} days"
+    
+    # Base data structure
+    data = {
+        'total_transactions': total_transactions,
+        'completed_transactions': completed_transactions.count(),
+        'cancelled_transactions': cancelled_transactions.count(),
+        'total_value': total_value,
+        'avg_deal_size': avg_deal_size,
+        'completion_rate': completion_rate,
+        'avg_completion_time': avg_completion_time,
+        'by_status': transactions.values('status').annotate(count=Count('id')).order_by('status'),
+        'by_type': transactions.values('transaction_type').annotate(count=Count('id')).order_by('transaction_type'),
+    }
+    
+    # Add report type specific data
+    if report_type == 'detailed':
+        data['transactions'] = transactions.select_related('lead_lawyer', 'primary_client').order_by('-created_at')
+    
+    elif report_type == 'performance':
+        # Performance metrics
+        active_transactions = transactions.filter(status__in=['planning', 'due_diligence', 'negotiation', 'documentation'])
+        data['active_transactions'] = active_transactions.count()
+        data['overdue_tasks'] = TransactionTask.objects.filter(
+            due_date__lt=timezone.now(),
+            status__in=['pending', 'in_progress']
+        ).count()
     
     return data
+
+
+def _handle_report_download(request, format_type):
+    """Handle report downloads in various formats"""
+    from django.http import HttpResponse
+    import csv
+    import io
+    
+    # Get filter parameters
+    date_range = request.GET.get('date_range', '30')
+    transaction_type = request.GET.get('transaction_type', '')
+    status = request.GET.get('status', '')
+    priority = request.GET.get('priority', '')
+    
+    # Build queryset
+    transactions = Transaction.objects.all()
+    
+    # Apply filters
+    if date_range != 'all':
+        days = int(date_range)
+        start_date = timezone.now() - timedelta(days=days)
+        transactions = transactions.filter(created_at__gte=start_date)
+    
+    if transaction_type:
+        transactions = transactions.filter(transaction_type=transaction_type)
+    if status:
+        transactions = transactions.filter(status=status)
+    if priority:
+        transactions = transactions.filter(priority=priority)
+    
+    # Get transactions with related data
+    transactions = transactions.select_related('lead_lawyer', 'primary_client').order_by('-created_at')
+    
+    if format_type == 'excel':
+        # Generate CSV (Excel compatible)
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="transaction_report_{timezone.now().strftime("%Y%m%d")}.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'Transaction ID', 'Title', 'Type', 'Status', 'Priority', 'Value ($M)', 
+            'Lead Lawyer', 'Client', 'Created Date', 'Status Date'
+        ])
+        
+        for transaction in transactions:
+            writer.writerow([
+                transaction.transaction_code or '',
+                transaction.title or '',
+                transaction.get_transaction_type_display() or '',
+                transaction.get_status_display() or '',
+                transaction.get_priority_display() or '',
+                transaction.transaction_value or 0,
+                transaction.lead_lawyer.get_full_name() if transaction.lead_lawyer else '',
+                transaction.primary_client.name if transaction.primary_client else '',
+                transaction.created_at.strftime('%Y-%m-%d') if transaction.created_at else '',
+                transaction.actual_closing_date.strftime('%Y-%m-%d') if transaction.actual_closing_date else ''
+            ])
+        
+        return response
+    
+    elif format_type == 'pdf':
+        # For PDF, we'll return a simple text response for now
+        # In production, you'd use a library like ReportLab or WeasyPrint
+        response = HttpResponse(content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename="transaction_report_{timezone.now().strftime("%Y%m%d")}.txt"'
+        
+        # Generate text report
+        report_lines = []
+        report_lines.append("TRANSACTION REPORT")
+        report_lines.append("=" * 50)
+        report_lines.append(f"Generated: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report_lines.append(f"Total Transactions: {transactions.count()}")
+        report_lines.append("")
+        
+        for transaction in transactions:
+            report_lines.append(f"Transaction: {transaction.title}")
+            report_lines.append(f"Type: {transaction.get_transaction_type_display()}")
+            report_lines.append(f"Status: {transaction.get_status_display()}")
+            report_lines.append(f"Value: ${transaction.transaction_value}M")
+            report_lines.append("-" * 30)
+        
+        response.write('\n'.join(report_lines))
+        return response
+    
+    # Default fallback
+    return HttpResponse("Unsupported format", status=400)
 
 
 # Legacy view functions for backward compatibility
@@ -626,29 +915,110 @@ def transaction_create(request):
 
 @login_required
 def transaction_monitoring(request):
-    """Transaction monitoring dashboard"""
+    """Transaction monitoring dashboard with comprehensive tracking"""
+    
     # Get active transactions with their progress
     active_transactions = Transaction.objects.filter(
-        status__in=['planning', 'due_diligence', 'negotiation', 'documentation']
-    ).select_related('client', 'lead_lawyer')
+        status__in=['planning', 'due_diligence', 'negotiation', 'documentation', 'regulatory_approval', 'closing', 'post_closing']
+    ).select_related('lead_lawyer', 'primary_client').prefetch_related('tasks', 'documents')
     
-    # Get overdue tasks
+    # Calculate progress for each transaction
+    for transaction in active_transactions:
+        total_tasks = transaction.tasks.count()
+        completed_tasks = transaction.tasks.filter(status='completed').count()
+        transaction.progress_percentage = int((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
+        
+        # Get next deadline
+        next_task = transaction.tasks.filter(
+            status__in=['pending', 'in_progress'],
+            due_date__gte=timezone.now()
+        ).order_by('due_date').first()
+        
+        if next_task:
+            transaction.next_deadline = next_task.due_date
+            transaction.next_deadline_task = next_task.title
+            transaction.is_deadline_approaching = (next_task.due_date - timezone.now()).days <= 3
+        else:
+            transaction.next_deadline = None
+            transaction.next_deadline_task = None
+            transaction.is_deadline_approaching = False
+    
+    # Get overdue tasks - simplified to avoid select_related issues
     overdue_tasks = TransactionTask.objects.filter(
         due_date__lt=timezone.now(),
         status__in=['pending', 'in_progress']
-    ).select_related('workflow__transaction')
+    ).select_related('assigned_to')
     
-    # Get upcoming deadlines
+    # Get upcoming deadlines (next 30 days) - simplified to avoid select_related issues
     upcoming_deadlines = TransactionTask.objects.filter(
         due_date__gte=timezone.now(),
         due_date__lte=timezone.now() + timedelta(days=30),
         status__in=['pending', 'in_progress']
-    ).order_by('due_date')
+    ).select_related('assigned_to').order_by('due_date')
+    
+    # Get pending tasks - simplified to avoid select_related issues
+    pending_tasks = TransactionTask.objects.filter(
+        status__in=['pending', 'in_progress']
+    ).select_related('assigned_to').order_by('due_date')
+    
+    # Get recent activities from audit logs - simplified to avoid select_related issues
+    recent_activities = TransactionAuditLog.objects.select_related('user').order_by('-timestamp')[:20]
+    
+    # Calculate statistics
+    total_transactions = Transaction.objects.count()
+    active_transactions_count = active_transactions.count()
+    completed_transactions = Transaction.objects.filter(status='completed').count()
+    cancelled_transactions = Transaction.objects.filter(status='cancelled').count()
+    
+    total_tasks = TransactionTask.objects.count()
+    pending_tasks_count = pending_tasks.count()
+    overdue_tasks_count = overdue_tasks.count()
+    completed_tasks_count = TransactionTask.objects.filter(status='completed').count()
+    
+    # High priority tasks
+    high_priority_tasks = TransactionTask.objects.filter(
+        priority__in=['high', 'critical'],
+        status__in=['pending', 'in_progress']
+    ).count()
+    
+    # Transaction value by type
+    transaction_values = Transaction.objects.values('transaction_type').annotate(
+        total_value=Sum('transaction_value'),
+        count=Count('id')
+    )
+    
+    # Workflow status summary
+    workflow_status = Transaction.objects.values('status').annotate(
+        count=Count('id')
+    ).order_by('status')
+    
+    # Task completion by type
+    task_completion_by_type = TransactionTask.objects.values('task_type').annotate(
+        total=Count('id'),
+        completed=Count('id', filter=Q(status='completed')),
+        pending=Count('id', filter=Q(status__in=['pending', 'in_progress']))
+    )
     
     context = {
         'active_transactions': active_transactions,
         'overdue_tasks': overdue_tasks,
         'upcoming_deadlines': upcoming_deadlines,
+        'pending_tasks': pending_tasks,
+        'recent_activities': recent_activities,
+        'stats': {
+            'total_transactions': total_transactions,
+            'active_transactions': active_transactions_count,
+            'completed_transactions': completed_transactions,
+            'cancelled_transactions': cancelled_transactions,
+            'total_tasks': total_tasks,
+            'pending_tasks': pending_tasks_count,
+            'overdue_tasks': overdue_tasks_count,
+            'completed_tasks': completed_tasks_count,
+            'high_priority_tasks': high_priority_tasks,
+        },
+        'transaction_values': transaction_values,
+        'workflow_status': workflow_status,
+        'task_completion_by_type': task_completion_by_type,
     }
     
     return render(request, 'transaction_support/monitoring.html', context)

@@ -1,0 +1,105 @@
+/* Communication App Styles */
+
+/* Dashboard Cards */
+.communication-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.communication-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    height: 256px;
+}
+
+/* Activity Items */
+.activity-item {
+    transition: background-color 0.2s ease;
+}
+
+.activity-item:hover {
+    background-color: #f9fafb;
+}
+
+/* Meeting Cards */
+.meeting-card {
+    border-left: 4px solid #3b82f6;
+    transition: all 0.2s ease;
+}
+
+.meeting-card:hover {
+    border-left-color: #1d4ed8;
+    background-color: #f8fafc;
+}
+
+/* Notification Badges */
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ef4444;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Status Indicators */
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.status-active {
+    background-color: #10b981;
+}
+
+.status-pending {
+    background-color: #f59e0b;
+}
+
+.status-inactive {
+    background-color: #6b7280;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 200px;
+    }
+    
+    .communication-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Custom Scrollbar */
+.communication-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.communication-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.communication-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.communication-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

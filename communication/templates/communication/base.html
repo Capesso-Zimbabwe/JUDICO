@@ -1,25 +1,25 @@
 {% extends 'base.html' %}
 
+{% block title %}Communication Management{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'communication/css/communication_styles.css' %}">
+{% endblock %}
+
+{% block header_title %}Communication Management - Dashboard{% endblock %}
+
 {% block content %}
 <!-- Navigation header with improved styling -->
 <div class="bg-white rounded-sm border-b border-gray-200 mb-4">
     <nav class="flex space-x-2 px-6 pt-3">
         <a href="{% url 'communication:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">Dashboard</a>
         <a href="{% url 'communication:messages' %}" class="{% if request.resolver_match.url_name == 'messages' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">Messages</a>
-        <a href="{% url 'communication:notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">Notifications</a>
-        <a href="{% url 'communication:settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">Settings</a>
     </nav>
 </div>
 
-<!-- Main Content -->
-<div class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-6 py-6">
-        <div class="bg-white rounded-lg shadow p-6">
-            {% block communication_content %}
-            {% endblock %}
-        </div>
-    </div>
-</div>
+{% block communication_content %}{% endblock %}
 
 <!-- Notification JavaScript -->
 <script>

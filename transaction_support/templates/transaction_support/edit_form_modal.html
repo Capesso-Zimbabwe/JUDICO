@@ -1,0 +1,35 @@
+<form
+        novalidate="novalidate"
+        method="post"
+        hx-post="{% url 'transaction_support:transaction_edit_modal' transaction.id %}{% querystring %}"
+                        hx-target="#edit-modal-form-container"
+        class="">
+    {% csrf_token %}
+    <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include 'components/non-field-errors.html' %}
+            <!-- Transaction Title -->
+            {% include 'components/field.html' with field=form.title field_widget_class="col-span-2" %}
+
+            {% include 'components/field.html' with field=form.transaction_type %}
+            <!-- Status -->
+            {% include 'components/field.html' with field=form.status %}
+
+            {% include 'components/field.html' with field=form.transaction_value %}
+
+            <!-- Lead Lawyer -->
+            {% include 'components/field.html' with field=form.lead_lawyer %}
+
+            <!-- Expected Close Date -->
+            {% include 'components/field.html' with field=form.expected_close_date %}
+
+            {% include 'components/field.html' with field=form.description field_widget_class="col-span-2" %}
+
+        </div>
+    </div>
+    <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
+        <div>
+            {% include 'components/submit-button.html' with button_text="Update Transaction" loading_text="Updating...." %}
+        </div>
+    </div>
+</form>

@@ -58,6 +58,7 @@ from django.db.models import Q, Max
 
 @login_required
 def message_list(request):
+    """Enhanced message list view with conversation data"""
     # Get all users the current user has had a conversation with
     sent_to = Message.objects.filter(sender=request.user).values_list('recipient', flat=True)
     received_from = Message.objects.filter(recipient=request.user).values_list('sender', flat=True)
@@ -72,9 +73,18 @@ def message_list(request):
                 latest_message = Message.objects.filter(
                     (Q(sender=request.user, recipient=user) | Q(sender=user, recipient=request.user))
                 ).latest('created_at')
+                
+                # Count unread messages from this user
+                unread_count = Message.objects.filter(
+                    sender=user,
+                    recipient=request.user,
+                    is_read=False
+                ).count()
+                
                 conversations.append({
                     'user': user,
-                    'latest_message': latest_message
+                    'latest_message': latest_message,
+                    'unread_count': unread_count
                 })
             except Message.DoesNotExist:
                 continue
@@ -84,12 +94,37 @@ def message_list(request):
 
     context = {
         'conversations': conversations,
+        'selected_user': None,
+        'selected_user_id': None,
+        'messages': []
     }
+    
+    # Check if a specific user is selected
+    selected_user_id = request.GET.get('user')
+    if selected_user_id:
+        try:
+            selected_user = User.objects.get(id=selected_user_id)
+            context['selected_user'] = selected_user
+            context['selected_user_id'] = selected_user_id
+            
+            # Get messages for this conversation
+            messages = Message.objects.filter(
+                (Q(sender=request.user, recipient=selected_user) | Q(sender=selected_user, recipient=request.user))
+            ).order_by('created_at')
+            context['messages'] = messages
+            
+            # Mark messages as read
+            Message.objects.filter(sender=selected_user, recipient=request.user, is_read=False).update(is_read=True)
+            
+        except User.DoesNotExist:
+            pass
+    
     return render(request, 'communication/messages.html', context)
 
 
 @login_required
 def message_detail_api(request, user_id):
+    """Get detailed messages between current user and another user"""
     other_user = get_object_or_404(User, id=user_id)
     
     # Mark messages from the other user as read
@@ -97,35 +132,70 @@ def message_detail_api(request, user_id):
     
     messages = Message.objects.filter(
         (Q(sender=request.user, recipient=other_user) | Q(sender=other_user, recipient=request.user))
-    ).order_by('created_at').values('sender__username', 'content', 'created_at')
+    ).order_by('created_at')
     
-    return JsonResponse(list(messages), safe=False)
+    # Format messages for the frontend
+    message_data = []
+    for message in messages:
+        message_data.append({
+            'id': message.id,
+            'sender_id': message.sender.id,
+            'sender_name': message.sender.get_full_name() or message.sender.username,
+            'content': message.content,
+            'created_at': message.created_at.isoformat(),
+            'is_read': message.is_read,
+            'attachments': list(message.attachments.all().values('filename', 'filesize'))
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'messages': message_data,
+        'other_user': {
+            'id': other_user.id,
+            'name': other_user.get_full_name() or other_user.username,
+            'is_lawyer': hasattr(other_user, 'lawyerprofile')
+        }
+    })
 
 @login_required
-def send_message_api(request, user_id):
+def send_message_api(request):
+    """Send a message with optional file attachments"""
     if request.method == 'POST':
+        recipient_id = request.POST.get('recipient_id')
+        content = request.POST.get('content')
+        attachment = request.FILES.get('attachment')
+        
+        if not recipient_id or not content:
+            return JsonResponse({'success': False, 'message': 'Missing required fields'})
+        
         try:
-            data = json.loads(request.body)
-            content = data.get('content')
-            recipient = get_object_or_404(User, id=user_id)
-
-            if content:
-                message = Message.objects.create(
-                    sender=request.user,
-                    recipient=recipient,
-                    subject='Chat Message',  # Default subject for chat messages
-                    content=content,
-                    message_type='general'
-                )
-                return JsonResponse({'status': 'success', 'message': 'Message sent.'})
-            else:
-                return JsonResponse({'status': 'error', 'message': 'Content cannot be empty.'}, status=400)
-        except json.JSONDecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON.'}, status=400)
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            recipient = User.objects.get(id=recipient_id)
             
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+            # Create the message
+            message = Message.objects.create(
+                sender=request.user,
+                recipient=recipient,
+                subject='New Message',
+                content=content
+            )
+            
+            # Handle file attachment if provided
+            if attachment:
+                # You can extend this to handle multiple file types
+                # For now, we'll store basic file information
+                message.attachments.add(attachment)
+            
+            # Mark as read for the sender
+            message.mark_as_read()
+            
+            return JsonResponse({'success': True, 'message_id': message.id})
+            
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Recipient not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
 @login_required
 def notification_list(request):
@@ -345,5 +415,31 @@ def new_conversation(request):
         'users': users,
     }
     return render(request, 'communication/new_conversation.html', context)
+
+@login_required
+def get_users_by_type(request, user_type):
+    """Get users by type (client or lawyer) for new conversations"""
+    from client_management.models import Client
+    from lawyer_portal.models import LawyerProfile
+    
+    if user_type == 'client':
+        users = Client.objects.all()
+        user_data = [{
+            'id': client.user.id,
+            'name': client.user.get_full_name() or client.user.username,
+            'type': 'client'
+        } for client in users if client.user]
+    elif user_type == 'lawyer':
+        users = LawyerProfile.objects.all()
+        user_data = [{
+            'id': lawyer.user.id,
+            'name': lawyer.user.get_full_name() or lawyer.user.username,
+            'type': 'lawyer',
+            'specialization': lawyer.specialization
+        } for lawyer in users if lawyer.user]
+    else:
+        user_data = []
+    
+    return JsonResponse({'users': user_data})
 
 # Create your views here.

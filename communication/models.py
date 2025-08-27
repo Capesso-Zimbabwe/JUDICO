@@ -5,6 +5,28 @@ from lawyer_portal.models import LawyerProfile
 from django.utils import timezone
 from datetime import timedelta
 
+class MessageAttachment(models.Model):
+    """Model for file attachments in messages"""
+    message = models.ForeignKey('Message', on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='message_attachments/%Y/%m/%d/')
+    filename = models.CharField(max_length=255)
+    filesize = models.PositiveIntegerField()
+    file_type = models.CharField(max_length=100, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-uploaded_at']
+    
+    def __str__(self):
+        return f"{self.filename} - {self.message.subject}"
+    
+    def save(self, *args, **kwargs):
+        if not self.filename:
+            self.filename = self.file.name
+        if not self.filesize:
+            self.filesize = self.file.size
+        super().save(*args, **kwargs)
+
 class Message(models.Model):
     MESSAGE_TYPES = [
         ('general', 'General'),
@@ -46,6 +68,14 @@ class Message(models.Model):
             from django.utils import timezone
             self.read_at = timezone.now()
             self.save()
+    
+    @property
+    def has_attachments(self):
+        return self.attachments.exists()
+    
+    @property
+    def attachment_count(self):
+        return self.attachments.count()
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
