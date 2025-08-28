@@ -167,6 +167,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT= BASE_DIR /'staticfiles'
 STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # Main project static directory
     BASE_DIR / 'JUDICO_HUB' / 'static',
     BASE_DIR / 'theme'/ 'static',
     BASE_DIR / 'contract_management' / 'static'
