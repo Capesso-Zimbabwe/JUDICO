@@ -773,13 +773,17 @@
             <span
               class="bg-gray-500 text-white rounded-full h-6 w-6 flex items-center justify-center font-semi-bold text-xs"
             >
-              {% if user.is_authenticated %} {% if user.first_name and
-              user.last_name %} {{ user.first_name|first|upper }}
-              {{user.last_name|first|upper }} {% elif user.first_name %} {{
-              user.first_name|first|upper }} {% elif user.last_name %}
-              {{user.last_name|first|upper }} {% else %}
-              {{user.username|first|upper }} {% endif %} {% else %} U {% endif
-              %}
+              {% if user.is_authenticated %}
+              {% if user.first_name and user.last_name %} 
+              {{ user.first_name|first|upper }}
+              {{user.last_name|first|upper }} 
+              {% elif user.first_name %} 
+              {{user.first_name|first|upper }} 
+              {% elif user.last_name %}
+              {{user.last_name|first|upper }} 
+              {% else %}
+              {{user.username|first|upper }} 
+              {% endif %} {% else %} U {% endif%}
             </span>
           </span>
         </div>
