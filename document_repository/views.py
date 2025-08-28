@@ -38,7 +38,10 @@ def document_list(request):
         documents = documents.filter(
             Q(title__icontains=search_query) | 
             Q(description__icontains=search_query) |
-            Q(tags__icontains=search_query)
+            Q(tags__icontains=search_query) |
+            Q(category__name__icontains=search_query) |
+            Q(uploaded_by__first_name__icontains=search_query) |
+            Q(uploaded_by__last_name__icontains=search_query)
         )
     
     # Filter by category if specified
@@ -46,21 +49,50 @@ def document_list(request):
     if category_filter:
         documents = documents.filter(category__name__icontains=category_filter)
     
+    # Filter by file type if specified
+    file_type_filter = request.GET.get('file_type')
+    if file_type_filter:
+        documents = documents.filter(file_type=file_type_filter)
+    
+    # Filter by date range if specified
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    if date_from:
+        try:
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+            documents = documents.filter(uploaded_at__gte=date_from_obj)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+            documents = documents.filter(uploaded_at__lte=date_to_obj)
+        except ValueError:
+            pass
+    
     # Order by most recent first
     documents = documents.order_by('-uploaded_at')
     
-    # Pagination
-    paginator = Paginator(documents, 12)  # Show 12 documents per page
+    # Pagination - match clients page pagination
+    paginator = Paginator(documents, 10)  # Show 10 documents per page like clients
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     categories = DocumentCategory.objects.all()
     
+    # Get unique file types for filtering
+    file_types = Document.objects.filter(is_active=True).values_list('file_type', flat=True).distinct()
+    
     context = {
         'page_obj': page_obj,
         'categories': categories,
+        'file_types': file_types,
         'current_category': category_filter,
+        'current_file_type': file_type_filter,
         'search_query': search_query,
+        'date_from': date_from,
+        'date_to': date_to,
     }
     return render(request, 'document_repository/document_list.html', context)
 
@@ -258,6 +290,82 @@ def document_detail(request, document_id):
         'related_documents': related_documents,
     }
     return render(request, 'document_repository/document_detail.html', context)
+
+@login_required
+def document_update(request, document_id):
+    document = get_object_or_404(Document, id=document_id, is_active=True)
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            title = request.POST.get('title', '').strip()
+            description = request.POST.get('description', '').strip()
+            category_id = request.POST.get('category')
+            tags = request.POST.get('tags', '').strip()
+            uploaded_file = request.FILES.get('file')
+            
+            # Validation
+            if not title:
+                messages.error(request, 'Document title is required.')
+                raise ValueError('Title is required')
+            
+            if not category_id:
+                messages.error(request, 'Please select a category.')
+                raise ValueError('Category is required')
+            
+            # Get category object
+            try:
+                category = DocumentCategory.objects.get(id=category_id)
+            except DocumentCategory.DoesNotExist:
+                messages.error(request, 'Invalid category selected.')
+                raise ValueError('Invalid category')
+            
+            # Update document
+            document.title = title
+            document.description = description
+            document.category = category
+            document.tags = tags
+            
+            # Handle file replacement if a new file was uploaded
+            if uploaded_file:
+                # Determine file type based on extension
+                file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+                file_type_mapping = {
+                    '.pdf': 'pdf',
+                    '.doc': 'doc',
+                    '.docx': 'docx',
+                    '.xls': 'xls',
+                    '.xlsx': 'xlsx',
+                    '.ppt': 'ppt',
+                    '.pptx': 'pptx',
+                    '.txt': 'txt',
+                    '.jpg': 'jpg',
+                    '.jpeg': 'jpg',
+                    '.png': 'png',
+                    '.gif': 'gif',
+                }
+                file_type = file_type_mapping.get(file_extension, 'other')
+                
+                # Replace the file
+                document.file = uploaded_file
+                document.file_type = file_type
+            
+            document.save()
+            
+            messages.success(request, f'Document "{title}" updated successfully!')
+            return redirect('document_repository:document_detail', document_id=document.id)
+            
+        except Exception as e:
+            # If there was an error and no specific message was set, show a generic error
+            if not messages.get_messages(request):
+                messages.error(request, 'An error occurred while updating the document. Please try again.')
+    
+    categories = DocumentCategory.objects.all().order_by('name')
+    context = {
+        'document': document,
+        'categories': categories,
+    }
+    return render(request, 'document_repository/document_update.html', context)
 
 @login_required
 def search_suggestions(request):

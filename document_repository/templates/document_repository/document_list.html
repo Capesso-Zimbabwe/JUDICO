@@ -1,109 +1,318 @@
 {% extends 'document_repository/base.html' %}
+{% load static %}
 
 {% block title %}Document Repository{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
 <style>
-    .bg-custom-orange { background-color: #f58020; }
-    .text-custom-orange { color: #f58020; }
-    .border-custom-orange { border-color: #f58020; }
-    .hover\:border-custom-orange:hover { border-color: #f58020; }
+    /* Table styles */
+    .compact-table th, .compact-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Hover effect for table rows */
+    .hover-row:hover {
+        background-color: rgba(243, 244, 246, 0.7);
+    }
+    
+    /* Fix table column overlap */
+    #documentsTable {
+        table-layout: fixed;
+    }
+    
+    #documentsTable th:nth-child(1),
+    #documentsTable td:nth-child(1) {
+        width: 35%;
+        max-width: 35%;
+    }
+    
+    #documentsTable th:nth-child(2),
+    #documentsTable td:nth-child(2) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #documentsTable th:nth-child(3),
+    #documentsTable td:nth-child(3) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #documentsTable th:nth-child(4),
+    #documentsTable td:nth-child(4) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #documentsTable th:nth-child(5),
+    #documentsTable td:nth-child(5) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #documentsTable th:nth-child(6),
+    #documentsTable td:nth-child(6) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    /* Prevent text overflow */
+    .document-title-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .category-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Scrollbar styling */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Card styling for empty state */
+    .empty-state-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
 </style>
 {% endblock %}
 
 {% block document_content %}
-<div class="container mx-auto px-4 py-6">
 
-    <!-- Search and Filter Section -->
-    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <form method="get" class="flex flex-wrap gap-3">
-            <div class="flex-1 min-w-[200px]">
-                <input type="text" name="q" placeholder="Search documents..." value="{{ request.GET.q }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-custom-orange focus:border-custom-orange">
+<!-- Document Management Table -->
+<div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+        <form action="" class="flex-1 max-w-sm" id="search-form" method="get">
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                </div>
+                <input type="text" name="q" value="{{ search_query }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-xs placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Search documents...">
             </div>
+        </form>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2">
+            <!-- Upload Document Button -->
+            <a href="{% url 'document_repository:document_upload' %}" class="p-2 flex gap-1 items-center bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <span class="font-bold text-xs">Upload Document</span>
+            </a>
+        </div>
+            </div>
+    
+    <!-- Filters -->
+    <div class="bg-gray-50 px-4 py-2 border-t border-b border-gray-200">
+        <form method="get" class="flex flex-wrap gap-2 items-end">
+            <input type="hidden" name="q" value="{{ search_query }}">
+            
             <div class="w-full md:w-auto">
-                <select name="category" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-custom-orange focus:border-custom-orange">
+                <label for="category" class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                <select name="category" id="category" class="block w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     <option value="">All Categories</option>
                     {% for category in categories %}
                         <option value="{{ category.name }}" {% if current_category == category.name %}selected{% endif %}>{{ category.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-3 rounded-lg transition duration-200 text-xs">
-                <i class="fas fa-search mr-1"></i>Search
+            
+            <div class="w-full md:w-auto">
+                <label for="file_type" class="block text-xs font-medium text-gray-700 mb-1">File Type</label>
+                <select name="file_type" id="file_type" class="block w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Types</option>
+                    {% for file_type in file_types %}
+                        <option value="{{ file_type }}" {% if current_file_type == file_type %}selected{% endif %}>{{ file_type|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="w-full md:w-auto">
+                <label for="date_from" class="block text-xs font-medium text-gray-700 mb-1">Date From</label>
+                <input type="date" name="date_from" id="date_from" value="{{ date_from }}" class="block w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div class="w-full md:w-auto">
+                <label for="date_to" class="block text-xs font-medium text-gray-700 mb-1">Date To</label>
+                <input type="date" name="date_to" id="date_to" value="{{ date_to }}" class="block w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div class="flex gap-2">
+                <button type="submit" class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Filter
             </button>
+                <a href="{% url 'document_repository:document_list' %}" class="px-3 py-2 text-xs font-medium text-center text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors duration-200">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Clear
+                </a>
+            </div>
         </form>
     </div>
 
-    <!-- Documents Table -->
-    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
-        <!-- Table Header -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between">
-            <h2 class="text-sm font-bold text-black m-0">All Documents</h2>
-        </div>
+    <!-- Document List Table -->
         <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
             <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-        
-        {% if page_obj %}
-            <table class="min-w-full document-table">
-                <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
-                    <tr>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Document</th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Category</th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Size</th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Uploaded</th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Modified</th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Actions</th>
+            <table class="w-full divide-y divide-gray-200 table-fixed" id="documentsTable">
+                <thead class="bg-gray-50 whitespace-nowrap text-xs sticky top-0 z-10">
+                <tr class="border-b border-gray-200">
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Document Title
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Category
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        File Type
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Size
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Uploaded
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Actions
+                    </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for document in page_obj %}
-                    <tr class="hover:bg-gray-50 transition-colors duration-200">
-                         <td class="px-3 py-1 whitespace-nowrap">
-                             <div class="flex items-center">
-                                 <div class="flex-shrink-0 h-10 w-10">
-                                     <div class="bg-blue-100 h-10 w-10 rounded-full flex items-center justify-center">
+                    <tr class="hover-row border-b border-gray-100">
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <button type="button"
+                                    class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                    onclick="window.location.href='{% url 'document_repository:document_detail' document.id %}'"
+                            >
+                                <div class="flex-shrink-0 h-8 w-8">
+                                    <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
                                          {% if document.file_type == 'pdf' %}
-                                             <i class="fas fa-file-pdf text-red-500 text-sm"></i>
-                                         {% elif document.file_type == 'doc' %}
-                                             <i class="fas fa-file-word text-blue-500 text-sm"></i>
-                                         {% elif document.file_type == 'excel' %}
-                                             <i class="fas fa-file-excel text-green-500 text-sm"></i>
-                                         {% elif document.file_type == 'image' %}
-                                             <i class="fas fa-file-image text-purple-500 text-sm"></i>
+                                            <span class="text-red-600 font-medium text-xs">PDF</span>
+                                        {% elif document.file_type == 'doc' or document.file_type == 'docx' %}
+                                            <span class="text-blue-600 font-medium text-xs">DOC</span>
+                                        {% elif document.file_type == 'xls' or document.file_type == 'xlsx' %}
+                                            <span class="text-green-600 font-medium text-xs">XLS</span>
+                                        {% elif document.file_type == 'jpg' or document.file_type == 'jpeg' or document.file_type == 'png' or document.file_type == 'gif' %}
+                                            <span class="text-purple-600 font-medium text-xs">IMG</span>
                                          {% else %}
-                                             <i class="fas fa-file text-gray-500 text-sm"></i>
+                                            <span class="text-gray-600 font-medium text-xs">{{ document.file_type|upper|slice:":3" }}</span>
                                          {% endif %}
                                      </div>
                                  </div>
-                                 <div class="ml-4">
-                                     <div class="text-sm font-medium text-blue-600">{{ document.title }}</div>
+                                <div class="ml-2">
+                                    <div class="text-xs font-medium text-gray-900 document-title-cell">
+                                        <span>{{ document.title|truncatechars:30 }}</span>
+                                    </div>
                                      {% if document.description %}
-                                         <div class="text-sm text-gray-500 truncate max-w-xs">{{ document.description }}</div>
+                                        <div class="text-xs text-gray-500 truncate max-w-xs">{{ document.description|truncatechars:30 }}</div>
+                                    {% endif %}
+                                    {% if document.tags %}
+                                        <div class="flex flex-wrap gap-1 mt-1">
+                                            {% for tag in document.tags|slice:":2" %}
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                                    {{ tag }}
+                                                </span>
+                                            {% endfor %}
+                                            {% if document.tags|length > 2 %}
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                                                    +{{ document.tags|length|add:"-2" }}
+                                                </span>
                                      {% endif %}
                                  </div>
+                                    {% endif %}
                              </div>
+                            </button>
                          </td>
-                         <td class="px-3 py-1 whitespace-nowrap">
-                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 category-cell">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                  {{ document.category.name|default:"Uncategorized" }}
                              </span>
                          </td>
-                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                {% if document.file_type == 'pdf' %}bg-red-100 text-red-800
+                                {% elif document.file_type == 'doc' or document.file_type == 'docx' %}bg-blue-100 text-blue-800
+                                {% elif document.file_type == 'xls' or document.file_type == 'xlsx' %}bg-green-100 text-green-800
+                                {% elif document.file_type == 'jpg' or document.file_type == 'jpeg' or document.file_type == 'png' or document.file_type == 'gif' %}bg-purple-100 text-purple-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ document.file_type|upper }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
                              {{ document.file_size_mb }} MB
                          </td>
-                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
-                             {{ document.uploaded_at|date:"M d, Y" }}
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ document.uploaded_at|date:"M d, Y" }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'document_repository:document_detail' document.id %}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                   title="View Document">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'document_repository:document_update' document.id %}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                   title="Edit Document">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{{ document.file.url }}" download
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 hover:text-orange-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                   title="Download Document">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path>
+                                    </svg>
+                                </a>
+                            </div>
                          </td>
-                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
-                             {{ document.updated_at|date:"M d, Y" }}
-                         </td>
-                         <td class="px-3 py-1 whitespace-nowrap">
-                             <div class="flex items-center space-x-2">
-                                 <a href="{{ document.file.url }}" target="_blank" class="action-button view-button">
-                                     <i class="fas fa-eye mr-1"></i> View
-                                 </a>
-                                 <a href="{{ document.file.url }}" download class="action-button download-button">
-                                     <i class="fas fa-download mr-1"></i> Download
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="text-center py-8 empty-state-card bg-white shadow-sm rounded-lg">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-500">No documents found</p>
+                                <p class="text-xs mb-4">Get started by uploading your first document.</p>
+                                <a href="{% url 'document_repository:document_upload' %}" class="px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Upload Document
                                  </a>
                              </div>
                          </td>
@@ -112,52 +321,33 @@
                 </tbody>
             </table>
             </div>
-        </div>
-        {% else %}
-            <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
-                <div class="p-8 text-center">
-                    <div class="text-gray-400 mb-4">
-                        <i class="fas fa-folder-open fa-2x"></i>
-                    </div>
-                    <h3 class="text-sm font-medium text-gray-900 mb-1">No Documents Available</h3>
-                    <p class="text-xs text-gray-600 mb-4">Upload your first document to get started</p>
-                    <a href="{% url 'document_repository:document_upload' %}" class="bg-custom-orange hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 text-xs inline-flex items-center">
-                        <i class="fas fa-upload mr-1"></i>Upload Document
-                    </a>
-                </div>
-            </div>
-        {% endif %}
     </div>
 
     <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <div class="flex justify-center py-3 border-t border-gray-200 bg-white">
-        <div class="flex space-x-1">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center">
-                    <i class="fas fa-chevron-left text-xs"></i>
-                </a>
-            {% endif %}
-            
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                    <a href="?page={{ num }}" class="px-2 py-1 rounded text-xs bg-custom-orange text-white font-medium">
-                        {{ num }}
-                    </a>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <a href="?page={{ num }}" class="px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 text-gray-700">
-                        {{ num }}
-                    </a>
-                {% endif %}
-            {% endfor %}
-            
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center">
-                    <i class="fas fa-chevron-right text-xs"></i>
-                </a>
-            {% endif %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 text-xs">
+        {% include 'components/paginator.html' with page_obj=page_obj %}
         </div>
     </div>
-    {% endif %}
-</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-submit form on filter change
+    document.querySelectorAll('select[name="category"], select[name="file_type"], input[name="date_from"], input[name="date_to"]').forEach(function(element) {
+        element.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+
+    // Auto-submit search form on input
+    document.getElementById('search-form').addEventListener('input', function(e) {
+        if (e.target.name === 'q') {
+            // Debounce search to avoid too many requests
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(() => {
+                this.submit();
+            }, 500);
+        }
+    });
+</script>
 {% endblock %}

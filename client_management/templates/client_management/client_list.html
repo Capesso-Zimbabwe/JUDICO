@@ -1,11 +1,76 @@
 {% extends 'client_management/base.html' %}
 
+{% block extra_css %}
+<style>
+    /* Table styles */
+    .compact-table th, .compact-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Hover effect for table rows */
+    .hover-row:hover {
+        background-color: rgba(243, 244, 246, 0.7);
+    }
+    
+    /* Fixed height table container */
+    .h-80 {
+        height: 20rem; /* 320px - shows approximately 7 rows */
+    }
+    
+    /* Table column widths for better distribution */
+    #clientsTable th:nth-child(1) { width: 20%; } /* Client Name */
+    #clientsTable th:nth-child(2) { width: 12%; } /* Client Number */
+    #clientsTable th:nth-child(3) { width: 18%; } /* Email */
+    #clientsTable th:nth-child(4) { width: 12%; } /* Phone */
+    #clientsTable th:nth-child(5) { width: 15%; } /* Lawyer */
+    #clientsTable th:nth-child(6) { width: 10%; } /* Status */
+    #clientsTable th:nth-child(7) { width: 8%; }  /* Cases */
+    #clientsTable th:nth-child(8) { width: 5%; }  /* Actions */
+    
+    /* Scrollable body styling */
+    .overflow-y-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+    
+    /* Custom scrollbar for webkit browsers */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+        border: 1px solid #f1f1f1;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Smooth scrolling */
+    .overflow-y-auto {
+        scroll-behavior: smooth;
+    }
+    
+    /* Table row height consistency */
+    .hover-row {
+        height: 2.5rem; /* 40px per row */
+    }
+</style>
+{% endblock %}
+
 {% block client_content %}
 
     <!-- Client Management Table -->
-    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
-        <div class="bg-white px-4 py-3 flex items-center justify-between">
-            {#            <h6 class="text-black font-bold text-xs m-0">All Clients</h6>#}
+    <div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
             <form action="" class="flex-1 max-w-sm" id="search-form">
                 {% include "components/field.html" with hide_label=True field=search_form.search %}
             </form>
@@ -14,51 +79,57 @@
                hx-indicator="#new-modal-overlay"
                hx-trigger="click"
                data-modal-target="new-modal" data-modal-toggle="new-modal"
-               href="{% url 'client_management:client_create' %}" class="p-2 flex gap-1">
-                <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+               href="{% url 'client_management:client_create' %}" class="p-2 flex gap-1 items-center bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                      height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M5 12h14m-7 7V5"></path>
                 </svg>
-                <span class="font-bold">Add New Client</span>
+                <span class="font-bold text-xs">Add New Client</span>
             </a>
         </div>
-        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
-            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-                <table class="w-full divide-y divide-gray-200" id="clientsTable">
-                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+        <!-- Fixed height table container - shows 7 rows but contains 10 rows -->
+        <div class="flex flex-col h-80"> <!-- Fixed height: 7 rows visible, 3 rows scrollable -->
+            <!-- Fixed header -->
+            <div class="bg-gray-50 border-b border-gray-200">
+                <table class="w-full table-fixed" id="clientsTable">
+                    <thead class="whitespace-nowrap text-xs">
                     <tr>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Client Name
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Client Number
                         </th>
-
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Email
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Phone
                         </th>
-
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Lawyer
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Status
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Cases
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Actions
                         </th>
                     </tr>
                     </thead>
+                </table>
+            </div>
+            
+            <!-- Scrollable body -->
+            <div class="flex-1 overflow-y-auto scrollbar-thin">
+                <table class="w-full table-fixed" id="clientsTableBody">
                     <tbody class="bg-white divide-y divide-gray-200">
                     {% for client in clients %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <tr class="hover-row border-b border-gray-100">
                             <td class="px-3 py-1 whitespace-nowrap">
                                 <button type="button"
                                         class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
@@ -205,7 +276,7 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
                                     <p class="text-xs font-medium">No clients found</p>
@@ -218,8 +289,17 @@
                 </table>
             </div>
         </div>
-        {% include 'components/paginator.html' %}
-
+        
+        <!-- Fixed pagination below the table -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 text-xs font-semibold">
+            {% if page_obj.has_other_pages %}
+                {% include 'components/paginator.html' with page_obj=page_obj %}
+            {% else %}
+                <div class="text-xs text-gray-600 font-semibold">
+                    Showing all {{ page_obj.paginator.count }} clients
+                </div>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Include Paginator Component -->

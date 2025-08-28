@@ -157,13 +157,7 @@
     </nav>
 </div>
 
-<!-- Page Header -->
-<div class="px-6 py-4">
-    <div>
-        <h1 class="text-sm font-semibold text-gray-900">Contract Management</h1>
-        <p class="text-xs text-gray-600 mt-1">Manage and monitor contracts through their lifecycle</p>
-    </div>
-</div>
+
 
 <!-- Contract Management Table -->
 <div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
@@ -374,7 +368,13 @@
 
     <!-- Pagination -->
     <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 text-xs">
-        {% include 'components/paginator.html' with page_obj=page_obj %}
+        {% if page_obj.has_other_pages %}
+            {% include 'components/paginator.html' with page_obj=page_obj %}
+        {% else %}
+            <div class="text-xs text-gray-500">
+                Showing all {{ page_obj.paginator.count }} contracts
+            </div>
+        {% endif %}
     </div>
 </div>
 

@@ -10,6 +10,7 @@ urlpatterns = [
     path('documents/', views.document_list, name='document_list'),
     path('documents/upload/', views.document_upload, name='document_upload'),
     path('documents/<int:document_id>/', views.document_detail, name='document_detail'),
+    path('documents/<int:document_id>/edit/', views.document_update, name='document_update'),
     path('categories/', views.category_list, name='category_list'),
     path('search/', views.document_search, name='document_search'),
     path('api/search-suggestions/', views.search_suggestions, name='search_suggestions'),
