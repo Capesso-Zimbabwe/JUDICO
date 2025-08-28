@@ -4,11 +4,132 @@
 
 {% load static %}
 
+{% block extra_css %}
+<style>
+    /* Table styles */
+    .compact-table th, .compact-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Hover effect for table rows */
+    .hover-row:hover {
+        background-color: rgba(243, 244, 246, 0.7);
+    }
+    
+    /* Fixed height table container */
+    .h-80 {
+        height: 20rem; /* 320px - shows approximately 7 rows */
+    }
+    
+    /* Table column widths for better distribution - adjusted to prevent overflow */
+    #leaveRequestsTable th:nth-child(1) { width: 25%; } /* Employee */
+    #leaveRequestsTable th:nth-child(2) { width: 15%; } /* Leave Type */
+    #leaveRequestsTable th:nth-child(3) { width: 18%; } /* Duration */
+    #leaveRequestsTable th:nth-child(4) { width: 15%; } /* Request Date */
+    #leaveRequestsTable th:nth-child(5) { width: 12%; } /* Status */
+    #leaveRequestsTable th:nth-child(6) { width: 10%; } /* Department */
+    #leaveRequestsTable th:nth-child(7) { width: 5%; }  /* Actions */
+    
+    /* Apply same column widths to body table for alignment */
+    #leaveRequestsTableBody td:nth-child(1) { width: 25%; } /* Employee */
+    #leaveRequestsTableBody td:nth-child(2) { width: 15%; } /* Leave Type */
+    #leaveRequestsTableBody td:nth-child(3) { width: 18%; } /* Duration */
+    #leaveRequestsTableBody td:nth-child(4) { width: 15%; } /* Request Date */
+    #leaveRequestsTableBody td:nth-child(5) { width: 12%; } /* Status */
+    #leaveRequestsTableBody td:nth-child(6) { width: 10%; } /* Department */
+    #leaveRequestsTableBody td:nth-child(7) { width: 5%; }  /* Actions */
+    
+    /* Ensure table cells maintain consistent width */
+    #leaveRequestsTableBody td {
+        width: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Prevent text wrapping and ensure proper alignment */
+    #leaveRequestsTableBody td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    
+    /* Specific column content alignment */
+    #leaveRequestsTableBody td:nth-child(1) { text-align: left; } /* Employee */
+    #leaveRequestsTableBody td:nth-child(2) { text-align: left; } /* Leave Type */
+    #leaveRequestsTableBody td:nth-child(3) { text-align: left; } /* Duration */
+    #leaveRequestsTableBody td:nth-child(4) { text-align: center; } /* Request Date */
+    #leaveRequestsTableBody td:nth-child(5) { text-align: center; } /* Status */
+    #leaveRequestsTableBody td:nth-child(6) { text-align: center; } /* Department */
+    #leaveRequestsTableBody td:nth-child(7) { text-align: center; } /* Actions */
+    
+    /* Scrollable body styling */
+    .overflow-y-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+    
+    /* Custom scrollbar for webkit browsers */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+        border: 1px solid #f1f1f1;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Smooth scrolling */
+    .overflow-y-auto {
+        scroll-behavior: smooth;
+    }
+    
+    /* Table row height consistency */
+    .hover-row {
+        height: 2.5rem; /* 40px per row */
+    }
+    
+    /* Horizontal scroll bar styling */
+    .overflow-x-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+        border: 1px solid #f1f1f1;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+</style>
+{% endblock %}
+
 {% block hr_content %}
 
-    <!-- Leave Management Table -->
-    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
-        <div class="bg-white px-4 py-3 flex items-center justify-between">
+    <!-- Leave Management Table - Pixel perfect match to client_list.html -->
+    <div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
             <form method="GET" class="flex-1 max-w-sm" id="search-form">
                 <div class="relative">
                     <input type="text" name="search" value="{{ search_query|default:'' }}" placeholder="Search leave requests..." class="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -24,46 +145,55 @@
                    hx-indicator="#leave-new-modal-overlay"
                    hx-trigger="click"
                    data-modal-target="leave-new-modal" data-modal-toggle="leave-new-modal"
-                   href="{% url 'hr_management:leave_create_modal' %}" class="p-2 flex gap-1">
-                    <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                   href="{% url 'hr_management:leave_create_modal' %}" class="p-2 flex gap-1 items-center bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                          height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M5 12h14m-7 7V5"></path>
                     </svg>
-                    <span class="font-bold">Add New Leave Request</span>
+                    <span class="font-bold text-xs">Add New Leave Request</span>
                 </a>
         </div>
-        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
-            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-                <table class="w-full divide-y divide-gray-200" id="leaveRequestsTable">
-                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+        
+        <!-- Fixed height table container - shows 7 rows but contains 10 rows -->
+        <div class="flex flex-col h-80"> <!-- Fixed height: 7 rows visible, 3 rows scrollable -->
+            <!-- Fixed header -->
+            <div class="bg-gray-50 border-b border-gray-200">
+                <table class="w-full table-fixed" id="leaveRequestsTable">
+                    <thead class="whitespace-nowrap text-xs">
                     <tr>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Employee
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Leave Type
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Duration
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Request Date
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Status
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Department
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Actions
                         </th>
                     </tr>
                     </thead>
+                </table>
+            </div>
+            
+            <!-- Scrollable body -->
+            <div class="flex-1 overflow-y-auto scrollbar-thin">
+                <table class="w-full table-fixed" id="leaveRequestsTableBody" style="table-layout: fixed;">
                     <tbody class="bg-white divide-y divide-gray-200">
                     {% for request in leave_requests %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <tr class="hover-row border-b border-gray-100">
                             <td class="px-3 py-1 whitespace-nowrap">
                                 <button type="button"
                                         class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
@@ -149,13 +279,11 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="7" class="px-6 py-8 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <p class="text-gray-500 mb-1">No leave requests found</p>
-                                    <p class="text-gray-400 text-sm">No pending leave requests to review</p>
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-calendar-alt text-4xl text-gray-300 mb-4"></i>
+                                    <p class="text-xs font-medium">No leave requests found</p>
+                                    <p class="text-xs">No pending leave requests to review</p>
                                 </div>
                             </td>
                         </tr>
@@ -163,9 +291,26 @@
                     </tbody>
                 </table>
             </div>
-            
-            <!-- Pagination -->
-            {% include 'components/paginator.html' %}
+        </div>
+        
+        <!-- Horizontal scroll bar space with same thickness as vertical scrollbar -->
+        <div class="bg-gray-50 h-2 border-t border-gray-200">
+            <div class="overflow-x-auto h-full" id="horizontalScrollContainer">
+                <div class="w-full" style="min-width: 800px;">
+                    <!-- This div ensures horizontal scroll when content overflows -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fixed pagination below the table -->
+        <div class="bg-gray-50 px-4 py-1 flex items-center justify-between border-t border-gray-200 border-b border-gray-200 text-xs">
+            {% if page_obj.has_other_pages %}
+                {% include 'components/paginator.html' with page_obj=page_obj %}
+            {% else %}
+                <div class="text-xs text-gray-600 font-semibold">
+                    Showing all {{ page_obj.paginator.count }} leave requests
+                </div>
+            {% endif %}
         </div>
     </div>
 
@@ -183,6 +328,27 @@
                     override: true
                 });
             }
+            
+            // Check if horizontal scroll is needed and show/hide scrollbar
+            function checkHorizontalScroll() {
+                const tableBody = document.getElementById('leaveRequestsTableBody');
+                const scrollContainer = document.getElementById('horizontalScrollContainer');
+                
+                if (tableBody && scrollContainer) {
+                    const tableWidth = tableBody.scrollWidth;
+                    const containerWidth = tableBody.clientWidth;
+                    
+                    if (tableWidth > containerWidth) {
+                        scrollContainer.classList.add('scrollbar-thin');
+                    } else {
+                        scrollContainer.classList.remove('scrollbar-thin');
+                    }
+                }
+            }
+            
+            // Check scroll on page load and window resize
+            checkHorizontalScroll();
+            window.addEventListener('resize', checkHorizontalScroll);
             
             // Debug HTMX events
              document.body.addEventListener('htmx:beforeRequest', function(evt) {

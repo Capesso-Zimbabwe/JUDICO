@@ -28,6 +28,39 @@
     #clientsTable th:nth-child(7) { width: 8%; }  /* Cases */
     #clientsTable th:nth-child(8) { width: 5%; }  /* Actions */
     
+    /* Apply same column widths to body table for alignment */
+    #clientsTableBody td:nth-child(1) { width: 20%; } /* Client Name */
+    #clientsTableBody td:nth-child(2) { width: 12%; } /* Client Number */
+    #clientsTableBody td:nth-child(3) { width: 18%; } /* Email */
+    #clientsTableBody td:nth-child(4) { width: 12%; } /* Phone */
+    #clientsTableBody td:nth-child(5) { width: 15%; } /* Lawyer */
+    #clientsTableBody td:nth-child(6) { width: 10%; } /* Status */
+    #clientsTableBody td:nth-child(7) { width: 8%; }  /* Cases */
+    #clientsTableBody td:nth-child(8) { width: 5%; }  /* Actions */
+    
+    /* Ensure table cells maintain consistent width */
+    #clientsTableBody td {
+        width: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Prevent text wrapping and ensure proper alignment */
+    #clientsTableBody td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    
+    /* Specific column content alignment */
+    #clientsTableBody td:nth-child(1) { text-align: left; } /* Client Name */
+    #clientsTableBody td:nth-child(2) { text-align: left; } /* Client Number */
+    #clientsTableBody td:nth-child(3) { text-align: left; } /* Email */
+    #clientsTableBody td:nth-child(4) { text-align: left; } /* Phone */
+    #clientsTableBody td:nth-child(5) { text-align: left; } /* Lawyer */
+    #clientsTableBody td:nth-child(6) { text-align: center; } /* Status */
+    #clientsTableBody td:nth-child(7) { text-align: center; } /* Cases */
+    #clientsTableBody td:nth-child(8) { text-align: center; } /* Actions */
+    
     /* Scrollable body styling */
     .overflow-y-auto {
         scrollbar-width: thin;
@@ -62,6 +95,31 @@
     /* Table row height consistency */
     .hover-row {
         height: 2.5rem; /* 40px per row */
+    }
+    
+    /* Horizontal scroll bar styling */
+    .overflow-x-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+        border: 1px solid #f1f1f1;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
     }
 </style>
 {% endblock %}
@@ -126,7 +184,7 @@
             
             <!-- Scrollable body -->
             <div class="flex-1 overflow-y-auto scrollbar-thin">
-                <table class="w-full table-fixed" id="clientsTableBody">
+                <table class="w-full table-fixed" id="clientsTableBody" style="table-layout: fixed;">
                     <tbody class="bg-white divide-y divide-gray-200">
                     {% for client in clients %}
                         <tr class="hover-row border-b border-gray-100">
@@ -290,8 +348,17 @@
             </div>
         </div>
         
+        <!-- Horizontal scroll bar space with same thickness as vertical scrollbar -->
+        <div class="bg-gray-50 h-2 border-t border-gray-200">
+            <div class="overflow-x-auto h-full" id="horizontalScrollContainer">
+                <div class="w-full" style="min-width: 800px;">
+                    <!-- This div ensures horizontal scroll when content overflows -->
+                </div>
+            </div>
+        </div>
+        
         <!-- Fixed pagination below the table -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 text-xs font-semibold">
+        <div class="bg-gray-50 px-4 py-1 flex items-center justify-between border-t border-gray-200 border-b border-gray-200 text-xs font-semibold">
             {% if page_obj.has_other_pages %}
                 {% include 'components/paginator.html' with page_obj=page_obj %}
             {% else %}
@@ -535,6 +602,27 @@
             }
         });
 
+        // Check if horizontal scroll is needed and show/hide scrollbar
+        function checkHorizontalScroll() {
+            const tableBody = document.getElementById('clientsTableBody');
+            const scrollContainer = document.getElementById('horizontalScrollContainer');
+            
+            if (tableBody && scrollContainer) {
+                const tableWidth = tableBody.scrollWidth;
+                const containerWidth = tableBody.clientWidth;
+                
+                if (tableWidth > containerWidth) {
+                    scrollContainer.classList.add('scrollbar-thin');
+                } else {
+                    scrollContainer.classList.remove('scrollbar-thin');
+                }
+            }
+        }
+        
+        // Check scroll on page load and window resize
+        document.addEventListener('DOMContentLoaded', checkHorizontalScroll);
+        window.addEventListener('resize', checkHorizontalScroll);
+        
         // Toast notification function
         function showToast(message, type = 'info') {
             // Create toast element

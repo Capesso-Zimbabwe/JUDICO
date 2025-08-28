@@ -1,10 +1,134 @@
 {% extends 'hr_management/base.html' %}
 
+{% block extra_css %}
+<style>
+    /* Table styles */
+    .compact-table th, .compact-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Hover effect for table rows */
+    .hover-row:hover {
+        background-color: rgba(243, 244, 246, 0.7);
+    }
+    
+    /* Fixed height table container */
+    .h-80 {
+        height: 20rem; /* 320px - shows approximately 7 rows */
+    }
+    
+    /* Table column widths for better distribution - adjusted to prevent overflow */
+    #employeesTable th:nth-child(1) { width: 20%; } /* Employee Name */
+    #employeesTable th:nth-child(2) { width: 10%; } /* Employee ID */
+    #employeesTable th:nth-child(3) { width: 20%; } /* Email */
+    #employeesTable th:nth-child(4) { width: 12%; } /* Phone */
+    #employeesTable th:nth-child(5) { width: 15%; } /* Department */
+    #employeesTable th:nth-child(6) { width: 15%; } /* Position */
+    #employeesTable th:nth-child(7) { width: 8%; }  /* Status */
+    #employeesTable th:nth-child(8) { width: 10%; } /* Actions */
+    
+    /* Apply same column widths to body table for alignment */
+    #employeesTableBody td:nth-child(1) { width: 20%; } /* Employee Name */
+    #employeesTableBody td:nth-child(2) { width: 10%; } /* Employee ID */
+    #employeesTableBody td:nth-child(3) { width: 20%; } /* Email */
+    #employeesTableBody td:nth-child(4) { width: 12%; } /* Phone */
+    #employeesTableBody td:nth-child(5) { width: 15%; } /* Department */
+    #employeesTableBody td:nth-child(6) { width: 15%; } /* Position */
+    #employeesTableBody td:nth-child(7) { width: 8%; }  /* Status */
+    #employeesTableBody td:nth-child(8) { width: 10%; } /* Actions */
+    
+    /* Ensure table cells maintain consistent width */
+    #employeesTableBody td {
+        width: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Prevent text wrapping and ensure proper alignment */
+    #employeesTableBody td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    
+    /* Specific column content alignment */
+    #employeesTableBody td:nth-child(1) { text-align: left; } /* Employee Name */
+    #employeesTableBody td:nth-child(2) { text-align: left; } /* Employee ID */
+    #employeesTableBody td:nth-child(3) { text-align: left; } /* Email */
+    #employeesTableBody td:nth-child(4) { text-align: left; } /* Phone */
+    #employeesTableBody td:nth-child(5) { text-align: left; } /* Department */
+    #employeesTableBody td:nth-child(6) { text-align: left; } /* Position */
+    #employeesTableBody td:nth-child(7) { text-align: center; } /* Status */
+    #employeesTableBody td:nth-child(8) { text-align: center; } /* Actions */
+    
+    /* Scrollable body styling */
+    .overflow-y-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+    
+    /* Custom scrollbar for webkit browsers */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+        border: 1px solid #f1f1f1;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Smooth scrolling */
+    .overflow-y-auto {
+        scroll-behavior: smooth;
+    }
+    
+    /* Table row height consistency */
+    .hover-row {
+        height: 2.5rem; /* 40px per row */
+    }
+    
+    /* Horizontal scroll bar styling */
+    .overflow-x-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+        border: 1px solid #f1f1f1;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+</style>
+{% endblock %}
+
 {% block hr_content %}
 
-    <!-- Employee Management Table -->
-    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
-        <div class="bg-white px-4 py-3 flex items-center justify-between">
+    <!-- Employee Management Table - Pixel perfect match to client_list.html -->
+    <div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
             <form action="" method="get" class="flex-1 max-w-sm" id="search-form">
                 <div class="relative">
                     <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search employees..." 
@@ -17,13 +141,13 @@
                    hx-indicator="#new-modal-overlay"
                    hx-trigger="click"
                    data-modal-target="new-modal" data-modal-toggle="new-modal"
-                   href="{% url 'hr_management:employee_create' %}" class="p-2 flex gap-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                   href="{% url 'hr_management:employee_create' %}" class="p-2 flex gap-1 items-center bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200">
                     <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                          height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M5 12h14m-7 7V5"></path>
                     </svg>
-                    <span class="font-bold">Add Employee</span>
+                    <span class="font-bold text-xs">Add Employee</span>
                 </a>
                 
                 <button type="button" 
@@ -31,50 +155,59 @@
                         data-modal-toggle="time-entry-new-modal"
                         hx-get="{% url 'hr_management:create_time_entry_modal' %}" 
                         hx-target="#time-entry-new-modal-container"
-                        class="p-2 flex gap-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                        class="p-2 flex gap-1 items-center bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200">
                     <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                          height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                    <span class="font-bold">Add Time Entry</span>
+                    <span class="font-bold text-xs">Add Time Entry</span>
                 </button>
             </div>
         </div>
-        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
-            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-                <table class="w-full divide-y divide-gray-200" id="employeesTable">
-                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
+        
+        <!-- Fixed height table container - shows 7 rows but contains 10 rows -->
+        <div class="flex flex-col h-80"> <!-- Fixed height: 7 rows visible, 3 rows scrollable -->
+            <!-- Fixed header -->
+            <div class="bg-gray-50 border-b border-gray-200">
+                <table class="w-full table-fixed" id="employeesTable">
+                    <thead class="whitespace-nowrap text-xs">
                     <tr>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Employee Name
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Employee ID
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Email
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Phone
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Department
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Position
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Status
                         </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Actions
                         </th>
                     </tr>
                     </thead>
+                </table>
+            </div>
+            
+            <!-- Scrollable body -->
+            <div class="flex-1 overflow-y-auto scrollbar-thin">
+                <table class="w-full table-fixed" id="employeesTableBody" style="table-layout: fixed;">
                     <tbody class="bg-white divide-y divide-gray-200">
                     {% for employee in employees %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <tr class="hover-row border-b border-gray-100">
                             <td class="px-3 py-1 whitespace-nowrap">
                                 <div class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200">
                                     <div class="flex-shrink-0 h-8 w-8">
@@ -163,8 +296,26 @@
                     </tbody>
                 </table>
             </div>
-            
-            {% include 'components/paginator.html' %}
+        </div>
+        
+        <!-- Horizontal scroll bar space with same thickness as vertical scrollbar -->
+        <div class="bg-gray-50 h-2 border-t border-gray-200">
+            <div class="overflow-x-auto h-full" id="horizontalScrollContainer">
+                <div class="w-full" style="min-width: 800px;">
+                    <!-- This div ensures horizontal scroll when content overflows -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fixed pagination below the table -->
+        <div class="bg-gray-50 px-4 py-1 flex items-center justify-between border-t border-gray-200 border-b border-gray-200 text-xs font-semibold">
+            {% if page_obj.has_other_pages %}
+                {% include 'components/paginator.html' with page_obj=page_obj %}
+            {% else %}
+                <div class="text-xs text-gray-600 font-semibold">
+                    Showing all {{ page_obj.paginator.count }} employees
+                </div>
+            {% endif %}
         </div>
     </div>
 
@@ -191,7 +342,26 @@
                 });
             }
 
-
+            // Check if horizontal scroll is needed and show/hide scrollbar
+            function checkHorizontalScroll() {
+                const tableBody = document.getElementById('employeesTableBody');
+                const scrollContainer = document.getElementById('horizontalScrollContainer');
+                
+                if (tableBody && scrollContainer) {
+                    const tableWidth = tableBody.scrollWidth;
+                    const containerWidth = tableBody.clientWidth;
+                    
+                    if (tableWidth > containerWidth) {
+                        scrollContainer.classList.add('scrollbar-thin');
+                    } else {
+                        scrollContainer.classList.remove('scrollbar-thin');
+                    }
+                }
+            }
+            
+            // Check scroll on page load and window resize
+            checkHorizontalScroll();
+            window.addEventListener('resize', checkHorizontalScroll);
             
             // Debug HTMX events
              document.body.addEventListener('htmx:beforeRequest', function(evt) {
