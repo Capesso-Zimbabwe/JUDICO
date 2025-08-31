@@ -1,282 +1,412 @@
 {% extends 'finance_management/base.html' %}
+{% load static %}
+
+{% block title %}Accounts Payable List{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+<style>
+    /* Status badges */
+    .status-draft {
+        background-color: #e2e8f0;
+        color: #4a5568;
+    }
+    
+    .status-pending_approval {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-approved {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-partially_paid {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-paid {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-cancelled {
+        background-color: #f3f4f6;
+        color: #1f2937;
+    }
+    
+    .status-overdue {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    /* Table styles */
+    .compact-table th, .compact-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Hover effect for table rows */
+    .hover-row:hover {
+        background-color: rgba(243, 244, 246, 0.7);
+    }
+    
+    /* Fix table column overlap */
+    #payablesTable {
+        table-layout: fixed;
+    }
+    
+    #payablesTable th:nth-child(1),
+    #payablesTable td:nth-child(1) {
+        width: 20%;
+        max-width: 20%;
+    }
+    
+    #payablesTable th:nth-child(2),
+    #payablesTable td:nth-child(2) {
+        width: 20%;
+        max-width: 20%;
+    }
+    
+    #payablesTable th:nth-child(3),
+    #payablesTable td:nth-child(3) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #payablesTable th:nth-child(4),
+    #payablesTable td:nth-child(4) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #payablesTable th:nth-child(5),
+    #payablesTable td:nth-child(5) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #payablesTable th:nth-child(6),
+    #payablesTable td:nth-child(6) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    /* Prevent text overflow */
+    .payable-title-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .vendor-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Scrollbar styling */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Card styling for empty state */
+    .empty-state-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+</style>
+{% endblock %}
 
 {% block finance_content %}
-<div class="container mx-auto px-4 py-6">
-  <!-- Header Section -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900 mb-2">Accounts Payable</h1>
-      <p class="text-gray-600">Manage vendor invoices and outstanding payments</p>
-    </div>
-    <div class="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
-      <button
-        type="button"
-        onclick="openNewPayableModal()"
-        class="inline-flex items-center px-4 py-2 bg-blue-900 text-white text-sm font-medium hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-        </svg>
-        Add New Payable
-      </button>
-    </div>
-  </div>
 
-  <!-- Summary Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-      <div class="flex items-center">
-        <div class="p-2 bg-blue-100 rounded-lg">
-          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Total Payables</p>
-          <p class="text-2xl font-bold text-gray-900">{{ total_payables }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-      <div class="flex items-center">
-        <div class="p-2 bg-green-100 rounded-lg">
-          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-          </svg>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Total Amount</p>
-          <p class="text-2xl font-bold text-gray-900">${{ total_amount|floatformat:2 }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-      <div class="flex items-center">
-        <div class="p-2 bg-orange-100 rounded-lg">
-          <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-          </svg>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Balance Due</p>
-          <p class="text-2xl font-bold text-gray-900">${{ total_balance|floatformat:2 }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-      <div class="flex items-center">
-        <div class="p-2 bg-red-100 rounded-lg">
-          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Overdue</p>
-          <p class="text-2xl font-bold text-gray-900">{{ overdue_count }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filters Section -->
-  <div class="bg-white rounded-lg shadow mb-6 border border-gray-200">
-    <div class="p-6">
-      <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <div>
-          <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-          {{ filter_form.search }}
-        </div>
-        
-        <div>
-          <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          {{ filter_form.status }}
-        </div>
-        
-        <div>
-          <label for="vendor" class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
-          {{ filter_form.vendor }}
-        </div>
-        
-        <div>
-          <label for="date_from" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-          {{ filter_form.date_from }}
-        </div>
-        
-        <div>
-          <label for="date_to" class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-          {{ filter_form.date_to }}
-        </div>
-        
-        <div>
-          <label for="expense_category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          {{ filter_form.expense_category }}
-        </div>
-        
-        <div class="md:col-span-2 lg:col-span-3 xl:col-span-6 flex gap-3">
-          <button
-            type="submit"
-            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Filter
-          </button>
-          <a
-            href="{% url 'finance_management:accounts_payable_list' %}"
-            class="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          >
-            Clear
-          </a>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Payables Table -->
-  <div class="bg-white rounded-lg shadow border border-gray-200">
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Reference
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Vendor
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Invoice Date
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Due Date
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Amount
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          {% for payable in payables %}
-          <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ payable.reference_number }}</div>
-              {% if payable.vendor_invoice_number %}
-              <div class="text-sm text-gray-500">Inv: {{ payable.vendor_invoice_number }}</div>
-              {% endif %}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ payable.vendor }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ payable.invoice_date|date:"M d, Y" }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ payable.due_date|date:"M d, Y" }}</div>
-              {% if payable.is_overdue %}
-              <div class="text-xs text-red-600">{{ payable.days_overdue }} days overdue</div>
-              {% endif %}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">${{ payable.total_amount|floatformat:2 }}</div>
-              {% if payable.amount_paid > 0 %}
-              <div class="text-xs text-gray-500">Paid: ${{ payable.amount_paid|floatformat:2 }}</div>
-              <div class="text-xs text-gray-500">Due: ${{ payable.balance_due|floatformat:2 }}</div>
-              {% endif %}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ payable.get_status_display_class }}">
-                {{ payable.get_status_display }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <div class="flex space-x-2">
-                <a
-                  href="{% url 'finance_management:accounts_payable_detail' payable.pk %}"
-                  class="text-blue-600 hover:text-blue-900"
-                >
-                  View
-                </a>
-                <a
-                  href="{% url 'finance_management:accounts_payable_update' payable.pk %}"
-                  class="text-indigo-600 hover:text-indigo-900"
-                >
-                  Edit
-                </a>
-                {% if payable.status == 'DRAFT' %}
-                <a
-                  href="{% url 'finance_management:accounts_payable_approve' payable.pk %}"
-                  class="text-green-600 hover:text-green-900"
-                >
-                  Approve
-                </a>
-                {% endif %}
-                {% if payable.balance_due > 0 %}
-                <a
-                  href="{% url 'finance_management:accounts_payable_payment' payable.pk %}"
-                  class="text-purple-600 hover:text-purple-900"
-                >
-                  Payment
-                </a>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="7" class="px-6 py-12 text-center">
-              <div class="text-gray-500">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No accounts payable found</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating your first accounts payable entry.</p>
-                <div class="mt-6">
-                  <button
-                    type="button"
-                    onclick="openNewPayableModal()"
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+<!-- Accounts Payable Management Table -->
+<div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+        <form action="" class="flex-1 max-w-sm" id="search-form" method="get">
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                     </svg>
-                    Add New Payable
-                  </button>
                 </div>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                <input type="text" name="search" value="{{ filter_form.search.value|default:'' }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 text-xs placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Search payables...">
+                </div>
+        </form>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2">
+            <!-- Create Payable Button -->
+            <button type="button"
+                    onclick="openNewPayableModal()"
+                    class="p-2 flex gap-1 items-center bg-blue-900 text-white hover:bg-blue-800 transition-colors duration-200">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"></path>
+                </svg>
+                <span class="font-bold text-xs">Add New Payable</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-gray-50 px-4 py-2 border-t border-b border-gray-200">
+        <form method="get" class="flex flex-wrap gap-2 items-end">
+            <div class="w-full md:w-auto">
+                <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Statuses</option>
+                    {% for value, label in filter_form.status.field.choices %}
+                        {% if value %}
+                            <option value="{{ value }}" {% if filter_form.status.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="w-full md:w-auto">
+                <label for="vendor" class="block text-xs font-medium text-gray-700 mb-1">Vendor</label>
+                <select name="vendor" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Vendors</option>
+                    {% for vendor in filter_form.vendor.field.queryset %}
+                        <option value="{{ vendor }}" {% if filter_form.vendor.value == vendor %}selected{% endif %}>
+                            {{ vendor }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="w-full md:w-auto">
+                <label for="expense_category" class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                <select name="expense_category" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Categories</option>
+                    {% for category in filter_form.expense_category.field.queryset %}
+                        <option value="{{ category.id }}" {% if filter_form.expense_category.value == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Filter
+                </button>
+                <a href="{% url 'finance_management:accounts_payable_list' %}" class="px-3 py-2 text-xs font-medium text-center text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors duration-200">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Payables List Table -->
+    <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+        <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+            <table class="w-full divide-y divide-gray-200 table-fixed" id="payablesTable">
+                <thead class="bg-gray-50 whitespace-nowrap text-xs sticky top-0 z-10">
+                    <tr class="border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Reference
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Vendor
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Invoice Date
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Due Date
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Amount
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for payable in payables %}
+                        <tr class="hover-row border-b border-gray-100">
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        onclick="window.location.href='{% url 'finance_management:accounts_payable_detail' payable.pk %}'"
+                                >
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-medium text-xs">{{ payable.reference_number|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ payable.reference_number|truncatechars:30 }}</span>
+                                        </div>
+                                        {% if payable.vendor_invoice_number %}
+                                            <div class="text-xs text-gray-500">
+                                                Inv: {{ payable.vendor_invoice_number|truncatechars:15 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ payable.vendor|truncatechars:20|default:"-" }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ payable.invoice_date|date:"M d, Y" }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                                {{ payable.due_date|date:"M d, Y" }}
+                                {% if payable.is_overdue %}
+                                    <div class="text-xs text-red-600">{{ payable.days_overdue }} days overdue</div>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                                {% if payable.total_amount %}
+                                    <span class="text-green-600">${{ payable.total_amount|floatformat:2 }}</span>
+                                    {% if payable.amount_paid > 0 %}
+                                        <div class="text-xs text-gray-500">Paid: ${{ payable.amount_paid|floatformat:2 }}</div>
+                                        <div class="text-xs text-gray-500">Due: ${{ payable.balance_due|floatformat:2 }}</div>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-gray-500">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'finance_management:accounts_payable_detail' payable.pk %}" 
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                       title="View Payable">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </a>
+                                    <a href="{% url 'finance_management:accounts_payable_update' payable.pk %}" 
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                       title="Edit Payable">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                        </svg>
+                                    </a>
+                                    {% if payable.status == 'DRAFT' %}
+                                        <a href="{% url 'finance_management:accounts_payable_approve' payable.pk %}" 
+                                           class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 hover:text-yellow-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                           title="Approve Payable">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
+                                    {% if payable.balance_due > 0 %}
+                                        <a href="{% url 'finance_management:accounts_payable_payment' payable.pk %}" 
+                                           class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                           title="Record Payment">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="text-center py-8 empty-state-card bg-white shadow-sm rounded-lg">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <p class="mt-2 text-sm text-gray-500">No accounts payable found</p>
+                                    <p class="text-xs mb-4">Get started by adding your first accounts payable entry.</p>
+                                    <button type="button" onclick="openNewPayableModal()" class="px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        Create Payable
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     
     <!-- Pagination -->
-    {% if is_paginated %}
-    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-      {% include 'components/paginator.html' %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 text-xs">
+        {% if is_paginated and page_obj.has_other_pages %}
+            {% include 'components/paginator.html' with page_obj=page_obj %}
+        {% else %}
+            <div class="text-xs text-gray-500">
+                Showing all {{ payables|length }} payables
+            </div>
+        {% endif %}
     </div>
-    {% endif %}
-  </div>
 </div>
 
-<!-- Include the modal -->
-{% include 'finance_management/modals/new_payable_modal.html' %}
+<!-- Include Payable Modals -->
+{% include "finance_management/modals/new_payable_modal.html" with modal_id="new-payable-modal" %}
+{% endblock finance_content %}
 
-<script>
-function openNewPayableModal() {
-  // Show the modal using Flowbite
-  const modal = document.getElementById('new-payable-modal');
-  if (modal) {
-    const flowbiteModal = new Flowbite.Modal(modal);
-    flowbiteModal.show();
-  }
-}
-</script>
+{% block extra_js %}
+    <script>
+    // Auto-submit form on filter change
+    document.querySelectorAll('select[name="status"], select[name="vendor"], select[name="expense_category"]').forEach(function(select) {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+
+    // Global modal functions
+    function openNewPayableModal() {
+        const modal = document.getElementById('new-payable-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            console.log('New payable modal opened');
+        } else {
+            console.log('Modal not found');
+        }
+    }
+
+    function closeNewPayableModal() {
+        const modal = document.getElementById('new-payable-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            console.log('New payable modal closed');
+        }
+    }
+
+    // Initialize Flowbite modals if available
+    if (typeof Modal !== 'undefined' && typeof modalOptions !== 'undefined') {
+        const newPayableModalElement = document.getElementById('new-payable-modal');
+        if (newPayableModalElement) {
+            window.newPayableModal = new Modal(newPayableModalElement, modalOptions, {
+                id: 'new-payable-modal',
+                override: true
+            });
+        }
+    }
+    </script>
 {% endblock %}

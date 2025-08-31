@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views import View
 from django.http import JsonResponse, HttpResponse
+from django.db import models
 from django.db.models import Q, Sum, Count
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
@@ -2296,6 +2297,9 @@ class AccountsPayableListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['filter_form'] = AccountsPayableFilterForm(self.request.GET)
+        
+        # Add expense categories for the modal
+        context['expense_categories'] = ExpenseCategory.objects.filter(is_active=True)
         
         # Summary statistics
         queryset = self.get_queryset()

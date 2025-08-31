@@ -1,74 +1,61 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Accounting & Finance{% endblock %}
+{% block title %}Accounting & Finance{% endblock title %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'finance_management/css/finance_styles.css' %}">
-{% endblock %}
+{% endblock extra_css %}
 
-{% block header_title %}Accounting & Finance - Dashboard{% endblock %}
+{% block header_title %}Accounting & Finance - Dashboard{% endblock header_title %}
 
 {% block content %}
-<!-- Navigation header with improved styling -->
 <div class="bg-white rounded-sm border-b border-gray-200 mb-4">
   <nav class="flex space-x-2 px-6 pt-3 overflow-x-auto">
-    <a
-      href="{% url 'finance_management:dashboard' %}"
-      class="{% if request.resolver_match.url_name == 'dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Dashboard
-    </a>
-    <a
-      href="{% url 'finance_management:chart_of_accounts' %}"
-      class="{% if request.resolver_match.url_name == 'chart_of_accounts' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Chart of Accounts
-    </a>
-    <a
-      href="{% url 'finance_management:expense_list' %}"
-      class="{% if request.resolver_match.url_name in 'expense_list expense_create expense_detail' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Expenses
-    </a>
-    <a
-      href="#"
-      class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Account Payable
-    </a>
-    <a
-      href="{% url 'finance_management:income_list' %}"
-      class="{% if request.resolver_match.url_name == 'income_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Income
-    </a>
-    <a
-      href="#"
-      class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Bank Reconciliation
-    </a>
-    <a
-      href="#"
-      class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Balance BD/CD
-    </a>
-    <a
-      href="{% url 'finance_management:petty_cash_list' %}"
-      class="{% if request.resolver_match.url_name == 'petty_cash_list' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Petty Cash
-    </a>
-    <a
-      href="{% url 'finance_management:reports' %}"
-      class="{% if request.resolver_match.url_name == 'reports' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200"
-    >
-      Reports
-    </a>
+    {# Keep this {% with %} on ONE line and close it BEFORE the block ends #}
+    {% with url_name=request.resolver_match.url_name active="border-b-2 border-blue-500 text-blue-600" idle="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" %}
+
+      <a href="{% url 'finance_management:dashboard' %}"
+         class="{% if url_name == 'dashboard' %}{{ active }}{% endif %}{% if url_name != 'dashboard' %} {{ idle }}{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+        Dashboard
+      </a>
+
+      <a href="{% url 'finance_management:chart_of_accounts' %}"
+         class="{% if url_name == 'chart_of_accounts' %}{{ active }}{% endif %}{% if url_name != 'chart_of_accounts' %} {{ idle }}{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+        Chart of Accounts
+      </a>
+
+      <a href="{% url 'finance_management:expense_list' %}"
+         class="{% if url_name == 'expense_list' or url_name == 'expense_create' or url_name == 'expense_detail' %}{{ active }}{% endif %}{% if url_name != 'expense_list' and url_name != 'expense_create' and url_name != 'expense_detail' %} {{ idle }}{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+        Expenses
+      </a>
+
+      <a href="{% url 'finance_management:accounts_payable_list' %}"
+         class="{% if url_name == 'accounts_payable_list' or url_name == 'accounts_payable_create' or url_name == 'accounts_payable_detail' or url_name == 'accounts_payable_update' or url_name == 'accounts_payable_approve' or url_name == 'accounts_payable_payment' %}{{ active }}{% endif %}{% if url_name != 'accounts_payable_list' and url_name != 'accounts_payable_create' and url_name != 'accounts_payable_detail' and url_name != 'accounts_payable_update' and url_name != 'accounts_payable_approve' and url_name != 'accounts_payable_payment' %} {{ idle }}{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+        Accounts Payable
+      </a>
+
+      <a href="{% url 'finance_management:income_list' %}"
+         class="{% if url_name == 'income_list' %}{{ active }}{% endif %}{% if url_name != 'income_list' %} {{ idle }}{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+        Income
+      </a>
+
+      <a href="{% url 'finance_management:petty_cash_list' %}"
+         class="{% if url_name == 'petty_cash_list' %}{{ active }}{% endif %}{% if url_name != 'petty_cash_list' %} {{ idle }}{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+        Petty Cash
+      </a>
+
+      <a href="{% url 'finance_management:reports' %}"
+         class="{% if url_name == 'reports' %}{{ active }}{% endif %}{% if url_name != 'reports' %} {{ idle }}{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
+        Reports
+      </a>
+
+    {% endwith %}
   </nav>
 </div>
 
-{% block finance_content %}{% endblock %}
-{% endblock %}
+{# Child pages inject their content here #}
+{% block finance_content %}{% endblock finance_content %}
+{% endblock content %}
+
+{% block extra_js %}{% endblock extra_js %}
