@@ -1,240 +1,896 @@
 <!-- Transactions Modal -->
-<div id="{{ modal_id|default:'modal' }}" tabindex="-1" aria-hidden="true" data-modal-backdrop="static"
-     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+<div
+  id="{{ modal_id|default:'modal' }}"
+  tabindex="-1"
+  aria-hidden="true"
+  data-modal-backdrop="static"
+  class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
+>
+  <div class="relative p-4 w-full max-w-7xl max-h-full">
+    <!-- Modal content -->
+    <div class="relative bg-white rounded-sm shadow-sm">
+      <!-- Modal header -->
+      <div
+        class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200"
+      >
+        <div>
+          <h3 class="text-base font-semibold text-gray-900">
+            Account Transactions
+          </h3>
+          <p class="text-sm text-gray-500 mt-1">
+            <span id="transactions-account-code">10001</span> -
+            <span id="transactions-account-name">Petty Cash (Asset)</span>
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+          data-modal-hide="{{ modal_id|default:'modal' }}"
+        >
+          <svg
+            class="w-3 h-3"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 14 14"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+            ></path>
+          </svg>
+          <span class="sr-only">Close modal</span>
+        </button>
+      </div>
 
-    <div class="relative p-4 w-full max-w-4xl max-h-full">
-        <!-- Modal content -->
-        <div class="relative bg-white rounded-sm shadow-sm">
+      <!-- Date Range and Controls Section -->
+      <div class="px-4 md:px-5 py-3 border-b border-gray-200 bg-gray-50">
+        <div class="flex items-center justify-between">
+          <!-- Date Range and Items Per Page -->
+          <div class="flex items-center space-x-4">
+            <!-- Date Range Pickers -->
+            <div class="flex items-center space-x-2">
+              <svg
+                class="w-4 h-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
+              </svg>
+              <input
+                type="text"
+                placeholder="mm/dd/yyyy"
+                class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <span class="text-sm text-gray-500">to</span>
+              <input
+                type="text"
+                placeholder="mm/dd/yyyy"
+                class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <svg
+                class="w-4 h-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
+              </svg>
+            </div>
 
-            <!-- Modal header -->
-            <div class="flex items-center justify-between px-4 md:px-5 py-3 border-b rounded-t border-gray-200">
-                <div>
-                    <h3 class="text-base font-semibold text-gray-900">
-                        Account Transactions
-                    </h3>
-                    <p class="text-sm text-gray-500 mt-1">
-                        <span id="transactions-account-name">Cash Account</span> (<span id="transactions-account-code">1000</span>)
-                    </p>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <div class="text-right">
-                        <p class="text-sm text-gray-500">Current Balance</p>
-                        <p class="text-lg font-semibold text-green-600" id="transactions-account-balance">$25,000.00</p>
-                    </div>
-                    <button type="button"
-                            class="text-gray-400 cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
-                            data-modal-hide="{{ modal_id|default:'modal' }}">
-                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                             viewBox="0 0 14 14">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
-                        </svg>
-                        <span class="sr-only">Close modal</span>
+            <!-- Items Per Page Dropdown -->
+            <div class="flex items-center space-x-2">
+              <select
+                class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="20">20 per page</option>
+                <option value="50">50 per page</option>
+                <option value="100">100 per page</option>
+              </select>
+              <svg
+                class="w-4 h-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center space-x-3">
+            <button
+              type="button"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-900 border border-blue-900 rounded-md hover:bg-blue-800 hover:border-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 transition-all duration-200"
+            >
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                ></path>
+              </svg>
+              Refresh
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-900 border border-blue-900 rounded-md hover:bg-blue-800 hover:border-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 transition-all duration-200"
+            >
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                ></path>
+              </svg>
+              Export
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Balance Section -->
+      <div class="px-4 md:px-5 py-3 border-b border-gray-200 bg-white">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-medium text-gray-700"
+              >Current Balance:</span
+            >
+            <span
+              class="text-lg font-bold text-blue-600"
+              id="transactions-account-balance"
+              >-$25,364.00</span
+            >
+          </div>
+          <button
+            type="button"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-900 border border-blue-900 rounded-md hover:bg-blue-800 hover:border-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 transition-all duration-200"
+          >
+            <svg
+              class="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              ></path>
+            </svg>
+            Refresh Balance
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal body -->
+      <div
+        id="{{ modal_id|default:'modal' }}-container"
+        class="p-1 md:p-2 flex flex-col max-h-[80vh] overflow-hidden"
+      >
+        <div
+          class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+        >
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <div class="text-sm font-medium text-blue-600 dark:text-blue-400">
+                Total Debits
+              </div>
+              <div class="text-xl font-bold text-blue-900 dark:text-blue-100">
+                $12,500.00
+              </div>
+            </div>
+            <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <div
+                class="text-sm font-medium text-green-600 dark:text-green-400"
+              >
+                Total Credits
+              </div>
+              <div class="text-xl font-bold text-green-900 dark:text-green-100">
+                $8,750.00
+              </div>
+            </div>
+            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <div
+                class="text-sm font-medium text-purple-600 dark:text-purple-400"
+              >
+                Net Balance
+              </div>
+              <div
+                class="text-xl font-bold text-purple-900 dark:text-purple-100"
+              >
+                $3,750.00
+              </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Transactions
+              </div>
+              <div class="text-xl font-bold text-gray-900 dark:text-gray-100">
+                24
+              </div>
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div
+            class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative"
+          >
+            <table class="w-full divide-y divide-gray-200">
+              <thead
+                class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10"
+              >
+                <tr>
+                  <th
+                    class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                  >
+                    Date
+                  </th>
+                  <th
+                    class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                  >
+                    Reference
+                  </th>
+                  <th
+                    class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                  >
+                    Description
+                  </th>
+                  <th
+                    class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                  >
+                    Debit
+                  </th>
+                  <th
+                    class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                  >
+                    Credit
+                  </th>
+                  <th
+                    class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                  >
+                    Running Balance
+                  </th>
+                  <th
+                    class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                  >
+                    Status
+                  </th>
+                  <th
+                    class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <!-- Sample transactions matching the image format -->
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Apr 22, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    EXP-20250422-1756062868495-1j5hs
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Expense: Water refill - Water, Expense payment: Water refill
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    $150.00
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$6,332.00
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
                     </button>
-                </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Apr 15, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    EXP-20250415-1756062868489-6xgkj
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Expense: Firewood - Firewood, Expense payment: Firewood
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    $30.00
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$6,182.00
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Apr 14, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    PCF-20250414-1756062868522-qoga1
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Petty cash funding: Petty Cash funding, Petty cash funding
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-green-600 font-mono text-right"
+                  >
+                    $380.00
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$5,620.00
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Apr 10, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    INV-20250410-1756062868456-abc12
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Invoice payment: Legal consultation services
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-green-600 font-mono text-right"
+                  >
+                    $2,500.00
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$6,000.00
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Apr 8, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    EXP-20250408-1756062868432-def34
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Expense: Office supplies - Stationery and paper
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    $85.50
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$8,500.00
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Apr 5, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    RET-20250405-1756062868418-ghi56
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Client retainer: Corporate legal services
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-green-600 font-mono text-right"
+                  >
+                    $5,000.00
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$8,415.50
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Apr 3, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    EXP-20250403-1756062868404-jkl78
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Expense: Utilities - Electricity and internet
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    $320.00
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$13,415.50
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Apr 1, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    INV-20250401-1756062868390-mno90
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Invoice payment: Contract review services
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-green-600 font-mono text-right"
+                  >
+                    $1,800.00
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$13,095.50
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Mar 28, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    EXP-20250328-1756062868376-pqr12
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Expense: Travel - Client meeting transportation
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    $45.00
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$14,895.50
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Mar 25, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    INV-20250325-1756062868362-stu34
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Invoice payment: Legal research services
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-green-600 font-mono text-right"
+                  >
+                    $3,200.00
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$14,850.50
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="px-3 py-2 text-xs text-gray-900">Mar 22, 2025</td>
+                  <td class="px-3 py-2 text-xs text-gray-500 font-mono">
+                    EXP-20250322-1756062868348-vwx56
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-900">
+                    Expense: Marketing - Website maintenance
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-500 text-right">-</td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    $180.00
+                  </td>
+                  <td
+                    class="px-3 py-2 text-xs font-medium text-red-600 font-mono text-right"
+                  >
+                    -$18,050.50
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      posted
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      type="button"
+                      class="text-blue-600 hover:text-blue-900"
+                      title="Edit Transaction"
+                    >
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="flex items-center justify-between mt-6">
+            <div class="text-xs text-gray-700">
+              Showing <span class="font-medium">1</span> to
+              <span class="font-medium">10</span> of
+              <span class="font-medium">24</span> transactions
             </div>
-            <!-- Modal body -->
-            <div id="{{ modal_id|default:'modal' }}-container" class="p-1 md:p-2 flex flex-col max-h-[80vh] overflow-hidden">
-                <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                <!-- Filter and Search Section -->
-                <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200 mb-6">
-                    <form class="flex-1 max-w-sm">
-                        <input type="text" 
-                               class="block w-full px-3 py-2 border border-gray-300 rounded text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
-                               placeholder="Search transactions...">
-                    </form>
-                    
-                    <div class="flex gap-2 items-center">
-                        <select class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">All Types</option>
-                            <option value="debit">Debits</option>
-                            <option value="credit">Credits</option>
-                        </select>
-                        
-                        <select class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">All Dates</option>
-                            <option value="today">Today</option>
-                            <option value="week">This Week</option>
-                            <option value="month">This Month</option>
-                            <option value="year">This Year</option>
-                        </select>
-                        
-                        <input type="date" 
-                               class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                </div>
-
-                <!-- Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-blue-600 dark:text-blue-400">Total Debits</div>
-                        <div class="text-xl font-bold text-blue-900 dark:text-blue-100">$12,500.00</div>
-                    </div>
-                    <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-green-600 dark:text-green-400">Total Credits</div>
-                        <div class="text-xl font-bold text-green-900 dark:text-green-100">$8,750.00</div>
-                    </div>
-                    <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-purple-600 dark:text-purple-400">Net Balance</div>
-                        <div class="text-xl font-bold text-purple-900 dark:text-purple-100">$3,750.00</div>
-                    </div>
-                    <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Transactions</div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">24</div>
-                    </div>
-                </div>
-
-                <!-- Transactions Table -->
-                <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-                    <table class="w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
-                            <tr>
-                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                    Date
-                                </th>
-                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                    Description
-                                </th>
-                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                    Reference
-                                </th>
-                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                    Debit
-                                </th>
-                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                    Credit
-                                </th>
-                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                    Balance
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Sample transactions -->
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
-                                    Jan 20, 2024
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
-                                    Payment from Client ABC
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
-                                    INV-2024-001
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-green-600 font-mono">
-                                    $2,500.00
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
-                                    -
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
-                                    $25,000.00
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
-                                    Jan 18, 2024
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
-                                    Office Supplies Purchase
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
-                                    EXP-2024-015
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
-                                    -
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-red-600 font-mono">
-                                    $150.00
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
-                                    $22,500.00
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
-                                    Jan 15, 2024
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
-                                    Legal Consultation Fee
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
-                                    INV-2024-002
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-green-600 font-mono">
-                                    $1,800.00
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
-                                    -
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
-                                    $22,650.00
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
-                                    Jan 12, 2024
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
-                                    Rent Payment
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
-                                    EXP-2024-012
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
-                                    -
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-red-600 font-mono">
-                                    $3,000.00
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
-                                    $20,850.00
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900">
-                                    Jan 10, 2024
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">
-                                    Client Retainer
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500 font-mono">
-                                    RET-2024-003
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-green-600 font-mono">
-                                    $5,000.00
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-500">
-                                    -
-                                </td>
-                                <td class="px-3 py-1 whitespace-nowrap text-xs font-medium text-gray-900 font-mono">
-                                    $23,850.00
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="flex items-center justify-between mt-6">
-                    <div class="text-xs text-gray-700">
-                        Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">24</span> transactions
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">Previous</button>
-                        <button class="text-xs bg-blue-900 text-white py-1.5 px-4 rounded-sm font-medium hover:bg-blue-700 transition-all duration-200">1</button>
-                        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">2</button>
-                        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">3</button>
-                        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">Next</button>
-                    </div>
-                </div>
-                </div>
-                <div class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200">
-                    <button data-modal-hide="{{ modal_id|default:'modal' }}" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10">Close</button>
-                    <button type="button" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-sm text-xs py-1.5 px-4 text-center">Export to CSV</button>
-                    <button type="button" class="text-xs bg-blue-900 text-white py-1.5 px-4 rounded-sm font-medium hover:bg-blue-700 transition-all duration-200 transform disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">Add Transaction</button>
-                </div>
+            <div class="flex space-x-2">
+              <button
+                class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10"
+              >
+                Previous
+              </button>
+              <button
+                class="text-xs bg-blue-900 text-white py-1.5 px-4 rounded-sm font-medium hover:bg-blue-700 transition-all duration-200"
+              >
+                1
+              </button>
+              <button
+                class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10"
+              >
+                2
+              </button>
+              <button
+                class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10"
+              >
+                3
+              </button>
+              <button
+                class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10"
+              >
+                Next
+              </button>
             </div>
-         </div>
+          </div>
+        </div>
+        <div
+          class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200"
+        >
+          <button
+            data-modal-hide="{{ modal_id|default:'modal' }}"
+            type="button"
+            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-sm border border-gray-200 text-xs font-medium py-1.5 px-4 hover:text-gray-900 focus:z-10"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-sm text-xs py-1.5 px-4 text-center"
+          >
+            Export to CSV
+          </button>
+          <button
+            type="button"
+            class="text-xs bg-blue-900 text-white py-1.5 px-4 rounded-sm font-medium hover:bg-blue-700 transition-all duration-200 transform disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Add Transaction
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
 </div>

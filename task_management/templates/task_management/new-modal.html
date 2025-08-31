@@ -1,22 +1,160 @@
-{% extends "base.html" %}
+{% extends 'components/modals/base-form-modal.html' %}
 
-{% block title %}Task Management{% endblock %}
+{% block modal_content %}
+<div class="min-h-[300px] p-4">
 
-{% load static %}
+    
+    <form novalidate="novalidate" method="post" hx-post="{% url 'task_management:task_create' %}" hx-target="#new-modal-container" class="space-y-4">
+        {% csrf_token %}
+        
+        <!-- Name Field - Full Width -->
+        <div class="col-span-2">
+            <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Title <span class="text-red-500">*</span>
+            </label>
+            <input type="text" 
+                   name="{{ form.title.name }}" 
+                   id="{{ form.title.id_for_label }}" 
+                   value="{{ form.title.value|default:'' }}"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter task title"
+                   required>
+            {% if form.title.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+            {% endif %}
+        </div>
 
-{% block header_title %}Task Management{% endblock %}
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Client Field - Left Column -->
+            <div>
+                <label for="{{ form.client.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    Client <span class="text-red-500">*</span>
+                </label>
+                <select name="{{ form.client.name }}" 
+                        id="{{ form.client.id_for_label }}" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required>
+                    <option value="">----------</option>
+                    {% for choice in form.client.choices %}
+                        <option value="{{ choice.0 }}" {% if choice.0 == form.client.value %}selected{% endif %}>
+                            {{ choice.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if form.client.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.client.errors.0 }}</p>
+                {% endif %}
+            </div>
 
-{% block content %}
-<!-- Navigation header with improved styling to match compliance module -->
-<div class="bg-white rounded-sm border-b border-gray-200 mb-4">
-    <nav class="flex space-x-2 px-6 pt-3">
-        <a href="{% url 'task_management:task_dashboard' %}" class="{% if request.resolver_match.url_name == 'task_dashboard' %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
-            Dashboard
-        </a>
-        <a href="{% url 'task_management:task_list' %}" class="{% if request.resolver_match.url_name == 'task_list' and not request.GET.status %}border-b-2 border-blue-500 text-blue-600{% else %}border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-2 px-2 font-medium text-xs transition-colors duration-200">
-            All Tasks
-        </a>
-    </nav>
+            <!-- Assigned To Field - Right Column -->
+            <div>
+                <label for="{{ form.assigned_to.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    Assigned To <span class="text-red-500">*</span>
+                </label>
+                <select name="{{ form.assigned_to.name }}" 
+                        id="{{ form.assigned_to.id_for_label }}" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required>
+                    <option value="">----------</option>
+                    {% for choice in form.assigned_to.choices %}
+                        <option value="{{ choice.0 }}" {% if choice.0 == form.assigned_to.value %}selected{% endif %}>
+                            {{ choice.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if form.assigned_to.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.assigned_to.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Status Field - Left Column -->
+            <div>
+                <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    Status <span class="text-red-500">*</span>
+                </label>
+                <select name="{{ form.status.name }}" 
+                        id="{{ form.status.id_for_label }}" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required>
+                    <option value="">----------</option>
+                    {% for choice in form.status.choices %}
+                        <option value="{{ choice.0 }}" {% if choice.0 == form.status.value %}selected{% endif %}>
+                            {{ choice.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if form.status.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Priority Field - Right Column -->
+            <div>
+                <label for="{{ form.priority.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    Priority <span class="text-red-500">*</span>
+                </label>
+                <select name="{{ form.priority.name }}" 
+                        id="{{ form.priority.id_for_label }}" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required>
+                    <option value="">----------</option>
+                    {% for choice in form.priority.choices %}
+                        <option value="{{ choice.0 }}" {% if choice.0 == form.priority.value %}selected{% endif %}>
+                            {{ choice.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if form.priority.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.priority.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Due Date Field - Full Width -->
+        <div class="col-span-2">
+            <label for="{{ form.due_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Due Date <span class="text-red-500">*</span>
+            </label>
+            <input type="date" 
+                   name="{{ form.due_date.name }}" 
+                   id="{{ form.due_date.id_for_label }}" 
+                   value="{{ form.due_date.value|date:'Y-m-d'|default:'' }}"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   required>
+            {% if form.due_date.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.due_date.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Description Field - Full Width -->
+        <div class="col-span-2">
+            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Description <span class="text-red-500">*</span>
+            </label>
+            <textarea name="{{ form.description.name }}" 
+                      id="{{ form.description.id_for_label }}" 
+                      rows="4"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="Enter task description"
+                      required>{{ form.description.value|default:'' }}</textarea>
+            {% if form.description.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Action Button -->
+        <div class="flex justify-end pt-4">
+            <button type="submit" 
+                    class="px-4 py-2 bg-blue-900 text-white rounded-none hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
+                Create Task
+            </button>
+        </div>
+    </form>
 </div>
-{% block task_content %}{% endblock %}
 {% endblock %}
+
+{% block modal_title %}New Task{% endblock %}

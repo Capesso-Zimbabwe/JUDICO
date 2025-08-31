@@ -1,0 +1,282 @@
+{% extends 'finance_management/base.html' %}
+
+{% block finance_content %}
+<div class="container mx-auto px-4 py-6">
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">Accounts Payable</h1>
+      <p class="text-gray-600">Manage vendor invoices and outstanding payments</p>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
+      <button
+        type="button"
+        onclick="openNewPayableModal()"
+        class="inline-flex items-center px-4 py-2 bg-blue-900 text-white text-sm font-medium hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Add New Payable
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+      <div class="flex items-center">
+        <div class="p-2 bg-blue-100 rounded-lg">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Total Payables</p>
+          <p class="text-2xl font-bold text-gray-900">{{ total_payables }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+      <div class="flex items-center">
+        <div class="p-2 bg-green-100 rounded-lg">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Total Amount</p>
+          <p class="text-2xl font-bold text-gray-900">${{ total_amount|floatformat:2 }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+      <div class="flex items-center">
+        <div class="p-2 bg-orange-100 rounded-lg">
+          <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Balance Due</p>
+          <p class="text-2xl font-bold text-gray-900">${{ total_balance|floatformat:2 }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+      <div class="flex items-center">
+        <div class="p-2 bg-red-100 rounded-lg">
+          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Overdue</p>
+          <p class="text-2xl font-bold text-gray-900">{{ overdue_count }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="bg-white rounded-lg shadow mb-6 border border-gray-200">
+    <div class="p-6">
+      <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div>
+          <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+          {{ filter_form.search }}
+        </div>
+        
+        <div>
+          <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          {{ filter_form.status }}
+        </div>
+        
+        <div>
+          <label for="vendor" class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+          {{ filter_form.vendor }}
+        </div>
+        
+        <div>
+          <label for="date_from" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+          {{ filter_form.date_from }}
+        </div>
+        
+        <div>
+          <label for="date_to" class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+          {{ filter_form.date_to }}
+        </div>
+        
+        <div>
+          <label for="expense_category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          {{ filter_form.expense_category }}
+        </div>
+        
+        <div class="md:col-span-2 lg:col-span-3 xl:col-span-6 flex gap-3">
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Filter
+          </button>
+          <a
+            href="{% url 'finance_management:accounts_payable_list' %}"
+            class="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Clear
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Payables Table -->
+  <div class="bg-white rounded-lg shadow border border-gray-200">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reference
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Vendor
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Invoice Date
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Due Date
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Amount
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Status
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for payable in payables %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">{{ payable.reference_number }}</div>
+              {% if payable.vendor_invoice_number %}
+              <div class="text-sm text-gray-500">Inv: {{ payable.vendor_invoice_number }}</div>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">{{ payable.vendor }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{ payable.invoice_date|date:"M d, Y" }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{ payable.due_date|date:"M d, Y" }}</div>
+              {% if payable.is_overdue %}
+              <div class="text-xs text-red-600">{{ payable.days_overdue }} days overdue</div>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">${{ payable.total_amount|floatformat:2 }}</div>
+              {% if payable.amount_paid > 0 %}
+              <div class="text-xs text-gray-500">Paid: ${{ payable.amount_paid|floatformat:2 }}</div>
+              <div class="text-xs text-gray-500">Due: ${{ payable.balance_due|floatformat:2 }}</div>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ payable.get_status_display_class }}">
+                {{ payable.get_status_display }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div class="flex space-x-2">
+                <a
+                  href="{% url 'finance_management:accounts_payable_detail' payable.pk %}"
+                  class="text-blue-600 hover:text-blue-900"
+                >
+                  View
+                </a>
+                <a
+                  href="{% url 'finance_management:accounts_payable_update' payable.pk %}"
+                  class="text-indigo-600 hover:text-indigo-900"
+                >
+                  Edit
+                </a>
+                {% if payable.status == 'DRAFT' %}
+                <a
+                  href="{% url 'finance_management:accounts_payable_approve' payable.pk %}"
+                  class="text-green-600 hover:text-green-900"
+                >
+                  Approve
+                </a>
+                {% endif %}
+                {% if payable.balance_due > 0 %}
+                <a
+                  href="{% url 'finance_management:accounts_payable_payment' payable.pk %}"
+                  class="text-purple-600 hover:text-purple-900"
+                >
+                  Payment
+                </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center">
+              <div class="text-gray-500">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No accounts payable found</h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by creating your first accounts payable entry.</p>
+                <div class="mt-6">
+                  <button
+                    type="button"
+                    onclick="openNewPayableModal()"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add New Payable
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+      {% include 'components/paginator.html' %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Include the modal -->
+{% include 'finance_management/modals/new_payable_modal.html' %}
+
+<script>
+function openNewPayableModal() {
+  // Show the modal using Flowbite
+  const modal = document.getElementById('new-payable-modal');
+  if (modal) {
+    const flowbiteModal = new Flowbite.Modal(modal);
+    flowbiteModal.show();
+  }
+}
+</script>
+{% endblock %}

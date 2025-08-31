@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.db.models import Count, Q
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
+from django.urls import reverse_lazy
 
 from .models import Task
 from client_management.models import Client
@@ -107,7 +109,10 @@ def task_create(request):
             task.created_by = request.user
             task.save()
             messages.success(request, 'Task created successfully!')
-            return redirect('task_list')
+            # Return HTMX response for modal
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = reverse_lazy('task_management:task_list')
+            return response
     else:
         form = TaskForm()
     
@@ -117,7 +122,7 @@ def task_create(request):
     
     # Check if this is an HTMX request
     if request.headers.get('HX-Request'):
-        return render(request, 'task_management/task_form_modal.html', context)
+        return render(request, 'task_management/new-modal.html', context)
     
     return render(request, 'task_management/task_form.html', context)
 
@@ -131,7 +136,10 @@ def task_update(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Task updated successfully!')
-            return redirect('task_list')
+            # Return HTMX response for modal
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = reverse_lazy('task_management:task_list')
+            return response
     else:
         form = TaskForm(instance=task)
     
@@ -142,7 +150,7 @@ def task_update(request, pk):
     
     # Check if this is an HTMX request
     if request.headers.get('HX-Request'):
-        return render(request, 'task_management/task_form_modal.html', context)
+        return render(request, 'task_management/new-modal.html', context)
     
     return render(request, 'task_management/task_form.html', context)
 

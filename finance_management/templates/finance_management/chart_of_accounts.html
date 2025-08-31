@@ -4,46 +4,79 @@
 
 {% block header_title %}Finance Management - Chart of Accounts{% endblock %}
 
-{% block finance_content %}
-    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+{% block extra_css %}
+<style>
+    /* Force sharp corners only on form elements */
+    #searchInput,
+    #typeFilter,
+    button[type="submit"],
+    a[href*="chart_of_accounts"] {
+        border-radius: 0 !important;
+        -webkit-border-radius: 0 !important;
+        -moz-border-radius: 0 !important;
+    }
+</style>
+{% endblock %}
 
-        <!-- Professional Header Section -->
-        <div class="px-6 py-4 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900">Chart of Accounts</h2>
-                <div class="flex space-x-2">
-                    <a hx-get="{% url 'finance_management:account_create' %}"
-                       hx-target="#new-modal-container"
-                       hx-indicator="#new-modal-overlay"
-                       hx-trigger="click"
-                       data-modal-target="new-modal" data-modal-toggle="new-modal"
-                       href="{% url 'finance_management:account_create' %}" 
-                       class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors">
-                        <i class="fas fa-plus mr-1"></i> Add Account
+{% block finance_content %}
+    <div class="bg-white shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+            <form action="" class="flex-1 max-w-sm" id="search-form" method="get">
+                <input type="text" 
+                       name="search" 
+                       id="searchInput"
+                       value="{{ request.GET.search|default:'' }}"
+                       placeholder="Search accounts..."
+                       class="block w-full px-3 py-2 border border-gray-300 text-xs placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </form>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2">
+                <!-- Create Account Button -->
+                <a hx-get="{% url 'finance_management:account_create' %}"
+                   hx-target="#new-modal-container"
+                   hx-indicator="#new-modal-overlay"
+                   hx-trigger="click"
+                   data-modal-target="new-modal" data-modal-toggle="new-modal"
+                   href="{% url 'finance_management:account_create' %}" 
+                   class="p-2 flex gap-1 items-center bg-blue-900 text-white hover:bg-blue-800 transition-colors duration-200">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"></path>
+                    </svg>
+                    <span class="font-bold text-xs">Add New Account</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="bg-gray-50 px-4 py-2 border-t border-b border-gray-200">
+            <form method="get" class="flex flex-wrap gap-2 items-end">
+                <div class="w-full md:w-auto">
+                    <label for="typeFilter" class="block text-xs font-medium text-gray-700 mb-1">Account Type</label>
+                    <select id="typeFilter" name="filter" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                        <option value="">All Account Types</option>
+                        <option value="ASSET" {% if request.GET.filter == 'ASSET' %}selected{% endif %}>Assets</option>
+                        <option value="LIABILITY" {% if request.GET.filter == 'LIABILITY' %}selected{% endif %}>Liabilities</option>
+                        <option value="EQUITY" {% if request.GET.filter == 'EQUITY' %}selected{% endif %}>Equity</option>
+                        <option value="REVENUE" {% if request.GET.filter == 'REVENUE' %}selected{% endif %}>Revenue</option>
+                        <option value="EXPENSE" {% if request.GET.filter == 'EXPENSE' %}selected{% endif %}>Expenses</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                        <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Filter
+                    </button>
+                    <a href="{% url 'finance_management:chart_of_accounts' %}" class="px-3 py-2 text-xs font-medium text-center text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors duration-200">
+                        <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Clear
                     </a>
                 </div>
-            </div>
-            
-            <!-- Search and Filter Section -->
-            <div class="mt-4 flex items-center justify-between">
-                <form action="" class="flex-1 max-w-sm" id="search-form">
-                    {% include "components/field.html" with hide_label=True field=search_form.search %}
-                </form>
-                
-                <div class="flex gap-2 items-center">
-                    <select id="typeFilter" name="filter" form="search-form" class="text-xs border border-gray-300 rounded px-2 py-1">
-                        <option value="">All Account Types</option>
-                        <option value="ASSET">Assets</option>
-                        <option value="LIABILITY">Liabilities</option>
-                        <option value="EQUITY">Equity</option>
-                        <option value="REVENUE">Revenue</option>
-                        <option value="EXPENSE">Expenses</option>
-                    </select>
-                    <button type="button" onclick="clearFilters()" class="text-xs text-gray-600 hover:text-gray-800 px-2 py-1">
-                        Clear Filters
-                    </button>
-                </div>
-            </div>
+            </form>
         </div>
 
         <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
@@ -133,6 +166,55 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination Controls -->
+            {% if paginator.num_pages > 1 %}
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} accounts
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" 
+                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                First
+                            </a>
+                            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" 
+                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                Previous
+                            </a>
+                        {% endif %}
+                        
+                        <div class="flex items-center space-x-1">
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if num == page_obj.number %}
+                                    <span class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600">
+                                        {{ num }}
+                                    </span>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" 
+                                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                        {{ num }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" 
+                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                Next
+                            </a>
+                            <a href="?page={{ paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" 
+                               class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                                Last
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -439,6 +521,20 @@
                     const currentFilter = document.getElementById('typeFilter')?.value || '';
                     filterAccounts(currentFilter);
                 });
+                
+                // Handle search form submission
+                const searchForm = document.getElementById('search-form');
+                if (searchForm) {
+                    searchForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const searchValue = searchInput.value.trim();
+                        if (searchValue) {
+                            // Reset to page 1 when searching
+                            document.getElementById('page-input').value = '1';
+                            this.submit();
+                        }
+                    });
+                }
             }
 
             // Filter functionality
@@ -446,7 +542,10 @@
             
             if (typeFilter) {
                 typeFilter.addEventListener('change', function() {
-                    filterAccounts(this.value);
+                    // Reset to page 1 when filtering
+                    document.getElementById('page-input').value = '1';
+                    // Submit the form to apply the filter
+                    document.getElementById('search-form').submit();
                 });
             }
 
@@ -478,7 +577,8 @@
                 if (searchInput) searchInput.value = '';
                 if (typeFilter) typeFilter.value = '';
                 
-                filterAccounts('');
+                // Reset to page 1 and redirect to first page
+                window.location.href = window.location.pathname;
             }
 
             // Make clearFilters globally accessible

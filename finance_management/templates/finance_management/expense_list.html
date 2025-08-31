@@ -1,413 +1,410 @@
 {% extends 'finance_management/base.html' %}
-{% load humanize %}
+{% load static %}
 
-{% block title %}Expense Report - Finance Management{% endblock %}
+{% block title %}Expense List{% endblock %}
 
-{% block header_title %}Expense Report{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+<style>
+    /* Status badges */
+    .status-draft {
+        background-color: #e2e8f0;
+        color: #4a5568;
+    }
+    
+    .status-submitted {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-approved {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-paid {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-rejected {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    .status-cancelled {
+        background-color: #f3f4f6;
+        color: #1f2937;
+    }
+    
+    /* Table styles */
+    .compact-table th, .compact-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Hover effect for table rows */
+    .hover-row:hover {
+        background-color: rgba(243, 244, 246, 0.7);
+    }
+    
+    /* Fix table column overlap */
+    #expensesTable {
+        table-layout: fixed;
+    }
+    
+    #expensesTable th:nth-child(1),
+    #expensesTable td:nth-child(1) {
+        width: 30%;
+        max-width: 30%;
+    }
+    
+    #expensesTable th:nth-child(2),
+    #expensesTable td:nth-child(2) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #expensesTable th:nth-child(3),
+    #expensesTable td:nth-child(3) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #expensesTable th:nth-child(4),
+    #expensesTable td:nth-child(4) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #expensesTable th:nth-child(5),
+    #expensesTable td:nth-child(5) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #expensesTable th:nth-child(6),
+    #expensesTable td:nth-child(6) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #expensesTable th:nth-child(7),
+    #expensesTable td:nth-child(7) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #expensesTable th:nth-child(8),
+    #expensesTable td:nth-child(8) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    /* Prevent text overflow */
+    .expense-title-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .vendor-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Scrollbar styling */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Card styling for empty state */
+    .empty-state-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+</style>
+{% endblock %}
 
 {% block finance_content %}
-    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
 
-        <!-- Header Section -->
-        <div class="bg-white px-6 py-4 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-lg font-semibold text-gray-900">Expense Report</h1>
-                    <p class="text-sm text-gray-600">Main Campus Dormitory</p>
+
+<!-- Expense Management Table -->
+<div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+        <form action="" class="flex-1 max-w-sm" id="search-form" method="get">
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
                 </div>
+                <input type="text" name="search" value="{{ search_query }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 text-xs placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Search expenses...">
+                </div>
+        </form>
+
+        <!-- Action Buttons -->
                 <div class="flex gap-2">
-                    <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">
-                        <i class="fas fa-edit mr-1"></i> Edit
+                        <!-- Create Expense Button -->
+            <button type="button"
+                    onclick="openNewExpenseModal()"
+                    class="p-2 flex gap-1 items-center bg-blue-900 text-white hover:bg-blue-800 transition-colors duration-200">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"></path>
+                </svg>
+                <span class="font-bold text-xs">Add New Expense</span>
                     </button>
-                    <button class="px-3 py-1 text-xs bg-gray-800 text-white rounded hover:bg-gray-700">
-                        <i class="fas fa-download mr-1"></i> Export
-                    </button>
-                </div>
             </div>
         </div>
 
-        <!-- Month Selection and Quick Select -->
-        <div class="bg-white px-6 py-3 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div>
-                        <label class="text-sm font-medium text-gray-700 mb-1 block">Select Months</label>
-                        <div class="grid grid-cols-4 gap-1">
-                            <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded">Jan</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Feb</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Mar</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Apr</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">May</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Jun</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Jul</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Aug</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Sep</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Oct</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Nov</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Dec</button>
+    <!-- Filters -->
+    <div class="bg-gray-50 px-4 py-2 border-t border-b border-gray-200">
+        <form method="get" class="flex flex-wrap gap-2 items-end">
+            <div class="w-full md:w-auto">
+                <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Statuses</option>
+                    {% for value, label in filter_form.status.field.choices %}
+                        {% if value %}
+                            <option value="{{ value }}" {% if filter_form.status.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
                         </div>
+            <div class="w-full md:w-auto">
+                <label for="expense_category" class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                <select name="expense_category" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Categories</option>
+                    {% for category in filter_form.expense_category.field.queryset %}
+                        <option value="{{ category.id }}" {% if filter_form.expense_category.value == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
                     </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-700 mb-1 block">Boarding House</label>
-                        <select class="text-sm border border-gray-300 rounded px-3 py-1">
-                            <option>Main Campus Dormitory</option>
+            <div class="w-full md:w-auto">
+                <label for="period" class="block text-xs font-medium text-gray-700 mb-1">Period</label>
+                <select name="period" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Periods</option>
+                    {% for period in filter_form.period.field.queryset %}
+                        <option value="{{ period.id }}" {% if filter_form.period.value == period.id %}selected{% endif %}>
+                            {{ period.name }}
+                        </option>
+                    {% endfor %}
                         </select>
                     </div>
+            <div class="flex gap-2">
+                <button type="submit" class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Filter
+                </button>
+                <a href="{% url 'finance_management:expense_list' %}" class="px-3 py-2 text-xs font-medium text-center text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors duration-200">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Clear
+                </a>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div>
-                        <label class="text-sm font-medium text-gray-700 mb-1 block">Quick Select</label>
-                        <div class="flex gap-1">
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q1</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q2</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q3</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q4</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">H1</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">H2</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Full Year</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        </form>
         </div>
 
-        <!-- Financial Report Table -->
+    <!-- Expense List Table -->
         <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
             <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-                <table class="w-full" id="expensesTable">
-                    <thead class="bg-gray-50 sticky top-0 z-10">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-200">
-                                Account
+            <table class="w-full divide-y divide-gray-200 table-fixed" id="expensesTable">
+                <thead class="bg-gray-50 whitespace-nowrap text-xs sticky top-0 z-10">
+                <tr class="border-b border-gray-200">
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Expense Title
+                    </th>
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Vendor
                             </th>
-                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
-                                Jan
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Category
                             </th>
-                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
-                                Feb
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Status
                             </th>
-                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
-                                Mar
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Amount
                             </th>
-                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
-                                Apr
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Date
                             </th>
-                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
-                                May
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Reference
                             </th>
-                            <th class="px-3 py-3 text-center text-sm font-semibold text-gray-900 border-b border-gray-200">
-                                Jun
+                    <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                        Actions
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white">
-                        <!-- EXPENSES Section -->
-                        <tr class="bg-gray-100">
-                            <td class="px-4 py-2 font-bold text-gray-900 border-b border-gray-200" colspan="7">
-                                EXPENSES
+                <tbody class="bg-white divide-y divide-gray-200">
+                {% for expense in expenses %}
+                    <tr class="hover-row border-b border-gray-100">
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <button type="button"
+                                    class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                    onclick="window.location.href='{% url 'finance_management:expense_detail' expense.pk %}'"
+                            >
+                                <div class="flex-shrink-0 h-8 w-8">
+                                    <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span class="text-blue-600 font-medium text-xs">{{ expense.title|first|upper }}</span>
+                                    </div>
+                                </div>
+                                <div class="ml-2">
+                                    <div class="text-xs font-medium text-gray-900">
+                                        <span>{{ expense.title|truncatechars:30 }}</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ expense.vendor|truncatechars:20|default:"-" }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {% if expense.expense_category %}
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-6 w-6">
+                                        <div class="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                            <span class="text-green-600 font-medium text-xs">{{ expense.expense_category.name|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-1">
+                                        <span class="text-xs font-medium text-gray-900">{{ expense.expense_category.name|truncatechars:15 }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Uncategorized
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium status-{{ expense.status|lower }}">
+                                {{ expense.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                            {% if expense.total_amount %}
+                                <span class="text-green-600">${{ expense.total_amount|floatformat:2 }}</span>
+                                {% if expense.tax_amount and expense.tax_amount > 0 %}
+                                    <div class="text-xs text-gray-500">+${{ expense.tax_amount|floatformat:2 }} tax</div>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-gray-500">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ expense.expense_date|date:"M d, Y" }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ expense.reference_number|default:"-" }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'finance_management:expense_detail' expense.pk %}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                   title="View Expense">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'finance_management:expense_update' expense.pk %}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                   title="Edit Expense">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+                                    </svg>
+                                </a>
+                            </div>
                             </td>
                         </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Utilities - Electricity</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$7,800</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$7,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,800</td>
+                {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="text-center py-8 empty-state-card bg-white shadow-sm rounded-lg">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-500">No expenses found</p>
+                                <p class="text-xs mb-4">Get started by adding your first expense.</p>
+                                <button type="button" onclick="openNewExpenseModal()" class="px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Create Expense
+                                </button>
+                            </div>
+                        </td>
                         </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Utilities - Water</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,100</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,900</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,100</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,300</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Internet & Cable</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Maintenance & Repairs</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,800</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$3,800</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,900</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Cleaning Supplies</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$800</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$850</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$900</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$750</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$800</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$850</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Security Services</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,000</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Insurance</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,200</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Property Tax</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$0</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$0</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$0</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$0</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$1,500</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Staff Salaries</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$12,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$12,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$12,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$12,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$13,000</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$13,000</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Food & Kitchen Supplies</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$8,800</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$9,200</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$9,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$9,800</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$10,200</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Office Supplies</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$600</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$450</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$700</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$550</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$650</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-100">Professional Fees</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-100">$2,500</td>
-                        </tr>
-                        <tr class="bg-gray-50 font-semibold">
-                            <td class="px-4 py-2 text-gray-900 border-b border-gray-200">Total Expenses</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$42,500</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$42,750</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$40,050</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$43,650</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$42,650</td>
-                            <td class="px-3 py-2 text-right text-gray-900 border-b border-gray-200">$45,200</td>
-                        </tr>
+                {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
         
         <!-- Pagination -->
-        {% include 'components/paginator.html' %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 text-xs">
+        {% if is_paginated and page_obj.has_other_pages %}
+            {% include 'components/paginator.html' with page_obj=page_obj %}
+        {% else %}
+            <div class="text-xs text-gray-500">
+                Showing all {{ expenses|length }} expenses
+    </div>
+        {% endif %}
+    </div>
     </div>
 
-    <!-- Modals -->
-    <div id="new-expense-modal-container">
-        {% include "finance_management/new_expense_modal.html" with modal_id="new-expense-modal" %}
-    </div>
-    {% include "finance_management/modals/expense_details_modal.html" with modal_id="details-expense-modal" %}
-    <div id="update-expense-modal-container">
-        {% include "finance_management/modals/update_expense_modal.html" with modal_id="update-expense-modal" %}
-    </div>
-
+<!-- Include Expense Modals -->
+{% include "finance_management/modals/new_expense_modal.html" with modal_id="new-expense-modal" %}
 {% endblock %}
 
 {% block extra_js %}
     <script>
-        // Global modal functions (must be outside DOMContentLoaded for onclick access)
-        function viewExpenseDetails(expenseId) {
-            // Fetch expense details from API
-            fetch(`/finance/api/expenses/${expenseId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    // Populate details modal with fetched data
-                    document.getElementById('detailExpenseTitle').textContent = data.title;
-                    document.getElementById('detailExpenseDescription').textContent = data.description || 'No description';
-                    document.getElementById('detailExpenseAmount').textContent = '$' + parseFloat(data.amount).toFixed(2);
-                    document.getElementById('detailExpenseCategory').textContent = data.category_display;
-                    document.getElementById('detailExpenseDate').textContent = data.expense_date;
-                    document.getElementById('detailExpenseCreatedBy').textContent = data.created_by;
-                    document.getElementById('detailExpenseStatus').textContent = data.approved_by ? 'Approved' : 'Pending';
-                    
-                    // Handle receipt display
-                    const receiptContainer = document.getElementById('detailExpenseReceipt');
-                    if (data.receipt_url) {
-                        receiptContainer.innerHTML = `<a href="${data.receipt_url}" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z"/></svg>View Receipt</a>`;
+    // Auto-submit form on filter change
+    document.querySelectorAll('select[name="status"], select[name="expense_category"], select[name="period"]').forEach(function(select) {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+
+    // Global modal functions
+    function openNewExpenseModal() {
+        const modal = document.getElementById('new-expense-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            console.log('New expense modal opened');
                     } else {
-                        receiptContainer.innerHTML = '<span class="text-gray-500">No receipt uploaded</span>';
-                    }
-                    
-                    // Set status badge color
-                    const statusBadge = document.getElementById('detailExpenseStatus');
-                    if (data.approved_by) {
-                        statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
-                    } else {
-                        statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
-                    }
-                    
-                    // Store expense ID for edit button
-                    const editButton = document.getElementById('editExpenseFromModal');
-                    if (editButton) {
-                        editButton.onclick = function() {
-                            editExpense(expenseId);
-                        };
-                    }
-                    
-                    // Show the modal after populating data
-                    if (window.detailsExpenseModal) {
-                        window.detailsExpenseModal.show();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching expense details:', error);
-                });
+            console.error('Modal not found');
         }
+    }
 
-        function editExpense(expenseId) {
-             // Close details modal
-             if (window.detailsExpenseModal) {
-                 window.detailsExpenseModal.hide();
-             }
-             
-             // Fetch expense data
-             fetch(`/finance/api/expenses/${expenseId}/`)
-                 .then(response => response.json())
-                 .then(data => {
-                     // Populate form fields
-                     document.getElementById('updateExpenseTitle').value = data.title || '';
-                     document.getElementById('updateExpenseAmount').value = data.amount || '0.00';
-                     document.getElementById('updateExpenseCategory').value = data.category || '';
-                     document.getElementById('updateExpenseDate').value = data.expense_date || '';
-                     document.getElementById('updateExpenseDescription').value = data.description || '';
-                     
-                     // Update form action URL
-                     const form = document.getElementById('updateExpenseForm');
-                     if (form) {
-                         form.setAttribute('hx-post', `/finance/expenses/${expenseId}/edit/`);
-                     }
-                     
-                     // Show the modal
-                     if (window.updateExpenseModal) {
-                         window.updateExpenseModal.show();
-                     }
-                 })
-                 .catch(error => {
-                     console.error('Error fetching expense details:', error);
-                     alert('Error loading expense data. Please try again.');
-                 });
-         }
-
-        function approveExpense(expenseId) {
-            if (confirm('Are you sure you want to approve this expense?')) {
-                fetch(`/finance/expenses/${expenseId}/approve/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Close modal and reload page
-                        if (window.detailsExpenseModal) {
-                            window.detailsExpenseModal.hide();
-                        }
-                        location.reload();
-                    } else {
-                        console.error('Error approving expense');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            }
+    function closeNewExpenseModal() {
+        const modal = document.getElementById('new-expense-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            console.log('New expense modal closed');
         }
+    }
 
-        function openNewExpenseModal() {
-             // Show the modal using Flowbite
-             if (window.newExpenseModal) {
-                 window.newExpenseModal.show();
-             }
-         }
-
-        // Initialize all functionality when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Search functionality
-            const searchInput = document.getElementById('id_search');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    filterTable();
-                });
-            }
-
-            // Filter functionality
-            const categoryFilter = document.getElementById('categoryFilter');
-            const statusFilter = document.getElementById('statusFilter');
-            
-            if (categoryFilter) {
-                categoryFilter.addEventListener('change', filterTable);
-            }
-            if (statusFilter) {
-                statusFilter.addEventListener('change', filterTable);
-            }
-
-            function filterTable() {
-                const searchTerm = document.getElementById('id_search').value.toLowerCase();
-                const categoryFilter = document.getElementById('categoryFilter').value;
-                const statusFilter = document.getElementById('statusFilter').value;
-                const rows = document.querySelectorAll('#expensesTableBody tr');
-
-                rows.forEach(row => {
-                    const title = row.getAttribute('data-expense-title') || '';
-                    const description = row.getAttribute('data-expense-description') || '';
-                    const category = row.getAttribute('data-expense-category') || '';
-                    const status = row.getAttribute('data-expense-status') || '';
-
-                    const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
-                    const matchesCategory = !categoryFilter || category === categoryFilter;
-                    const matchesStatus = !statusFilter || status === statusFilter;
-
-                    if (matchesSearch && matchesCategory && matchesStatus) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            }
-
-            // Initialize Flowbite modals (modalOptions is defined in base template)
+    // Initialize Flowbite modals if available
             if (typeof Modal !== 'undefined' && typeof modalOptions !== 'undefined') {
                 const newExpenseModalElement = document.getElementById('new-expense-modal');
                 if (newExpenseModalElement) {
@@ -416,50 +413,6 @@
                         override: true
                     });
                 }
-                
-                const detailsExpenseModalElement = document.getElementById('details-expense-modal');
-                if (detailsExpenseModalElement) {
-                    window.detailsExpenseModal = new Modal(detailsExpenseModalElement, modalOptions, {
-                        id: 'details-expense-modal',
-                        override: true
-                    });
-                }
-                
-                // Initialize Update Expense Modal
-                const updateExpenseModalElement = document.getElementById('update-expense-modal');
-                if (updateExpenseModalElement) {
-                    window.updateExpenseModal = new Modal(updateExpenseModalElement, modalOptions, {
-                        id: 'update-expense-modal',
-                        override: true
-                    });
-                }
-            }
-        });
-
-        // Handle HTMX events for modal management
-        document.addEventListener('htmx:beforeSwap', function(event) {
-            // Check if this is a successful form submission (status 200) and targets a modal container
-            if (event.detail.xhr.status === 200) {
-                if (event.detail.target.id === 'new-expense-modal-container') {
-                    // Close the new expense modal
-                    if (window.newExpenseModal) {
-                        window.newExpenseModal.hide();
-                    }
-                    // Refresh the page to show the new expense in the table
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
-                } else if (event.detail.target.id === 'update-expense-modal-container') {
-                    // Close the update expense modal
-                    if (window.updateExpenseModal) {
-                        window.updateExpenseModal.hide();
-                    }
-                    // Refresh the page to show the updated expense in the table
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
-                }
-            }
-        });
+    }
     </script>
 {% endblock %}

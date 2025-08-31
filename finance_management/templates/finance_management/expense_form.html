@@ -1,252 +1,334 @@
 <form
-        novalidate="novalidate"
-        method="post"
-        enctype="multipart/form-data"
-        {% if expense %}
-        hx-post="{% url 'finance_management:expense_update' expense.id %}{% querystring %}"
-        hx-target="#update-expense-modal-container"
-        {% else %}
-        hx-post="{% url 'finance_management:expense_create' %}{% querystring %}"
-        hx-target="#new-expense-modal-container"
-        {% endif %}
-        class="">
-    {% csrf_token %}
-    
-    <div class="p-4 space-y-6 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-        
-        <!-- Basic Information Section -->
-        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Basic Information
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Expense Title -->
-                <div class="md:col-span-2">
-                    {% include 'components/field.html' with field=form.title %}
-                </div>
-                
-                <!-- Amount -->
-                <div>
-                    {% include 'components/field.html' with field=form.amount %}
-                </div>
-                
-                <!-- Category -->
-                <div>
-                    {% include 'components/field.html' with field=form.category %}
-                </div>
-                
-                <!-- Expense Date -->
-                <div>
-                    {% include 'components/field.html' with field=form.expense_date %}
-                </div>
-                
-                <!-- Description -->
-                <div class="md:col-span-2">
-                    {% include 'components/field.html' with field=form.description %}
-                </div>
-            </div>
+  novalidate="novalidate"
+  method="post"
+  enctype="multipart/form-data"
+  {%
+  if
+  expense
+  %}
+  hx-post="{% url 'finance_management:expense_update' expense.id %}{% querystring %}"
+  hx-target="#update-expense-modal-container"
+  {%
+  else
+  %}
+  hx-post="{% url 'finance_management:expense_create' %}{% querystring %}"
+  hx-target="#new-expense-modal-container"
+  {%
+  endif
+  %}
+  class=""
+>
+  {% csrf_token %}
+
+  <div
+    class="p-4 space-y-6 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+  >
+    <!-- Basic Information Section -->
+    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <h3 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+        <svg
+          class="w-4 h-4 mr-2 text-blue-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ></path>
+        </svg>
+        Basic Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Expense Title -->
+        <div class="md:col-span-2">
+          {% include 'components/field.html' with field=form.title %}
         </div>
-        
-        <!-- Legal Matter Integration Section -->
-        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h3 class="text-sm font-semibold text-blue-900 mb-4 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"></path>
-                </svg>
-                Legal Matter Integration
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Case Number -->
-                <div>
-                    {% include 'components/field.html' with field=form.case_number %}
-                </div>
-                
-                <!-- Matter Type -->
-                <div>
-                    {% include 'components/field.html' with field=form.matter_type %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Accounting & Tax Section -->
-        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h3 class="text-sm font-semibold text-green-900 mb-4 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-                Accounting & Tax
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Account -->
-                <div>
-                    {% include 'components/field.html' with field=form.account %}
-                </div>
-                
-                <!-- Tax Amount -->
-                <div>
-                    {% include 'components/field.html' with field=form.tax_amount %}
-                </div>
-                
-                <!-- Tax Rate -->
-                <div>
-                    {% include 'components/field.html' with field=form.tax_rate %}
-                </div>
-                
-                <!-- Approval Level -->
-                <div>
-                    {% include 'components/field.html' with field=form.approval_level %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Billable Status Section -->
-        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-            <h3 class="text-sm font-semibold text-purple-900 mb-4 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599 1"></path>
-                </svg>
-                Billable Status
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Billable Status -->
-                <div>
-                    {% include 'components/field.html' with field=form.billable_status %}
-                </div>
-                
-                <!-- Billable Amount -->
-                <div>
-                    {% include 'components/field.html' with field=form.billable_amount %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Vendor Information Section -->
-        <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <h3 class="text-sm font-semibold text-orange-900 mb-4 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
-                Vendor Information
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Invoice Number -->
-                <div>
-                    {% include 'components/field.html' with field=form.invoice_number %}
-                </div>
-                
-                <!-- Vendor Name -->
-                <div>
-                    {% include 'components/field.html' with field=form.vendor_name %}
-                </div>
-                
-                <!-- Vendor Tax ID -->
-                <div class="md:col-span-2">
-                    {% include 'components/field.html' with field=form.vendor_tax_id %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Documentation Section -->
-        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Documentation
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Receipt -->
-                <div>
-                    {% include 'components/field.html' with field=form.receipt %}
-                </div>
-                
-                <!-- Supporting Documents -->
-                <div>
-                    {% include 'components/field.html' with field=form.supporting_documents %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Compliance Section -->
-        <div class="bg-red-50 p-4 rounded-lg border border-red-200">
-            <h3 class="text-sm font-semibold text-red-900 mb-4 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
-                Compliance & Notes
-            </h3>
-            
-            <div class="grid grid-cols-1 gap-4">
-                <!-- Compliance Notes -->
-                <div>
-                    {% include 'components/field.html' with field=form.compliance_notes %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Non-field Errors -->
-        {% include 'components/non-field-errors.html' %}
-    </div>
-    
-    <!-- Form Actions -->
-    <div class="flex justify-end space-x-3 pt-4 py-3 px-4 border-t border-gray-200 bg-gray-50">
-        <button type="button" 
-                onclick="closeModal()"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Cancel
-        </button>
+
+        <!-- Amount -->
+        <div>{% include 'components/field.html' with field=form.amount %}</div>
+
+        <!-- Category -->
         <div>
-            {% if not expense %}
-            {% include 'components/submit-button.html' with button_text="Create Expense" loading_text="Creating..." %}
-            {% else %}
-            {% include 'components/submit-button.html' with button_text="Update Expense" loading_text="Updating..." %}
-            {% endif %}
+          {% include 'components/field.html' with field=form.category %}
         </div>
+
+        <!-- Expense Date -->
+        <div>
+          {% include 'components/field.html' with field=form.expense_date %}
+        </div>
+
+        <!-- Description -->
+        <div class="md:col-span-2">
+          {% include 'components/field.html' with field=form.description %}
+        </div>
+      </div>
     </div>
+
+    <!-- Legal Matter Integration Section -->
+    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+      <h3 class="text-sm font-semibold text-blue-900 mb-4 flex items-center">
+        <svg
+          class="w-4 h-4 mr-2 text-blue-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
+          ></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"
+          ></path>
+        </svg>
+        Legal Matter Integration
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Case Number -->
+        <div>
+          {% include 'components/field.html' with field=form.case_number %}
+        </div>
+
+        <!-- Matter Type -->
+        <div>
+          {% include 'components/field.html' with field=form.matter_type %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Accounting & Tax Section -->
+    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+      <h3 class="text-sm font-semibold text-green-900 mb-4 flex items-center">
+        <svg
+          class="w-4 h-4 mr-2 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+          ></path>
+        </svg>
+        Accounting & Tax
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Account -->
+        <div>{% include 'components/field.html' with field=form.account %}</div>
+
+        <!-- Tax Amount -->
+        <div>
+          {% include 'components/field.html' with field=form.tax_amount %}
+        </div>
+
+        <!-- Tax Rate -->
+        <div>
+          {% include 'components/field.html' with field=form.tax_rate %}
+        </div>
+
+        <!-- Approval Level -->
+        <div>
+          {% include 'components/field.html' with field=form.approval_level %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Billable Status Section -->
+    <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+      <h3 class="text-sm font-semibold text-purple-900 mb-4 flex items-center">
+        <svg
+          class="w-4 h-4 mr-2 text-purple-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599 1"
+          ></path>
+        </svg>
+        Billable Status
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Billable Status -->
+        <div>
+          {% include 'components/field.html' with field=form.billable_status %}
+        </div>
+
+        <!-- Billable Amount -->
+        <div>
+          {% include 'components/field.html' with field=form.billable_amount %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Vendor Information Section -->
+    <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+      <h3 class="text-sm font-semibold text-orange-900 mb-4 flex items-center">
+        <svg
+          class="w-4 h-4 mr-2 text-orange-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          ></path>
+        </svg>
+        Vendor Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Invoice Number -->
+        <div>
+          {% include 'components/field.html' with field=form.invoice_number %}
+        </div>
+
+        <!-- Vendor Name -->
+        <div>
+          {% include 'components/field.html' with field=form.vendor_name %}
+        </div>
+
+        <!-- Vendor Tax ID -->
+        <div class="md:col-span-2">
+          {% include 'components/field.html' with field=form.vendor_tax_id %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Documentation Section -->
+    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <h3 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+        <svg
+          class="w-4 h-4 mr-2 text-gray-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ></path>
+        </svg>
+        Documentation
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Receipt -->
+        <div>{% include 'components/field.html' with field=form.receipt %}</div>
+
+        <!-- Supporting Documents -->
+        <div>
+          {% include 'components/field.html' with
+          field=form.supporting_documents %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Compliance Section -->
+    <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+      <h3 class="text-sm font-semibold text-red-900 mb-4 flex items-center">
+        <svg
+          class="w-4 h-4 mr-2 text-red-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          ></path>
+        </svg>
+        Compliance & Notes
+      </h3>
+
+      <div class="grid grid-cols-1 gap-4">
+        <!-- Compliance Notes -->
+        <div>
+          {% include 'components/field.html' with field=form.compliance_notes %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Non-field Errors -->
+    {% include 'components/non-field-errors.html' %}
+  </div>
+
+  <!-- Form Actions -->
+  <div
+    class="flex justify-end space-x-3 pt-4 py-3 px-4 border-t border-gray-200 bg-gray-50"
+  >
+    <button
+      type="button"
+      onclick="closeModal()"
+      class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    >
+      Cancel
+    </button>
+    <div>
+      {% if not expense %} {% include 'components/submit-button.html' with
+      button_text="Create Expense" loading_text="Creating..." %} {% else %} {%
+      include 'components/submit-button.html' with button_text="Update Expense"
+      loading_text="Updating..." %} {% endif %}
+    </div>
+  </div>
 </form>
 
 <script>
-    // Auto-calculate billable amount when billable status changes
-    document.addEventListener('DOMContentLoaded', function() {
-        const billableStatusSelect = document.getElementById('id_billable_status');
-        const billableAmountInput = document.getElementById('id_billable_amount');
-        const amountInput = document.getElementById('id_amount');
-        
-        if (billableStatusSelect && billableAmountInput && amountInput) {
-            billableStatusSelect.addEventListener('change', function() {
-                if (this.value === 'BILLABLE' && amountInput.value) {
-                    billableAmountInput.value = amountInput.value;
-                } else if (this.value === 'NON_BILLABLE') {
-                    billableAmountInput.value = '0.00';
-                }
-            });
-            
-            // Also update when amount changes
-            amountInput.addEventListener('input', function() {
-                if (billableStatusSelect.value === 'BILLABLE') {
-                    billableAmountInput.value = this.value;
-                }
-            });
+  // Auto-calculate billable amount when billable status changes
+  document.addEventListener("DOMContentLoaded", function () {
+    const billableStatusSelect = document.getElementById("id_billable_status");
+    const billableAmountInput = document.getElementById("id_billable_amount");
+    const amountInput = document.getElementById("id_amount");
+
+    if (billableStatusSelect && billableAmountInput && amountInput) {
+      billableStatusSelect.addEventListener("change", function () {
+        if (this.value === "BILLABLE" && amountInput.value) {
+          billableAmountInput.value = amountInput.value;
+        } else if (this.value === "NON_BILLABLE") {
+          billableAmountInput.value = "0.00";
         }
-    });
-    
-    function closeModal() {
-        // Close the modal - implementation depends on your modal system
-        if (window.newExpenseModal) {
-            window.newExpenseModal.hide();
+      });
+
+      // Also update when amount changes
+      amountInput.addEventListener("input", function () {
+        if (billableStatusSelect.value === "BILLABLE") {
+          billableAmountInput.value = this.value;
         }
-        if (window.updateExpenseModal) {
-            window.updateExpenseModal.hide();
-        }
+      });
     }
+  });
+
+  function closeModal() {
+    // Close the modal - implementation depends on your modal system
+    if (window.newExpenseModal) {
+      window.newExpenseModal.hide();
+    }
+    if (window.updateExpenseModal) {
+      window.updateExpenseModal.hide();
+    }
+  }
 </script>

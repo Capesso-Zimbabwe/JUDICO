@@ -1,0 +1,295 @@
+{% extends 'components/modals/base-form-modal.html' %}
+
+{% block modal_title %}Add New Accounts Payable{% endblock %}
+
+{% block modal_content %}
+<form method="post" action="{% url 'finance_management:accounts_payable_create' %}" id="new-payable-form">
+  {% csrf_token %}
+  
+  <div class="space-y-6">
+    <!-- Basic Information -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label for="id_vendor" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Vendor *
+        </label>
+        <input
+          type="text"
+          id="id_vendor"
+          name="vendor"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          placeholder="e.g., Office Depot"
+          required
+        />
+      </div>
+      
+      <div>
+        <label for="id_vendor_invoice_number" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Vendor Invoice Number
+        </label>
+        <input
+          type="text"
+          id="id_vendor_invoice_number"
+          name="vendor_invoice_number"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          placeholder="e.g., INV-2024-001"
+        />
+      </div>
+      
+      <div>
+        <label for="id_invoice_date" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Invoice Date *
+        </label>
+        <input
+          type="date"
+          id="id_invoice_date"
+          name="invoice_date"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          required
+        />
+      </div>
+      
+      <div>
+        <label for="id_due_date" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Due Date *
+        </label>
+        <input
+          type="date"
+          id="id_due_date"
+          name="due_date"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          required
+        />
+      </div>
+      
+      <div>
+        <label for="id_payment_terms" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Payment Terms *
+        </label>
+        <select
+          id="id_payment_terms"
+          name="payment_terms"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          required
+        >
+          <option value="">Select payment terms</option>
+          <option value="IMMEDIATE">Immediate</option>
+          <option value="NET_15">Net 15</option>
+          <option value="NET_30" selected>Net 30</option>
+          <option value="NET_45">Net 45</option>
+          <option value="NET_60">Net 60</option>
+          <option value="NET_90">Net 90</option>
+          <option value="CUSTOM">Custom</option>
+        </select>
+      </div>
+      
+      <div>
+        <label for="id_expense_category" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Expense Category
+        </label>
+        <select
+          id="id_expense_category"
+          name="expense_category"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+        >
+          <option value="">Select category</option>
+          {% for category in expense_categories %}
+          <option value="{{ category.id }}">{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    
+    <!-- Amounts -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div>
+        <label for="id_subtotal" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Subtotal *
+        </label>
+        <input
+          type="number"
+          step="0.01"
+          id="id_subtotal"
+          name="subtotal"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          placeholder="0.00"
+          required
+        />
+      </div>
+      
+      <div>
+        <label for="id_tax_amount" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Tax Amount
+        </label>
+        <input
+          type="number"
+          step="0.01"
+          id="id_tax_amount"
+          name="tax_amount"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          placeholder="0.00"
+          value="0.00"
+        />
+      </div>
+      
+      <div>
+        <label for="id_total_amount" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Total Amount *
+        </label>
+        <input
+          type="number"
+          step="0.01"
+          id="id_total_amount"
+          name="total_amount"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          placeholder="0.00"
+          required
+        />
+      </div>
+    </div>
+    
+    <!-- Additional Information -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label for="id_description" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Description
+        </label>
+        <textarea
+          id="id_description"
+          name="description"
+          rows="3"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          placeholder="Invoice description..."
+        ></textarea>
+      </div>
+      
+      <div>
+        <label for="id_notes" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Notes
+        </label>
+        <textarea
+          id="id_notes"
+          name="notes"
+          rows="3"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          placeholder="Additional notes..."
+        ></textarea>
+      </div>
+    </div>
+    
+    <!-- Recurring Options -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="flex items-center">
+        <input
+          type="checkbox"
+          id="id_is_recurring"
+          name="is_recurring"
+          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        />
+        <label for="id_is_recurring" class="ml-2 text-xs font-medium text-gray-900 dark:text-white">
+          Recurring Invoice
+        </label>
+      </div>
+      
+      <div>
+        <label for="id_recurring_frequency" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">
+          Recurring Frequency
+        </label>
+        <select
+          id="id_recurring_frequency"
+          name="recurring_frequency"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+          disabled
+        >
+          <option value="">Select frequency</option>
+          <option value="monthly">Monthly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="annually">Annually</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Form Actions -->
+  <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+    <button
+      type="button"
+      data-modal-hide="new-payable-modal"
+      class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="px-4 py-2 text-sm font-medium text-white bg-blue-900 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    >
+      Create Payable
+    </button>
+  </div>
+</form>
+
+<script>
+// Enable/disable recurring frequency based on checkbox
+document.getElementById('id_is_recurring').addEventListener('change', function() {
+  const frequencySelect = document.getElementById('id_recurring_frequency');
+  frequencySelect.disabled = !this.checked;
+  if (!this.checked) {
+    frequencySelect.value = '';
+  }
+});
+
+// Auto-calculate total amount
+document.getElementById('id_subtotal').addEventListener('input', calculateTotal);
+document.getElementById('id_tax_amount').addEventListener('input', calculateTotal);
+
+function calculateTotal() {
+  const subtotal = parseFloat(document.getElementById('id_subtotal').value) || 0;
+  const taxAmount = parseFloat(document.getElementById('id_tax_amount').value) || 0;
+  const totalAmount = subtotal + taxAmount;
+  document.getElementById('id_total_amount').value = totalAmount.toFixed(2);
+}
+
+// Form submission
+document.getElementById('new-payable-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  
+  fetch(this.action, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json',
+    }
+  })
+  .then(response => {
+    if (response.ok) {
+      if (response.headers.get('Content-Type')?.includes('application/json')) {
+        return response.json();
+      } else {
+        // Handle HTML response (redirect)
+        window.location.href = '{% url "finance_management:accounts_payable_list" %}';
+        return;
+      }
+    }
+    throw new Error('Network response was not ok');
+  })
+  .then(data => {
+    if (data && data.success) {
+      // Close modal and refresh page
+      const modal = document.getElementById('new-payable-modal');
+      if (modal) {
+        const flowbiteModal = new Flowbite.Modal(modal);
+        flowbiteModal.hide();
+      }
+      window.location.reload();
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    // Handle error - could show notification here
+  });
+});
+</script>
+{% endblock %}

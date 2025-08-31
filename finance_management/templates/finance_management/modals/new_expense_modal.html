@@ -1,24 +1,240 @@
 <!-- New Expense Modal -->
-<div id="{{ modal_id|default:'new-expense-modal' }}" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative p-4 w-full max-w-2xl max-h-full">
-        <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <!-- Modal header -->
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                <h3 class="text-xs font-semibold text-gray-900 dark:text-white">
-                    Record New Expense
-                </h3>
-                <button type="button" class="text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 py-2 px-3 font-medium transition-all duration-200" data-modal-hide="{{ modal_id|default:'new-expense-modal' }}">
-                    Close
-                </button>
+<div
+  id="{{ modal_id|default:'new-expense-modal' }}"
+  tabindex="-1"
+  aria-hidden="true"
+  class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full flex items-center justify-center"
+>
+  <div class="relative w-full max-w-2xl max-h-full mx-auto">
+    <!-- Modal content -->
+    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+      <!-- Modal header -->
+      <div
+        class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600"
+      >
+        <h3 class="text-xs font-semibold text-gray-900 dark:text-white">
+          Add New Expense
+        </h3>
+        <button
+          type="button"
+          class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+          data-modal-hide="{{ modal_id|default:'new-expense-modal' }}"
+        >
+          <svg
+            class="w-3 h-3"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 14 14"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+            />
+          </svg>
+          <span class="sr-only">Close modal</span>
+        </button>
+      </div>
+      <!-- Modal body -->
+      <div class="p-6 space-y-6">
+        <form
+          id="newExpenseForm"
+          method="post"
+          action="{% url 'finance_management:expense_create' %}"
+        >
+          {% csrf_token %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                for="id_title"
+                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white"
+                >Expense Title *</label
+              >
+              <input
+                type="text"
+                id="id_title"
+                name="title"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                placeholder="e.g., Office Supplies"
+                required
+              />
             </div>
-            <!-- Modal body -->
-            <div class="p-4 md:p-5 space-y-4" id="newExpenseModalContent">
-                <!-- Content will be loaded here via JavaScript -->
-                <div class="flex items-center justify-center py-8">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
+            <div>
+              <label
+                for="id_expense_type"
+                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white"
+                >Expense Type *</label
+              >
+              <select
+                id="id_expense_type"
+                name="expense_type"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                required
+              >
+                <option value="">Select Type</option>
+                <option value="OPERATING">Operating Expense</option>
+                <option value="CAPITAL">Capital Expense</option>
+                <option value="PREPAID">Prepaid Expense</option>
+                <option value="ACCRUED">Accrued Expense</option>
+              </select>
             </div>
-        </div>
+            <div>
+              <label
+                for="id_expense_date"
+                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white"
+                >Expense Date *</label
+              >
+              <input
+                type="date"
+                id="id_expense_date"
+                name="expense_date"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="id_vendor"
+                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white"
+                >Vendor *</label
+              >
+              <input
+                type="text"
+                id="id_vendor"
+                name="vendor"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                placeholder="e.g., Office Depot"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="id_expense_category"
+                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white"
+                >Category *</label
+              >
+              <select
+                id="id_expense_category"
+                name="expense_category"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                required
+              >
+                <option value="">Select Category</option>
+                {% for category in expense_categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label
+                for="id_total_amount"
+                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white"
+                >Total Amount *</label
+              >
+              <input
+                type="number"
+                step="0.01"
+                id="id_total_amount"
+                name="total_amount"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                placeholder="0.00"
+                required
+              />
+            </div>
+            <div class="md:col-span-2">
+              <label
+                for="id_description"
+                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white"
+                >Description (Optional)</label
+              >
+              <textarea
+                id="id_description"
+                name="description"
+                rows="3"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                placeholder="Expense description..."
+              ></textarea>
+            </div>
+            <div>
+              <label
+                for="id_status"
+                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white"
+                >Status</label
+              >
+              <select
+                id="id_status"
+                name="status"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+              >
+                <option value="DRAFT" selected>Draft</option>
+                <option value="SUBMITTED">Submitted</option>
+                <option value="APPROVED">Approved</option>
+                <option value="PAID">Paid</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <!-- Modal footer -->
+      <div
+        class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600"
+      >
+        <button
+          type="submit"
+          form="newExpenseForm"
+          class="w-full text-xs bg-blue-900 text-white py-2 px-3 font-medium hover:bg-blue-800 transition-all duration-200 shadow-sm disabled:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed submit-btn"
+        >
+          Create Expense
+        </button>
+      </div>
     </div>
+  </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("newExpenseForm");
+    const submitBtn = form.querySelector(".submit-btn");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating...";
+
+      // Get form data
+      const formData = new FormData(form);
+
+      // Submit form
+      fetch(form.action, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          Accept: "application/json",
+        },
+        credentials: "same-origin",
+      })
+        .then((response) => {
+          if (response.ok) {
+            // Success - redirect to expense list
+            window.location.href =
+              '{% url "finance_management:expense_list" %}';
+          } else {
+            throw new Error("Form submission failed");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          // Re-enable submit button
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Create Expense";
+          alert("An error occurred. Please try again.");
+        });
+    });
+  });
+</script>
