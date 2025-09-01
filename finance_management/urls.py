@@ -14,6 +14,7 @@ urlpatterns = [
     path('invoices/', views.InvoiceListView.as_view(), name='invoice_list'),
     path('invoices/create/', views.InvoiceCreateView.as_view(), name='invoice_create'),
     path('invoices/<int:pk>/', views.InvoiceDetailView.as_view(), name='invoice_detail'),
+    path('invoices/<int:pk>/update/', views.InvoiceUpdateView.as_view(), name='invoice_update'),
     
     # Payments
     path('payments/', views.PaymentListView.as_view(), name='payment_list'),
@@ -109,4 +110,9 @@ urlpatterns = [
     path('accounts-payable/<int:pk>/delete/', views.AccountsPayableDeleteView.as_view(), name='accounts_payable_delete'),
     path('accounts-payable/<int:pk>/approve/', views.AccountsPayableApprovalView.as_view(), name='accounts_payable_approve'),
     path('accounts-payable/<int:pk>/payment/', views.AccountsPayablePaymentView.as_view(), name='accounts_payable_payment'),
+    
+    # Accounts Receivable URLs
+    path('accounts-receivable/', views.AccountsReceivableListView.as_view(), name='accounts_receivable_list'),
+    path('accounts-receivable/<int:pk>/', views.AccountsReceivableDetailView.as_view(), name='accounts_receivable_detail'),
+    path('accounts-receivable/<int:pk>/payment/', views.AccountsReceivablePaymentView.as_view(), name='accounts_receivable_payment'),
 ]

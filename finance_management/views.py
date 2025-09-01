@@ -36,14 +36,26 @@ class FinanceDashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Get summary statistics
-        total_revenue = Invoice.objects.filter(status='PAID').aggregate(total=Sum('total'))['total'] or 0
-        total_expenses = Expense.objects.aggregate(total=Sum('total_amount'))['total'] or 0
+        # Calculate real financial metrics
+        # Cash Position (Total payments received - Total expenses paid)
+        total_payments = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
+        total_expenses_paid = Expense.objects.filter(status='APPROVED').aggregate(total=Sum('total_amount'))['total'] or 0
+        cash_position = total_payments - total_expenses_paid
         
-        context['total_revenue'] = total_revenue
-        context['total_expenses'] = total_expenses
-        context['net_profit'] = total_revenue - total_expenses
-        context['pending_invoices'] = Invoice.objects.filter(status__in=['SENT', 'OVERDUE']).count()
+        # Accounts Receivable (Unpaid invoices)
+        accounts_receivable = Invoice.objects.filter(status__in=['SENT', 'OVERDUE']).aggregate(total=Sum('total'))['total'] or 0
+        
+        # Accounts Payable (Unpaid accounts payable)
+        accounts_payable = AccountsPayable.objects.filter(status__in=['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'PARTIALLY_PAID']).aggregate(total=Sum('balance_due'))['total'] or 0
+        
+        # Working Capital (Current Assets - Current Liabilities)
+        working_capital = cash_position + accounts_receivable - accounts_payable
+        
+        # Set dashboard metrics
+        context['cash_position'] = cash_position
+        context['accounts_receivable'] = accounts_receivable
+        context['accounts_payable'] = accounts_payable
+        context['working_capital'] = working_capital
         
         # Get invoice counts by status
         context['paid_count'] = Invoice.objects.filter(status='PAID').count()
@@ -56,6 +68,9 @@ class FinanceDashboardView(LoginRequiredMixin, TemplateView):
         
         # Get recent expenses
         context['recent_expenses'] = Expense.objects.order_by('-expense_date')[:5]
+        
+        # Get recent accounts payable
+        context['recent_payables'] = AccountsPayable.objects.order_by('-invoice_date')[:5]
         
         # Calculate monthly revenue and expenses for the current year
         current_year = timezone.now().year
@@ -78,21 +93,16 @@ class FinanceDashboardView(LoginRequiredMixin, TemplateView):
         # Get expense categories distribution
         expense_categories_data = []
         expense_categories_labels = []
-        category_mapping = {
-            'OFFICE_SUPPLIES': 'Office Supplies',
-            'UTILITIES': 'Utilities',
-            'RENT': 'Rent',
-            'TRAVEL': 'Travel',
-            'PROFESSIONAL_FEES': 'Professional Fees',
-            'MARKETING': 'Marketing',
-            'OTHER': 'Other'
-        }
         
-        for category_key, category_label in category_mapping.items():
-            total = Expense.objects.filter(expense_category__name=category_key).aggregate(total=Sum('total_amount'))['total'] or 0
-            if total > 0:
-                expense_categories_data.append(float(total))
-                expense_categories_labels.append(category_label)
+        # Get all expense categories that have expenses
+        categories_with_expenses = Expense.objects.values('expense_category__name').annotate(
+            total=Sum('total_amount')
+        ).filter(expense_category__isnull=False).order_by('-total')
+        
+        for category in categories_with_expenses:
+            if category['total'] > 0:
+                expense_categories_data.append(float(category['total']))
+                expense_categories_labels.append(category['expense_category__name'] or 'Unknown')
         
         # Invoice status distribution
         invoice_status_data = [
@@ -113,22 +123,133 @@ class FinanceDashboardView(LoginRequiredMixin, TemplateView):
             client_revenue_labels.append(client['invoice__client__name'] or 'Unknown Client')
             client_revenue_data.append(float(client['total_revenue']))
         
-        # Financial metrics
-        context['collection_rate'] = 92  # Default value
-        context['avg_payment_time'] = 15  # Default value
-        context['outstanding_amount'] = Invoice.objects.filter(status__in=['SENT', 'OVERDUE']).aggregate(total=Sum('total'))['total'] or 0
-        context['monthly_growth'] = '+8.5'  # Default value
-        context['finance_status'] = 'All financial reports up to date'
+        # Calculate real financial metrics
+        # Collection Rate (Paid invoices / Total invoices)
+        total_invoices = Invoice.objects.count()
+        paid_invoices = Invoice.objects.filter(status='PAID').count()
+        collection_rate = (paid_invoices / total_invoices * 100) if total_invoices > 0 else 0
         
-        # Convert data to JSON for charts
-        context['monthly_revenue'] = json.dumps(monthly_revenue)
-        context['monthly_expenses'] = json.dumps(monthly_expenses)
+        # Average Payment Time (in days)
+        paid_payments = Payment.objects.filter(payment_date__isnull=False)
+        if paid_payments.exists():
+            total_days = 0
+            payment_count = 0
+            for payment in paid_payments:
+                if payment.invoice and payment.invoice.issue_date:
+                    days_diff = (payment.payment_date - payment.invoice.issue_date).days
+                    if days_diff >= 0:  # Only count valid payment times
+                        total_days += days_diff
+                        payment_count += 1
+            
+            avg_payment_time = total_days / payment_count if payment_count > 0 else 0
+        else:
+            avg_payment_time = 0
+        
+        # Outstanding Amount (Unpaid invoices)
+        outstanding_amount = Invoice.objects.filter(status__in=['SENT', 'OVERDUE']).aggregate(total=Sum('total'))['total'] or 0
+        
+        # Monthly Growth (Compare current month vs previous month)
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+        
+        # Current month revenue
+        current_month_revenue = Payment.objects.filter(
+            payment_date__year=current_year,
+            payment_date__month=current_month
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Previous month revenue
+        if current_month == 1:
+            prev_month = 12
+            prev_year = current_year - 1
+        else:
+            prev_month = current_month - 1
+            prev_year = current_year
+            
+        prev_month_revenue = Payment.objects.filter(
+            payment_date__year=prev_year,
+            payment_date__month=prev_month
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Calculate growth percentage
+        if prev_month_revenue > 0:
+            growth_percentage = ((current_month_revenue - prev_month_revenue) / prev_month_revenue) * 100
+            monthly_growth = f"{growth_percentage:+.1f}"
+        else:
+            monthly_growth = "+0.0"
+        
+        # Finance Status
+        overdue_invoices = Invoice.objects.filter(status='OVERDUE').count()
+        pending_expenses = Expense.objects.filter(status='PENDING').count()
+        pending_payables = AccountsPayable.objects.filter(status__in=['DRAFT', 'PENDING_APPROVAL']).count()
+        
+        if overdue_invoices > 0 and (pending_expenses > 0 or pending_payables > 0):
+            finance_status = f"{overdue_invoices} overdue invoices, {pending_expenses} pending expenses, {pending_payables} pending payables"
+        elif overdue_invoices > 0:
+            finance_status = f"{overdue_invoices} overdue invoices need attention"
+        elif pending_expenses > 0 or pending_payables > 0:
+            finance_status = f"{pending_expenses} pending expenses, {pending_payables} pending payables require approval"
+        else:
+            finance_status = "All financial reports up to date"
+        
+        # Set calculated metrics
+        context['collection_rate'] = round(collection_rate, 1)
+        context['avg_payment_time'] = round(avg_payment_time, 0)
+        context['outstanding_amount'] = outstanding_amount
+        context['monthly_growth'] = monthly_growth
+        context['finance_status'] = finance_status
+        
+        # Payment Methods Distribution
+        payment_methods_data = []
+        payment_methods_labels = ['Bank Transfer', 'Credit Card', 'Cash', 'Check', 'Online']
+        
+        # Count payments by method
+        bank_transfer_count = Payment.objects.filter(payment_method='BANK_TRANSFER').count()
+        credit_card_count = Payment.objects.filter(payment_method='CREDIT_CARD').count()
+        cash_count = Payment.objects.filter(payment_method='CASH').count()
+        check_count = Payment.objects.filter(payment_method='CHECK').count()
+        online_count = Payment.objects.filter(payment_method='ONLINE_PAYMENT').count()
+        
+        payment_methods_data = [bank_transfer_count, credit_card_count, cash_count, check_count, online_count]
+        
+        # Cash Flow Trends (Last 6 months)
+        cash_flow_data = []
+        cash_flow_labels = []
+        
+        for i in range(6):
+            month_offset = 5 - i  # Start from 5 months ago
+            target_date = timezone.now() - timedelta(days=30 * month_offset)
+            target_month = target_date.month
+            target_year = target_date.year
+            
+            # Calculate net cash flow for this month
+            month_payments = Payment.objects.filter(
+                payment_date__year=target_year,
+                payment_date__month=target_month
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            month_expenses = Expense.objects.filter(
+                expense_date__year=target_year,
+                expense_date__month=target_month
+            ).aggregate(total=Sum('total_amount'))['total'] or 0
+            
+            net_cash_flow = month_payments - month_expenses
+            cash_flow_data.append(net_cash_flow)
+            cash_flow_labels.append(target_date.strftime('%b'))
+        
+        # Convert data to JSON for charts (convert Decimal to float for JSON serialization)
+        context['monthly_revenue'] = json.dumps([float(x) for x in monthly_revenue])
+        context['monthly_expenses'] = json.dumps([float(x) for x in monthly_expenses])
         context['monthly_labels'] = json.dumps(monthly_labels)
-        context['expense_categories_data'] = json.dumps(expense_categories_data)
+        context['expense_categories_data'] = json.dumps([float(x) for x in expense_categories_data])
         context['expense_categories_labels'] = json.dumps(expense_categories_labels)
         context['invoice_status_data'] = json.dumps(invoice_status_data)
         context['client_revenue_labels'] = json.dumps(client_revenue_labels)
-        context['client_revenue_data'] = json.dumps(client_revenue_data)
+        context['client_revenue_data'] = json.dumps([float(x) for x in client_revenue_data])
+        context['payment_methods_data'] = json.dumps(payment_methods_data)
+        context['payment_methods_labels'] = json.dumps(payment_methods_labels)
+        context['cash_flow_data'] = json.dumps([float(x) for x in cash_flow_data])
+        context['cash_flow_labels'] = json.dumps(cash_flow_labels)
         
         return context
 
@@ -203,6 +324,35 @@ class InvoiceCreateView(LoginRequiredMixin, View):
             'form': form, 
             'clients': clients,
             'modal_id': 'new-invoice-modal'
+        })
+
+class InvoiceUpdateView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        invoice = get_object_or_404(Invoice, pk=pk)
+        form = InvoiceForm(instance=invoice)
+        clients = Client.objects.all()
+        return render(request, 'finance_management/modals/new_invoice_modal.html', {
+            'form': form, 
+            'clients': clients,
+            'modal_id': 'edit-invoice-modal',
+            'invoice': invoice
+        })
+    
+    def post(self, request, pk):
+        invoice = get_object_or_404(Invoice, pk=pk)
+        form = InvoiceForm(request.POST, instance=invoice)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Invoice updated successfully.')
+            response = HttpResponse(status=204)
+            response['HX-Redirect'] = reverse_lazy('finance_management:income_list')
+            return response
+        clients = Client.objects.all()
+        return render(request, 'finance_management/modals/new_invoice_modal.html', {
+            'form': form, 
+            'clients': clients,
+            'modal_id': 'edit-invoice-modal',
+            'invoice': invoice
         })
 
 class PaymentListView(LoginRequiredMixin, ListView):
@@ -825,6 +975,11 @@ class PettyCashListView(LoginRequiredMixin, TemplateView):
         if status_param:
             petty_cash_transactions = petty_cash_transactions.filter(status=status_param)
         
+        # Handle transaction type filter
+        transaction_type_param = self.request.GET.get('transaction_type')
+        if transaction_type_param:
+            petty_cash_transactions = petty_cash_transactions.filter(transaction_type=transaction_type_param)
+        
         # Pagination
         paginator = Paginator(petty_cash_transactions, 10)  # Show 10 transactions per page
         page = self.request.GET.get('page')
@@ -842,6 +997,8 @@ class PettyCashListView(LoginRequiredMixin, TemplateView):
             initial['search'] = search_param
         if status_param:
             initial['status'] = status_param
+        if transaction_type_param:
+            initial['transaction_type'] = transaction_type_param
         search_form = PettyCashFilterForm(initial=initial)
         
         context['petty_cash_transactions'] = page_obj
@@ -985,7 +1142,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
     paginate_by = 10
     
     def get_queryset(self):
-        queryset = Invoice.objects.all().order_by('-issue_date')
+        queryset = Invoice.objects.select_related('client').all().order_by('-issue_date')
         
         # Handle search functionality
         search_param = self.request.GET.get('search')
@@ -1001,6 +1158,11 @@ class IncomeListView(LoginRequiredMixin, ListView):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         
+        # Handle client filter
+        client_filter = self.request.GET.get('client')
+        if client_filter:
+            queryset = queryset.filter(client_id=client_filter)
+        
         return queryset
     
     def get_context_data(self, **kwargs):
@@ -1009,6 +1171,9 @@ class IncomeListView(LoginRequiredMixin, ListView):
         # Create a simple search form context
         search_param = self.request.GET.get('search')
         context['search_form'] = {'search': search_param or ''}
+        
+        # Add clients for filter dropdown
+        context['clients'] = Client.objects.all().order_by('name')
         
         return context
 
@@ -1043,7 +1208,7 @@ class ReportListView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         
         # Get reports from the database
-        reports = Report.objects.all().order_by('-created_at')
+        reports = Report.objects.select_related('generated_by').all().order_by('-created_at')
         
         # Handle search functionality
         search_param = self.request.GET.get('search')
@@ -1058,6 +1223,16 @@ class ReportListView(LoginRequiredMixin, TemplateView):
         report_type_param = self.request.GET.get('report_type')
         if report_type_param:
             reports = reports.filter(report_type=report_type_param)
+        
+        # Handle status filter
+        status_param = self.request.GET.get('status')
+        if status_param:
+            reports = reports.filter(status=status_param)
+        
+        # Handle format filter
+        format_param = self.request.GET.get('format')
+        if format_param:
+            reports = reports.filter(format=format_param)
         
         # Pagination
         paginator = Paginator(reports, 10)  # Show 10 reports per page
@@ -1076,6 +1251,10 @@ class ReportListView(LoginRequiredMixin, TemplateView):
             initial['search'] = search_param
         if report_type_param:
             initial['report_type'] = report_type_param
+        if status_param:
+            initial['status'] = status_param
+        if format_param:
+            initial['format'] = format_param
         search_form = ReportFilterForm(initial=initial)
         
         context['reports'] = page_obj
@@ -1111,14 +1290,26 @@ class ReportCreateView(LoginRequiredMixin, View):
             report.save()
             
             messages.success(request, 'Report generation request submitted successfully.')
-            response = HttpResponse(status=204)
-            response['HX-Redirect'] = reverse_lazy('finance_management:reports')
-            return response
+            
+            # Check if this is an HTMX request (modal) or regular form submission
+            if request.headers.get('HX-Request'):
+                response = HttpResponse(status=204)
+                response['HX-Redirect'] = reverse_lazy('finance_management:reports')
+                return response
+            else:
+                # Regular form submission from page form
+                return redirect('finance_management:reports')
         
-        return render(request, 'finance_management/modals/report_form.html', {
-            'form': form,
-            'modal_id': 'new-report-modal'
-        })
+        # If form is invalid, check if it's an HTMX request
+        if request.headers.get('HX-Request'):
+            return render(request, 'finance_management/modals/report_form.html', {
+                'form': form,
+                'modal_id': 'new-report-modal'
+            })
+        else:
+            # For page form, redirect back to reports page with error
+            messages.error(request, 'Please correct the errors below.')
+            return redirect('finance_management:reports')
 
 class ReportDetailView(LoginRequiredMixin, DetailView):
     model = Report
@@ -2517,3 +2708,103 @@ class AccountsPayablePaymentView(UpdateView):
             messages.error(self.request, 'Failed to record payment!')
         
         return redirect('finance_management:accounts_payable_detail', pk=self.object.pk)
+
+# ============================================================================
+# ACCOUNTS RECEIVABLE VIEWS
+# ============================================================================
+
+class AccountsReceivableListView(LoginRequiredMixin, TemplateView):
+    """List view for accounts receivable (unpaid invoices)"""
+    template_name = 'finance_management/accounts_receivable_list.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get unpaid invoices from the database
+        unpaid_invoices = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE']
+        ).select_related('client').order_by('-due_date', '-created_at')
+        
+        # Handle search functionality
+        search_param = self.request.GET.get('search')
+        if search_param:
+            unpaid_invoices = unpaid_invoices.filter(
+                Q(invoice_number__icontains=search_param) |
+                Q(client__name__icontains=search_param) |
+                Q(description__icontains=search_param)
+            )
+        
+        # Handle status filter
+        status_param = self.request.GET.get('status')
+        if status_param:
+            unpaid_invoices = unpaid_invoices.filter(status=status_param)
+        
+        # Handle client filter
+        client_param = self.request.GET.get('client')
+        if client_param:
+            unpaid_invoices = unpaid_invoices.filter(client_id=client_param)
+        
+        # Pagination
+        paginator = Paginator(unpaid_invoices, 10)  # Show 10 invoices per page
+        page = self.request.GET.get('page')
+        
+        try:
+            page_obj = paginator.page(page)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+        
+        # Initialize search form
+        initial = {}
+        if search_param:
+            initial['search'] = search_param
+        if status_param:
+            initial['status'] = status_param
+        if client_param:
+            initial['client'] = client_param
+        
+        # Get all clients for the filter dropdown
+        clients = Client.objects.filter(is_active=True).order_by('name')
+        
+        context['unpaid_invoices'] = page_obj
+        context['page_obj'] = page_obj
+        context['clients'] = clients
+        
+        # Summary statistics
+        context['total_receivables'] = unpaid_invoices.count()
+        context['total_amount'] = unpaid_invoices.aggregate(
+            total=models.Sum('total')
+        )['total'] or Decimal('0.00')
+        context['overdue_count'] = unpaid_invoices.filter(status='OVERDUE').count()
+        context['overdue_amount'] = unpaid_invoices.filter(status='OVERDUE').aggregate(
+            total=models.Sum('total')
+        )['total'] or Decimal('0.00')
+        
+        return context
+
+class AccountsReceivableDetailView(LoginRequiredMixin, DetailView):
+    """Detail view for accounts receivable (invoice detail)"""
+    model = Invoice
+    template_name = 'finance_management/accounts_receivable_detail.html'
+    context_object_name = 'invoice'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['line_items'] = self.object.items.all()
+        context['payments'] = self.object.payments.all().order_by('-payment_date')
+        return context
+
+class AccountsReceivablePaymentView(LoginRequiredMixin, UpdateView):
+    """View for recording payments against accounts receivable"""
+    model = Invoice
+    template_name = 'finance_management/accounts_receivable_payment.html'
+    fields = ['status']
+    
+    def form_valid(self, form):
+        # Update invoice status to paid
+        self.object.status = 'PAID'
+        self.object.save()
+        
+        messages.success(self.request, 'Payment recorded successfully! Invoice marked as paid.')
+        return redirect('finance_management:accounts_receivable_detail', pk=self.object.pk)

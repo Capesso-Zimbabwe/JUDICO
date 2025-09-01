@@ -480,6 +480,16 @@ class ReportFilterForm(forms.Form):
         required=False,
         widget=forms.Select(attrs={'onchange': 'document.getElementById("search-form").submit();'})
     )
+    status = forms.ChoiceField(
+        choices=[('', 'All Statuses')] + Report.STATUS_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'onchange': 'document.getElementById("search-form").submit();'})
+    )
+    format = forms.ChoiceField(
+        choices=[('', 'All Formats')] + Report.FORMAT_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'onchange': 'document.getElementById("search-form").submit();'})
+    )
 
 class ReportForm(forms.ModelForm):
     class Meta:

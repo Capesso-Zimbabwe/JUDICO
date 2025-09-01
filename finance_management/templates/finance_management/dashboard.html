@@ -1,507 +1,429 @@
 {% extends 'finance_management/base.html' %}
+{% load static %}
 {% load humanize %}
 
-{% block title %}Finance Dashboard{% endblock %}
+{% block title %}Finance Dashboard{% endblock title %}
 
-{% load static %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{% static 'finance_management/js/finance_dashboard.js' %}"></script>
-{% endblock %}
-
-{% block client_header %}Dashboard{% endblock %}
+{% block client_header %}Dashboard{% endblock client_header %}
 
 {% block finance_content %}
 <!-- Scrollable Content Wrapper -->
 <div class="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
 
+  <!-- Quick Financial Metrics Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <div class="bg-white rounded-lg shadow p-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700">Cash Position</h3>
+          <p class="text-xl font-bold text-green-600">
+            ${{ cash_position|default:"125,340"|floatformat:0 }}
+          </p>
+        </div>
+        <div class="bg-green-100 p-2 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
 
-<!-- Quick Financial Metrics Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
     <div class="bg-white rounded-lg shadow p-3">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700">Cash Position</h3>
-                <p class="text-xl font-bold text-green-600">${{ cash_position|default:"125,340"|floatformat:0 }}</p>
-            </div>
-            <div class="bg-green-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-            </div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700">Accounts Receivable</h3>
+          <p class="text-xl font-bold text-blue-600">
+            ${{ accounts_receivable|default:"37,800"|floatformat:0 }}
+          </p>
         </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow p-3">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700">Accounts Receivable</h3>
-                <p class="text-xl font-bold text-blue-600">${{ accounts_receivable|default:"37,800"|floatformat:0 }}</p>
-            </div>
-            <div class="bg-blue-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-            </div>
+        <div class="bg-blue-100 p-2 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
         </div>
+      </div>
     </div>
-    
-    <div class="bg-white rounded-lg shadow p-3">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700">Accounts Payable</h3>
-                <p class="text-xl font-bold text-orange-600">${{ accounts_payable|default:"15,200"|floatformat:0 }}</p>
-            </div>
-            <div class="bg-orange-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                </svg>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow p-3">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700">Working Capital</h3>
-                <p class="text-xl font-bold text-purple-600">${{ working_capital|default:"147,940"|floatformat:0 }}</p>
-            </div>
-            <div class="bg-purple-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Charts Section -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <!-- Monthly Revenue vs Expenses Chart -->
     <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">Monthly Revenue vs Expenses</h3>
-        <div class="h-64">
-            <canvas id="monthlyChart"></canvas>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700">Accounts Payable</h3>
+          <p class="text-xl font-bold text-orange-600">
+            ${{ accounts_payable|default:"15,200"|floatformat:0 }}
+          </p>
         </div>
-    </div>
-    
-    <!-- Invoice Status Distribution Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">Invoice Status Distribution</h3>
-        <div class="h-64">
-            <canvas id="invoiceStatusChart"></canvas>
+        <div class="bg-orange-100 p-2 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+          </svg>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- Second Row of Charts -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <!-- Expense Categories Chart -->
     <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">Expense Categories</h3>
-        <div class="h-64">
-            <canvas id="expenseCategoriesChart"></canvas>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700">Working Capital</h3>
+          <p class="text-xl font-bold text-purple-600">
+            ${{ working_capital|default:"147,940"|floatformat:0 }}
+          </p>
         </div>
-    </div>
-    
-    <!-- Payment Methods Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">Payment Methods</h3>
-        <div class="h-64">
-            <canvas id="paymentMethodsChart"></canvas>
+        <div class="bg-purple-100 p-2 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
         </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Third Row of Charts -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <!-- Cash Flow Trends Chart -->
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">Cash Flow Trends (Last 6 Months)</h3>
-        <div class="h-64">
-            <canvas id="cashFlowChart"></canvas>
-        </div>
+      <h3 class="text-sm font-semibold text-gray-700 mb-2">Monthly Revenue vs Expenses</h3>
+      <div class="h-64"><canvas id="monthlyChart"></canvas></div>
     </div>
-    
-    <!-- Client Revenue Distribution Chart -->
-    <div class="bg-white rounded-lg shadow p-3">
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">Top Client Revenue</h3>
-        <div class="h-64">
-            <canvas id="clientRevenueChart"></canvas>
-        </div>
-    </div>
-</div>
 
-<!-- Recent Activity Summary -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow p-3">
+      <h3 class="text-sm font-semibold text-gray-700 mb-2">Invoice Status Distribution</h3>
+      <div class="h-64"><canvas id="invoiceStatusChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Second Row of Charts -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div class="bg-white rounded-lg shadow p-3">
+      <h3 class="text-sm font-semibold text-gray-700 mb-2">Expense Categories</h3>
+      <div class="h-64"><canvas id="expenseCategoriesChart"></canvas></div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-3">
+      <h3 class="text-sm font-semibold text-gray-700 mb-2">Payment Methods</h3>
+      <div class="h-64"><canvas id="paymentMethodsChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Third Row of Charts -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div class="bg-white rounded-lg shadow p-3">
+      <h3 class="text-sm font-semibold text-gray-700 mb-2">Cash Flow Trends (Last 6 Months)</h3>
+      <div class="h-64"><canvas id="cashFlowChart"></canvas></div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-3">
+      <h3 class="text-sm font-semibold text-gray-700 mb-2">Top Client Revenue</h3>
+      <div class="h-64"><canvas id="clientRevenueChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Summary -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
     <!-- Recent Payments -->
     <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Recent Payments
-        </h3>
-        <div class="space-y-3">
-            {% for payment in recent_payments|slice:":4" %}
-            <div class="flex items-start space-x-3">
-                <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
-                <div class="flex-1">
-                    <p class="text-xs text-gray-600">{{ payment.invoice.client.name }} - ${{ payment.amount|floatformat:2 }}</p>
-                    <p class="text-xs text-gray-400">{{ payment.payment_date|timesince }} ago</p>
-                </div>
-            </div>
-            {% empty %}
-            <div class="flex items-start space-x-3">
-                <div class="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
-                <div class="flex-1">
-                    <p class="text-xs text-gray-600">No recent payments</p>
-                    <p class="text-xs text-gray-400">--</p>
-                </div>
-            </div>
-            {% endfor %}
+      <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Recent Payments
+      </h3>
+      <div class="space-y-3">
+        {% for payment in recent_payments|slice:":4" %}
+        <div class="flex items-start space-x-3">
+          <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+          <div class="flex-1">
+            <p class="text-xs text-gray-600">
+              {{ payment.invoice.client.name }} - ${{ payment.amount|floatformat:2 }}
+            </p>
+            <p class="text-xs text-gray-400">{{ payment.payment_date|timesince }} ago</p>
+          </div>
         </div>
+        {% empty %}
+        <div class="flex items-start space-x-3">
+          <div class="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
+          <div class="flex-1">
+            <p class="text-xs text-gray-600">No recent payments</p>
+            <p class="text-xs text-gray-400">--</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
 
     <!-- Recent Expenses -->
     <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-            </svg>
-            Recent Expenses
-        </h3>
-        <div class="space-y-3">
-            {% for expense in recent_expenses|slice:":3" %}
-            <div class="flex items-center justify-between p-2 bg-red-50 rounded">
-                <div>
-                    <p class="text-xs font-medium text-gray-700">{{ expense.title }}</p>
-                    <p class="text-xs text-gray-500">${{ expense.amount|floatformat:2 }}</p>
-                </div>
-                <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">{{ expense.get_category_display }}</span>
-            </div>
-            {% empty %}
-            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                <div>
-                    <p class="text-xs font-medium text-gray-700">No recent expenses</p>
-                    <p class="text-xs text-gray-500">All caught up!</p>
-                </div>
-            </div>
-            {% endfor %}
+      <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+          </svg>
+        Recent Expenses
+      </h3>
+      <div class="space-y-3">
+        {% for expense in recent_expenses|slice:":3" %}
+        <div class="flex items-center justify-between p-2 bg-red-50 rounded">
+          <div>
+            <p class="text-xs font-medium text-gray-700">{{ expense.title }}</p>
+            <p class="text-xs text-gray-500">${{ expense.total_amount|floatformat:2 }}</p>
+          </div>
+          <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">{{ expense.expense_category.name|title }}</span>
         </div>
+        {% empty %}
+        <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+          <div>
+            <p class="text-xs font-medium text-gray-700">No recent expenses</p>
+            <p class="text-xs text-gray-500">All caught up!</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
 
-    <!-- Finance Management Summary -->
+    <!-- Recent Accounts Payable -->
     <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            Finance Summary
-        </h3>
-        <div class="space-y-3">
-            <div class="flex justify-between items-center">
-                <span class="text-xs text-gray-600">Collection Rate</span>
-                <span class="text-xs font-semibold text-green-600">{{ collection_rate|default:"92" }}%</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-xs text-gray-600">Avg. Payment Time</span>
-                <span class="text-xs font-semibold text-blue-600">{{ avg_payment_time|default:"15" }} days</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-xs text-gray-600">Outstanding Amount</span>
-                <span class="text-xs font-semibold text-purple-600">${{ outstanding_amount|default:"0"|floatformat:2 }}</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-xs text-gray-600">Monthly Growth</span>
-                <span class="text-xs font-semibold text-orange-600">{{ monthly_growth|default:"+8.5" }}%</span>
-            </div>
-            <div class="mt-3 p-2 bg-green-50 rounded">
-                <p class="text-xs text-green-700 font-medium">✓ {{ finance_status|default:"All financial reports up to date" }}</p>
-            </div>
+      <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+        </svg>
+        Recent Payables
+      </h3>
+      <div class="space-y-3">
+        {% for payable in recent_payables|slice:":3" %}
+        <div class="flex items-center justify-between p-2 bg-orange-50 rounded">
+          <div>
+            <p class="text-xs font-medium text-gray-700">{{ payable.vendor }}</p>
+            <p class="text-xs text-gray-500">${{ payable.balance_due|floatformat:2 }}</p>
+          </div>
+          <span class="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded">{{ payable.get_status_display }}</span>
         </div>
+        {% empty %}
+        <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+          <div>
+            <p class="text-xs font-medium text-gray-700">No recent payables</p>
+            <p class="text-xs text-gray-500">All caught up!</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
+
+    <!-- Finance Summary -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Finance Summary
+      </h3>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-gray-600">Collection Rate</span>
+          <span class="text-xs font-semibold text-green-600">{{ collection_rate|default:"92" }}%</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-gray-600">Avg. Payment Time</span>
+          <span class="text-xs font-semibold text-blue-600">{{ avg_payment_time|default:"15" }} days</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-gray-600">Outstanding Amount</span>
+          <span class="text-xs font-semibold text-purple-600">${{ outstanding_amount|default:"0"|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-gray-600">Monthly Growth</span>
+          <span class="text-xs font-semibold text-orange-600">{{ monthly_growth|default:"+8.5" }}%</span>
+        </div>
+        <div class="mt-3 p-2 bg-green-50 rounded">
+          <p class="text-xs text-green-700 font-medium">✓ {{ finance_status|default:"All financial reports up to date" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<!-- Chart.js Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Monthly Revenue vs Expenses Chart
-        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-        const monthlyChart = new Chart(monthlyCtx, {
-            type: 'line',
-            data: {
-                labels: {{ monthly_labels|default:'["Jan", "Feb", "Mar", "Apr", "May", "Jun"]'|safe }},
-                datasets: [{
-                    label: 'Revenue',
-                    data: {{ monthly_revenue|default:'[5000, 8000, 12000, 7000, 10000, 15000]'|safe }},
-                    borderColor: '#10B981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }, {
-                    label: 'Expenses',
-                    data: {{ monthly_expenses|default:'[3000, 4000, 6000, 5000, 7000, 8000]'|safe }},
-                    borderColor: '#EF4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                            font: {
-                                size: 12
-                            },
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Amount ($)',
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 10
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                }
-            }
-        });
-        
-        // Invoice Status Distribution Chart
-        const invoiceStatusCtx = document.getElementById('invoiceStatusChart').getContext('2d');
-        const invoiceStatusChart = new Chart(invoiceStatusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Paid', 'Pending', 'Overdue', 'Draft'],
-                datasets: [{
-                    data: {{ invoice_status_data|default:'[45, 25, 15, 15]'|safe }},
-                    backgroundColor: ['#34D399', '#FCD34D', '#F87171', '#9CA3AF'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    title: {
-                        display: false,
-                        text: 'Invoice Status Distribution'
-                    }
-                }
-            }
-        });
-        
-        // Expense Categories Chart
-        const expenseCategoriesCtx = document.getElementById('expenseCategoriesChart').getContext('2d');
-        const expenseCategoriesChart = new Chart(expenseCategoriesCtx, {
-            type: 'pie',
-            data: {
-                labels: {{ expense_categories_labels|default:'["Office Supplies", "Travel", "Marketing", "Legal", "Other"]'|safe }},
-                datasets: [{
-                    data: {{ expense_categories_data|default:'[35, 25, 20, 15, 5]'|safe }},
-                    backgroundColor: ['#F87171', '#34D399', '#60A5FA', '#A78BFA', '#FBBF24'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Payment Methods Chart
-        const paymentMethodsCtx = document.getElementById('paymentMethodsChart').getContext('2d');
-        const paymentMethodsChart = new Chart(paymentMethodsCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Bank Transfer', 'Credit Card', 'Cash', 'Check', 'Online'],
-                datasets: [{
-                    label: 'Number of Payments',
-                    data: [25, 18, 12, 8, 15],
-                    backgroundColor: [
-                        '#34D399', // Green
-                        '#60A5FA', // Blue
-                        '#FCD34D', // Yellow
-                        '#A78BFA', // Purple
-                        '#F87171'  // Red
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                            font: {
-                                size: 10
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Number of Payments',
-                            font: {
-                                size: 10
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 10
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-        
-        // Cash Flow Trends Chart
-        const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
-        const cashFlowChart = new Chart(cashFlowCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Net Cash Flow',
-                    data: [2000, 4000, 6000, 2000, 3000, 7000],
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Cash Flow ($)'
-                        },
-                        ticks: {
-                            font: {
-                                size: 10
-                            },
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 10
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            font: {
-                                size: 10
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Client Revenue Distribution Chart
-        const clientRevenueCtx = document.getElementById('clientRevenueChart').getContext('2d');
-        const clientRevenueChart = new Chart(clientRevenueCtx, {
-            type: 'pie',
-            data: {
-                labels: {{ client_revenue_labels|default:'["ABC Corp", "XYZ Ltd", "Tech Solutions", "Legal Partners", "Others"]'|safe }},
-                datasets: [{
-                    data: {{ client_revenue_data|default:'[35000, 25000, 20000, 15000, 5000]'|safe }},
-                    backgroundColor: [
-                        '#60A5FA', // Blue
-                        '#34D399', // Green
-                        '#FCD34D', // Yellow
-                        '#A78BFA', // Purple
-                        '#F87171'  // Red
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            font: {
-                                size: 10
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': $' + context.parsed.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    });
-</script>
-
-</div> <!-- End scrollable wrapper -->
+<!-- End scrollable wrapper -->
 {% endblock finance_content %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'finance_management/js/finance_dashboard.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Monthly Revenue vs Expenses Chart
+  const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+  new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+      labels: {{ monthly_labels|default:'["Jan","Feb","Mar","Apr","May","Jun"]'|safe }},
+      datasets: [{
+        label: 'Revenue',
+        data: {{ monthly_revenue|default:'[5000,8000,12000,7000,10000,15000]'|safe }},
+        borderColor: '#10B981',
+        backgroundColor: 'rgba(16,185,129,0.1)',
+        tension: 0.3,
+        fill: true
+      },{
+        label: 'Expenses',
+        data: {{ monthly_expenses|default:'[3000,4000,6000,5000,7000,8000]'|safe }},
+        borderColor: '#EF4444',
+        backgroundColor: 'rgba(239,68,68,0.1)',
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0,
+            font: { size: 12 },
+            callback: function(value) { return '$' + value.toLocaleString(); }
+          },
+          title: { display: true, text: 'Amount ($)', font: { size: 12 } }
+        },
+        x: { ticks: { font: { size: 10 } } }
+      },
+      plugins: { legend: { display: true, position: 'top' } }
+    }
+  });
+
+  // Invoice Status Distribution Chart
+  const invoiceStatusCtx = document.getElementById('invoiceStatusChart').getContext('2d');
+  new Chart(invoiceStatusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Paid','Pending','Overdue','Draft'],
+      datasets: [{
+        data: {{ invoice_status_data|default:'[45,25,15,15]'|safe }},
+        backgroundColor: ['#34D399','#FCD34D','#F87171','#9CA3AF'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 12 } } },
+        title: { display: false }
+      }
+    }
+  });
+
+  // Expense Categories Chart
+  const expenseCategoriesCtx = document.getElementById('expenseCategoriesChart').getContext('2d');
+  new Chart(expenseCategoriesCtx, {
+    type: 'pie',
+    data: {
+      labels: {{ expense_categories_labels|default:'["Office Supplies","Travel","Marketing","Legal","Other"]'|safe }},
+      datasets: [{
+        data: {{ expense_categories_data|default:'[35,25,20,15,5]'|safe }},
+        backgroundColor: ['#F87171','#34D399','#60A5FA','#A78BFA','#FBBF24'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { font: { size: 12 } } } }
+    }
+  });
+
+  // Payment Methods Chart
+  const paymentMethodsCtx = document.getElementById('paymentMethodsChart').getContext('2d');
+  new Chart(paymentMethodsCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ payment_methods_labels|default:'["Bank Transfer","Credit Card","Cash","Check","Online"]'|safe }},
+      datasets: [{
+        label: 'Number of Payments',
+        data: {{ payment_methods_data|default:'[0,0,0,0,0]'|safe }},
+        backgroundColor: ['#34D399','#60A5FA','#FCD34D','#A78BFA','#F87171'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0, font: { size: 10 } },
+          title: { display: true, text: 'Number of Payments', font: { size: 10 } }
+        },
+        x: { ticks: { font: { size: 10 } } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Cash Flow Trends Chart
+  const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
+  new Chart(cashFlowCtx, {
+    type: 'line',
+    data: {
+      labels: {{ cash_flow_labels|default:'["Jan","Feb","Mar","Apr","May","Jun"]'|safe }},
+      datasets: [{
+        label: 'Net Cash Flow',
+        data: {{ cash_flow_data|default:'[0,0,0,0,0,0]'|safe }},
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59,130,246,0.1)',
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Cash Flow ($)' },
+          ticks: {
+            font: { size: 10 },
+            callback: function(value) { return '$' + value.toLocaleString(); }
+          }
+        },
+        x: { ticks: { font: { size: 10 } } }
+      },
+      plugins: { legend: { display: true, position: 'top', labels: { font: { size: 10 } } } }
+    }
+  });
+
+  // Client Revenue Distribution Chart
+  const clientRevenueCtx = document.getElementById('clientRevenueChart').getContext('2d');
+  new Chart(clientRevenueCtx, {
+    type: 'pie',
+    data: {
+      labels: {{ client_revenue_labels|default:'["ABC Corp","XYZ Ltd","Tech Solutions","Legal Partners","Others"]'|safe }},
+      datasets: [{
+        data: {{ client_revenue_data|default:'[35000,25000,20000,15000,5000]'|safe }},
+        backgroundColor: ['#60A5FA','#34D399','#FCD34D','#A78BFA','#F87171'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 10 } } },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.label + ': $' + context.parsed.toLocaleString();
+            }
+          }
+        }
+      }
+    }
+  });
+});
+</script>
+{% endblock extra_js %}

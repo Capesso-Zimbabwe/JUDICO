@@ -1,358 +1,373 @@
 {% extends 'finance_management/base.html' %}
+{% load humanize %}
 
 {% block title %}Financial Reports - Finance Management{% endblock %}
 
-{% block header_title %}Financial Reports{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+<style>
+    /* Status badges */
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-processing {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-completed {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-failed {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    /* Table styles */
+    .compact-table th, .compact-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Hover effect for table rows */
+    .hover-row:hover {
+        background-color: rgba(243, 244, 246, 0.7);
+    }
+    
+    /* Fix table column overlap */
+    #reportsTable {
+        table-layout: fixed;
+    }
+    
+    #reportsTable th:nth-child(1),
+    #reportsTable td:nth-child(1) {
+        width: 25%;
+        max-width: 25%;
+    }
+    
+    #reportsTable th:nth-child(2),
+    #reportsTable td:nth-child(2) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #reportsTable th:nth-child(3),
+    #reportsTable td:nth-child(3) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #reportsTable th:nth-child(4),
+    #reportsTable td:nth-child(4) {
+        width: 10%;
+        max-width: 10%;
+    }
+    
+    #reportsTable th:nth-child(5),
+    #reportsTable td:nth-child(5) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #reportsTable th:nth-child(6),
+    #reportsTable td:nth-child(6) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    #reportsTable th:nth-child(7),
+    #reportsTable td:nth-child(7) {
+        width: 15%;
+        max-width: 15%;
+    }
+    
+    /* Prevent text overflow */
+    .report-name-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Scrollbar styling */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Card styling for empty state */
+    .empty-state-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+</style>
+{% endblock %}
 
 {% block finance_content %}
-    <div class="bg-white rounded-sm shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
 
-        <!-- Header Section -->
-        <div class="bg-white px-6 py-4 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-lg font-semibold text-gray-900">Financial Reports</h1>
-                    <p class="text-sm text-gray-600">Main Campus Dormitory</p>
+<!-- Financial Reports Management Table -->
+<div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+        <form action="" class="flex-1 max-w-sm" id="search-form" method="get">
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
                 </div>
-                <div class="flex gap-2">
-                    <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">
-                        <i class="fas fa-edit mr-1"></i> Edit
-                    </button>
-                    <button class="px-3 py-1 text-xs bg-gray-800 text-white rounded hover:bg-gray-700">
-                        <i class="fas fa-download mr-1"></i> Export
-                    </button>
-                </div>
+                <input type="text" name="search" value="{{ search_form.search.value|default:'' }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 text-xs placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Search reports...">
             </div>
-        </div>
+        </form>
 
-        <!-- Month Selection and Quick Select -->
-        <div class="bg-white px-6 py-3 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div>
-                        <label class="text-sm font-medium text-gray-700">Select Months</label>
-                        <div class="grid grid-cols-4 gap-2 mt-2">
-                            <button class="px-3 py-1 text-xs bg-blue-500 text-white rounded">Jan</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Feb</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Mar</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Apr</button>
-                            <button class="px-3 py-1 text-xs bg-blue-500 text-white rounded">May</button>
-                            <button class="px-3 py-1 text-xs bg-blue-500 text-white rounded">Jun</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Jul</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Aug</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Sep</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Oct</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Nov</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Dec</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div>
-                        <label class="text-sm font-medium text-gray-700">Boarding House</label>
-                        <select class="mt-2 px-3 py-1 text-xs border border-gray-300 rounded">
-                            <option>Main Campus Dormitory</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-700">Quick Select</label>
-                        <div class="flex gap-2 mt-2">
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q1</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Q2</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">H1</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">H2</button>
-                            <button class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">Full Year</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
-            <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
-                <table class="w-full" id="financialReportsTable">
-                    <thead class="bg-gray-100 whitespace-nowrap text-xs sticky top-0 z-10">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Account
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Jan
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Feb
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Mar
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Apr
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                May
-                            </th>
-                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                                Jun
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white">
-                        <!-- REVENUE Section -->
-                        <tr class="bg-blue-50">
-                            <td class="px-4 py-3 text-sm font-bold text-blue-900 border-b border-gray-200">REVENUE</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-blue-900 border-b border-gray-200">Jan</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-blue-900 border-b border-gray-200">Feb</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-blue-900 border-b border-gray-200">Mar</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-blue-900 border-b border-gray-200">Apr</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-blue-900 border-b border-gray-200">May</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-blue-900 border-b border-gray-200">Jun</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-sm text-gray-900 border-b border-gray-100">Rental Income</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$75,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$75,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$75,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$75,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$75,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$75,000</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2 text-sm text-gray-900 border-b border-gray-100">Accounts Receivable</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$34,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$34,500</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$43,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$15,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$39,500</td>
-                            <td class="px-3 py-2 text-center text-sm text-gray-900 border-b border-gray-100">$37,800</td>
-                        </tr>
-                        <tr class="bg-blue-100 font-semibold">
-                            <td class="px-4 py-2 text-sm text-blue-900 border-b border-gray-200">Total Revenue</td>
-                            <td class="px-3 py-2 text-center text-sm text-blue-900 border-b border-gray-200">$109,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-blue-900 border-b border-gray-200">$109,500</td>
-                            <td class="px-3 py-2 text-center text-sm text-blue-900 border-b border-gray-200">$118,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-blue-900 border-b border-gray-200">$90,000</td>
-                            <td class="px-3 py-2 text-center text-sm text-blue-900 border-b border-gray-200">$114,500</td>
-                            <td class="px-3 py-2 text-center text-sm text-blue-900 border-b border-gray-200">$112,800</td>
-                        </tr>
-                        
-                        <!-- EXPENSES Section -->
-                        <tr class="bg-red-50">
-                            <td class="px-4 py-3 text-sm font-bold text-red-900 border-b border-gray-200">EXPENSES</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-red-900 border-b border-gray-200">Jan</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-red-900 border-b border-gray-200">Feb</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-red-900 border-b border-gray-200">Mar</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-red-900 border-b border-gray-200">Apr</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-red-900 border-b border-gray-200">May</td>
-                            <td class="px-3 py-3 text-center text-sm font-bold text-red-900 border-b border-gray-200">Jun</td>
-                        </tr>
-                        <!-- Expense data will be populated dynamically from database -->
-
-
-
-
-
-
-
-
- 
-                        <tr class="bg-red-100 font-semibold">
-                            <td class="px-4 py-2 text-sm text-red-900 border-b border-gray-200">Total Expenses</td>
-                            <td class="px-3 py-2 text-center text-sm text-red-900 border-b border-gray-200">$41,800</td>
-                            <td class="px-3 py-2 text-center text-sm text-red-900 border-b border-gray-200">$42,650</td>
-                            <td class="px-3 py-2 text-center text-sm text-red-900 border-b border-gray-200">$41,200</td>
-                            <td class="px-3 py-2 text-center text-sm text-red-900 border-b border-gray-200">$43,650</td>
-                            <td class="px-3 py-2 text-center text-sm text-red-900 border-b border-gray-200">$43,400</td>
-                            <td class="px-3 py-2 text-center text-sm text-red-900 border-b border-gray-200">$44,950</td>
-                        </tr>
-                        
-                        <!-- NET INCOME Section -->
-                        <tr class="bg-green-100 font-bold">
-                            <td class="px-4 py-3 text-sm text-green-900 border-b border-gray-300">NET INCOME</td>
-                            <td class="px-3 py-3 text-center text-sm text-green-900 border-b border-gray-300">$67,200</td>
-                            <td class="px-3 py-3 text-center text-sm text-green-900 border-b border-gray-300">$66,850</td>
-                            <td class="px-3 py-3 text-center text-sm text-green-900 border-b border-gray-300">$76,800</td>
-                            <td class="px-3 py-3 text-center text-sm text-green-900 border-b border-gray-300">$46,350</td>
-                            <td class="px-3 py-3 text-center text-sm text-green-900 border-b border-gray-300">$71,100</td>
-                            <td class="px-3 py-3 text-center text-sm text-green-900 border-b border-gray-300">$67,850</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- Action Buttons -->
+        <div class="flex gap-2">
+            <!-- Create Report Button -->
+            <button type="button"
+                    onclick="openNewReportModal()"
+                    class="p-2 flex gap-1 items-center bg-blue-900 text-white hover:bg-blue-800 transition-colors duration-200">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"></path>
+                </svg>
+                <span class="font-bold text-xs">Generate New Report</span>
+            </button>
         </div>
     </div>
 
+    <!-- Filters -->
+    <div class="bg-gray-50 px-4 py-2 border-t border-b border-gray-200">
+        <form method="get" class="flex flex-wrap gap-2 items-end">
+            <div class="w-full md:w-auto">
+                <label for="report_type" class="block text-xs font-medium text-gray-700 mb-1">Report Type</label>
+                <select name="report_type" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Types</option>
+                    <option value="petty_cash" {% if request.GET.report_type == 'petty_cash' %}selected{% endif %}>Petty Cash Report</option>
+                    <option value="expense" {% if request.GET.report_type == 'expense' %}selected{% endif %}>Expense Report</option>
+                    <option value="income" {% if request.GET.report_type == 'income' %}selected{% endif %}>Income Report</option>
+                    <option value="account_summary" {% if request.GET.report_type == 'account_summary' %}selected{% endif %}>Account Summary</option>
+                </select>
+            </div>
+            <div class="w-full md:w-auto">
+                <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="processing" {% if request.GET.status == 'processing' %}selected{% endif %}>Processing</option>
+                    <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Failed</option>
+                </select>
+            </div>
+            <div class="w-full md:w-auto">
+                <label for="format" class="block text-xs font-medium text-gray-700 mb-1">Format</label>
+                <select name="format" class="w-full px-3 py-2 border border-gray-300 text-xs">
+                    <option value="">All Formats</option>
+                    <option value="pdf" {% if request.GET.format == 'pdf' %}selected{% endif %}>PDF</option>
+                    <option value="excel" {% if request.GET.format == 'excel' %}selected{% endif %}>Excel</option>
+                    <option value="csv" {% if request.GET.format == 'csv' %}selected{% endif %}>CSV</option>
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Filter
+                </button>
+                <a href="{% url 'finance_management:reports' %}" class="px-3 py-2 text-xs font-medium text-center text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors duration-200">
+                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reports List Table -->
+    <div class="p-0 overflow-hidden flex flex-col flex-1 max-w-full max-h-full">
+        <div class="compact-table flex-1 max-w-full max-h-full scrollbar-thin overflow-auto relative">
+            <table class="w-full divide-y divide-gray-200 table-fixed" id="reportsTable">
+                <thead class="bg-gray-50 whitespace-nowrap text-xs sticky top-0 z-10">
+                    <tr class="border-b border-gray-200">
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Report Name
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Type
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Period
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Format
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Status
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Generated By
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for report in reports %}
+                        <tr class="hover-row border-b border-gray-100">
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <button type="button"
+                                        class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
+                                        onclick="viewReportDetails('{{ report.id }}')">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-medium text-xs">{{ report.name|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-medium text-gray-900">
+                                            <span>{{ report.name|truncatechars:30 }}</span>
+                                        </div>
+                                        {% if report.description %}
+                                            <div class="text-xs text-gray-500">
+                                                {{ report.description|truncatechars:25 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </button>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if report.report_type == 'petty_cash' %}bg-red-100 text-red-800
+                                    {% elif report.report_type == 'expense' %}bg-orange-100 text-orange-800
+                                    {% elif report.report_type == 'income' %}bg-green-100 text-green-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    {{ report.get_report_type_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ report.date_range }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ report.get_format_display|upper }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if report.status == 'completed' %}bg-green-100 text-green-800
+                                    {% elif report.status == 'processing' %}bg-yellow-100 text-yellow-800
+                                    {% elif report.status == 'failed' %}bg-red-100 text-red-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ report.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ report.generated_by.get_full_name|default:report.generated_by.username }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'finance_management:report_detail' report.pk %}" 
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                       title="View Report">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+                                        </svg>
+                                    </a>
+                                    {% if report.status == 'completed' and report.file_path %}
+                                        <a href="{% url 'finance_management:report_download' report.pk %}" 
+                                           class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                           title="Download Report">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 16l-4-4h3V4h2v8h3l-4 4zM20 18H4v2h16v-2z"></path>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
+                                    {% if report.status == 'failed' %}
+                                        <button type="button"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 hover:text-yellow-700 transition-all duration-150 shadow-sm hover:shadow-md"
+                                                title="Retry Generation"
+                                                onclick="retryReportGeneration('{{ report.id }}')">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.68 4.22 1.78L13 11h7V4l-2.35 2.35z"></path>
+                                            </svg>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
     <!-- Pagination -->
-    {% include "components/paginator.html" %}
-
-    <!-- Modals -->
-    {% include "finance_management/modals/new_report_modal.html" with modal_id="new-report-modal" %}
-    {% include "finance_management/modals/report_details_modal.html" with modal_id="details-modal" %}
-
-    <!-- Modal containers -->
-    <div id="new-report-modal-container"></div>
-    <div id="new-report-modal-overlay" class="htmx-indicator fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 text-xs">
+        {% if is_paginated and page_obj.has_other_pages %}
+            {% include 'components/paginator.html' with page_obj=page_obj %}
+        {% else %}
+            <div class="text-xs text-gray-500">
+                Showing all {{ reports|length }} reports
+            </div>
+        {% endif %}
     </div>
+</div>
+
+<!-- Include Report Modals -->
+{% include "finance_management/modals/report_form.html" with modal_id="new-report-modal" %}
 
 {% endblock %}
 
 {% block extra_js %}
     <script>
-        // Global modal functions (must be outside DOMContentLoaded for onclick access)
-        function viewReportDetails(id, name, type, dateRange, status) {
-            // Populate modal with report details
-            document.getElementById('detailReportName').textContent = name;
-            document.getElementById('detailReportType').textContent = type;
-            document.getElementById('detailReportDateRange').textContent = dateRange;
-            document.getElementById('detailReportStatus').textContent = status;
-            
-            // Set status badge color
-            const statusBadge = document.getElementById('detailReportStatus');
-            if (status === 'completed') {
-                statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
-            } else if (status === 'processing') {
-                statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
-            } else {
-                statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
-            }
-        }
-
-        function openNewReportModal() {
-            // Open the new report modal
-            console.log('Opening new report modal');
-        }
-
-        function downloadReport(id) {
-            // Handle report download with proper status handling
-            fetch(`/finance/api/reports/${id}/download/`)
-                .then(response => {
-                    if (response.status === 200) {
-                        // Report is ready, start download
-                        window.location.href = `/finance/api/reports/${id}/download/`;
-                        showNotification('Download started successfully!', 'success');
-                    } else if (response.status === 202) {
-                        // Report is being generated
-                        showNotification('Report is being generated. Please wait a moment and try again.', 'info');
-                        // Optionally refresh the page after a delay to show updated status
-                        setTimeout(() => {
-                            location.reload();
-                        }, 2000);
-                    } else {
-                        return response.json().then(data => {
-                            showNotification(data.error || 'Failed to download report', 'error');
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Download error:', error);
-                    showNotification('An error occurred while downloading the report', 'error');
-                });
-        }
-
-        function showNotification(message, type) {
-            // Create a simple notification
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-                type === 'success' ? 'bg-green-500 text-white' :
-                type === 'info' ? 'bg-blue-500 text-white' :
-                type === 'error' ? 'bg-red-500 text-white' : 'bg-gray-500 text-white'
-            }`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            // Remove notification after 5 seconds
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
-        }
-
-        function deleteReport(id) {
-            if (confirm('Are you sure you want to delete this report?')) {
-                // Handle report deletion
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-                const formData = new FormData();
-                
-                if (csrfToken) {
-                    formData.append('csrfmiddlewaretoken', csrfToken.value);
-                }
-                
-                fetch(`/finance/api/reports/${id}/delete/`, {
-                    method: 'POST',
-                    body: formData
-                }).then(response => {
-                    if (response.ok) {
-                        location.reload();
-                    } else {
-                        alert('Error deleting report. Please try again.');
-                    }
-                }).catch(error => {
-                    console.error('Error:', error);
-                    alert('Error deleting report. Please try again.');
-                });
-            }
-        }
-
-        function viewReport(id) {
-            // Navigate to report detail view
-            window.location.href = `/finance/reports/${id}/`;
-        }
-
-        function filterReports(type) {
-            const rows = document.querySelectorAll('#reportsTableBody tr');
-            rows.forEach(row => {
-                const reportType = row.getAttribute('data-report-type') || '';
-                const matchesType = !type || reportType === type;
-                row.style.display = matchesType ? '' : 'none';
-            });
-        }
-
-        // Initialize all functionality when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Search functionality
-            const searchInput = document.querySelector('input[name="search"]');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    filterTable();
-                });
-            }
-
-            function filterTable() {
-                const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-                const typeFilter = document.querySelector('select[name="report_type"]')?.value || '';
-                
-                const rows = document.querySelectorAll('#reportsTableBody tr');
-                rows.forEach(row => {
-                    const name = row.getAttribute('data-report-name')?.toLowerCase() || '';
-                    const type = row.getAttribute('data-report-type') || '';
-                    const status = row.getAttribute('data-report-status') || '';
-
-                    const matchesSearch = name.includes(searchTerm);
-                    const matchesType = !typeFilter || type === typeFilter;
-
-                    row.style.display = (matchesSearch && matchesType) ? '' : 'none';
-                });
-            }
-
-            // Initialize Flowbite modals
-            if (typeof Modal !== 'undefined') {
-                const modalOptions = {
-                    placement: 'bottom-right',
-                    backdrop: 'dynamic',
-                    backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
-                    closable: true,
-                };
-
-                const newReportModalEl = document.getElementById('new-report-modal');
-                const detailsModalEl = document.getElementById('details-modal');
-                
-                if (newReportModalEl) {
-                    window.newReportModal = new Modal(newReportModalEl, modalOptions);
-                }
-                if (detailsModalEl) {
-                    window.detailsReportModal = new Modal(detailsModalEl, modalOptions);
-                }
-            }
+    // Auto-submit form on filter change
+    document.querySelectorAll('select[name="report_type"], select[name="status"], select[name="format"]').forEach(function(select) {
+        select.addEventListener('change', function() {
+            this.form.submit();
         });
+    });
+
+    // Global modal functions
+    function openNewReportModal() {
+        const modal = document.getElementById('new-report-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            console.log('New report modal opened');
+        } else {
+            console.log('Modal not found');
+        }
+    }
+
+    function closeNewReportModal() {
+        const modal = document.getElementById('new-report-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            console.log('New report modal closed');
+        }
+    }
+
+    function viewReportDetails(id) {
+        // Navigate to report detail page
+        window.location.href = `/finance/reports/${id}/`;
+    }
+
+    function retryReportGeneration(id) {
+        // Implement retry logic here
+        console.log('Retrying report generation for ID:', id);
+        // You can add AJAX call to retry endpoint here
+    }
     </script>
 {% endblock %}

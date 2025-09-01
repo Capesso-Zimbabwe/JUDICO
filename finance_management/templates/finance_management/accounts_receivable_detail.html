@@ -1,0 +1,445 @@
+{% extends 'finance_management/base.html' %} {% load static %} {% load humanize
+%} {% block finance_content %}
+<div class="container mx-auto px-4 py-6">
+  <!-- Header Section -->
+  <div class="bg-white border-b border-gray-200 pb-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center">
+          <a
+            href="{% url 'finance_management:accounts_receivable_list' %}"
+            class="text-blue-600 hover:text-blue-900 mr-4"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
+            </svg>
+          </a>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">
+              Invoice Details
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+              {{ invoice.invoice_number }} - {{ invoice.client.name }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 sm:mt-0 sm:ml-4 flex space-x-3">
+        {% if invoice.status != 'PAID' %}
+        <a
+          href="{% url 'finance_management:accounts_receivable_payment' invoice.id %}"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-none shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          <svg
+            class="-ml-1 mr-2 h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+            ></path>
+          </svg>
+          Record Payment
+        </a>
+        {% endif %}
+        <a
+          href="{% url 'finance_management:invoice_update' invoice.id %}"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-none text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <svg
+            class="-ml-1 mr-2 h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            ></path>
+          </svg>
+          Edit Invoice
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Information -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Main Invoice Details -->
+    <div class="lg:col-span-2">
+      <div class="bg-white border border-gray-200 p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">
+          Invoice Information
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-500"
+              >Invoice Number</label
+            >
+            <p class="mt-1 text-sm text-gray-900">
+              {{ invoice.invoice_number }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-500"
+              >Status</label
+            >
+            <div class="mt-1">
+              {% if invoice.status == 'DRAFT' %}
+              <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+              >
+                Draft
+              </span>
+              {% elif invoice.status == 'SENT' %}
+              <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+              >
+                Sent
+              </span>
+              {% elif invoice.status == 'OVERDUE' %}
+              <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+              >
+                Overdue
+              </span>
+              {% elif invoice.status == 'PAID' %}
+              <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+              >
+                Paid
+              </span>
+              {% endif %}
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-500"
+              >Issue Date</label
+            >
+            <p class="mt-1 text-sm text-gray-900">
+              {{ invoice.issue_date|date:"M d, Y" }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-500"
+              >Due Date</label
+            >
+            <p class="mt-1 text-sm text-gray-900">
+              {{ invoice.due_date|date:"M d, Y" }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-500"
+              >Total Amount</label
+            >
+            <p class="mt-1 text-lg font-semibold text-gray-900">
+              ${{ invoice.total|floatformat:2|intcomma }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-500"
+              >Balance Due</label
+            >
+            <p class="mt-1 text-lg font-semibold text-red-600">
+              {% if invoice.status == 'PAID' %} $0.00 {% else %} ${{
+              invoice.total|floatformat:2|intcomma }} {% endif %}
+            </p>
+          </div>
+        </div>
+
+        {% if invoice.description %}
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-500"
+            >Description</label
+          >
+          <p class="mt-1 text-sm text-gray-900">{{ invoice.description }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Client Information -->
+    <div class="lg:col-span-1">
+      <div class="bg-white border border-gray-200 p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">
+          Client Information
+        </h2>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-500"
+              >Client Name</label
+            >
+            <p class="mt-1 text-sm text-gray-900">{{ invoice.client.name }}</p>
+          </div>
+          {% if invoice.client.email %}
+          <div>
+            <label class="block text-sm font-medium text-gray-500">Email</label>
+            <p class="mt-1 text-sm text-gray-900">{{ invoice.client.email }}</p>
+          </div>
+          {% endif %} {% if invoice.client.phone %}
+          <div>
+            <label class="block text-sm font-medium text-gray-500">Phone</label>
+            <p class="mt-1 text-sm text-gray-900">{{ invoice.client.phone }}</p>
+          </div>
+          {% endif %} {% if invoice.client.address %}
+          <div>
+            <label class="block text-sm font-medium text-gray-500"
+              >Address</label
+            >
+            <p class="mt-1 text-sm text-gray-900">
+              {{ invoice.client.address }}
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Line Items -->
+  <div class="bg-white border border-gray-200 mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-900">Line Items</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Description
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Quantity
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Unit Price
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Total
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for item in line_items %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ item.description }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ item.quantity }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${{ item.unit_price|floatformat:2|intcomma }}
+            </td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+            >
+              ${{ item.line_total|floatformat:2|intcomma }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot class="bg-gray-50">
+          <tr>
+            <td
+              colspan="3"
+              class="px-6 py-4 text-right text-sm font-medium text-gray-900"
+            >
+              Subtotal:
+            </td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+            >
+              ${{ invoice.subtotal|floatformat:2|intcomma }}
+            </td>
+          </tr>
+          {% if invoice.tax_amount %}
+          <tr>
+            <td
+              colspan="3"
+              class="px-6 py-4 text-right text-sm font-medium text-gray-900"
+            >
+              Tax:
+            </td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+            >
+              ${{ invoice.tax_amount|floatformat:2|intcomma }}
+            </td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td
+              colspan="3"
+              class="px-6 py-4 text-right text-lg font-bold text-gray-900"
+            >
+              Total:
+            </td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-lg font-bold text-gray-900"
+            >
+              ${{ invoice.total|floatformat:2|intcomma }}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Payment History -->
+  {% if payments %}
+  <div class="bg-white border border-gray-200 mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-900">Payment History</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Date
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Amount
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Method
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Reference
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for payment in payments %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ payment.payment_date|date:"M d, Y" }}
+            </td>
+            <td
+              class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+            >
+              ${{ payment.amount|floatformat:2|intcomma }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ payment.payment_method }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ payment.reference_number|default:"-" }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Actions -->
+  <div class="bg-white border border-gray-200 p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex space-x-3">
+        <a
+          href="{% url 'finance_management:accounts_receivable_list' %}"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-none text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <svg
+            class="-ml-1 mr-2 h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            ></path>
+          </svg>
+          Back to Receivables
+        </a>
+        <a
+          href="{% url 'finance_management:invoice_detail' invoice.id %}"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-none text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <svg
+            class="-ml-1 mr-2 h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            ></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+            ></path>
+          </svg>
+          View Full Invoice
+        </a>
+      </div>
+      {% if invoice.status != 'PAID' %}
+      <div class="mt-4 sm:mt-0">
+        <a
+          href="{% url 'finance_management:accounts_receivable_payment' invoice.id %}"
+          class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-none shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          <svg
+            class="-ml-1 mr-3 h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+            ></path>
+          </svg>
+          Record Payment
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock finance_content %}
