@@ -1,0 +1,338 @@
+{% extends 'finance_management/base.html' %} {% load humanize %} {% block title
+%}{{ report_data.report_type }} - Finance Management{% endblock %} {% block
+finance_content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+  <!-- Report Header -->
+  <div class="border-b border-gray-200 pb-4 mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">
+      {{ report_data.report_type }}
+    </h1>
+    <p class="text-gray-600 mt-2">
+      {% if report_data.period %} Period: {{ report_data.period }} {% elif
+      report_data.as_of_date %} As of: {{ report_data.as_of_date }} {% endif %}
+    </p>
+    <p class="text-sm text-gray-500">
+      Generated on {{ report.generated_at|date:"F j, Y" }} at {{
+      report.generated_at|time:"g:i A" }}
+    </p>
+  </div>
+
+  <!-- Report Content -->
+  {% if report_data.report_type == 'Cash Flow Report' %}
+  <!-- Cash Flow Report -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-blue-900 mb-3">
+        Operating Activities
+      </h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-blue-700">Payments Received</p>
+          <p class="text-xl font-bold text-blue-900">
+            ${{ report_data.operating_activities.payments_received|floatformat:2
+            }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-blue-700">Expenses Paid</p>
+          <p class="text-xl font-bold text-red-600">
+            -${{ report_data.operating_activities.expenses_paid|floatformat:2 }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-blue-700">AP Payments</p>
+          <p class="text-xl font-bold text-red-600">
+            -${{ report_data.operating_activities.ap_payments|floatformat:2 }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-blue-700">Net Operating Cash</p>
+          <p
+            class="text-xl font-bold {% if report_data.operating_activities.net_operating_cash >= 0 %}text-green-600{% else %}text-red-600{% endif %}"
+          >
+            ${{
+            report_data.operating_activities.net_operating_cash|floatformat:2 }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% elif report_data.report_type == 'Profit & Loss Statement' %}
+  <!-- Profit & Loss Statement -->
+  <div class="space-y-6">
+    <div class="bg-green-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-green-900 mb-3">Revenue</h3>
+      <p class="text-2xl font-bold text-green-900">
+        ${{ report_data.revenue.total_revenue|floatformat:2 }}
+      </p>
+    </div>
+
+    <div class="bg-red-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-red-900 mb-3">Expenses</h3>
+      <p class="text-2xl font-bold text-red-900">
+        ${{ report_data.expenses.total_expenses|floatformat:2 }}
+      </p>
+
+      {% if report_data.expenses.by_category %}
+      <div class="mt-4">
+        <h4 class="font-semibold text-red-800 mb-2">By Category:</h4>
+        <div class="space-y-2">
+          {% for category in report_data.expenses.by_category %}
+          <div class="flex justify-between">
+            <span class="text-red-700">{{ category.category }}</span>
+            <span class="font-semibold text-red-900"
+              >${{ category.amount|floatformat:2 }}</span
+            >
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-gray-900 mb-3">Net Income</h3>
+      <p
+        class="text-2xl font-bold {% if report_data.net_income >= 0 %}text-green-600{% else %}text-red-600{% endif %}"
+      >
+        ${{ report_data.net_income|floatformat:2 }}
+      </p>
+      <p class="text-sm text-gray-600">
+        Gross Margin: {{ report_data.gross_margin|floatformat:1 }}%
+      </p>
+    </div>
+  </div>
+
+  {% elif report_data.report_type == 'Balance Sheet' %}
+  <!-- Balance Sheet -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-blue-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-blue-900 mb-3">Assets</h3>
+      <div class="space-y-2">
+        <div class="flex justify-between">
+          <span class="text-blue-700">Cash & Equivalents</span>
+          <span class="font-semibold text-blue-900"
+            >${{ report_data.assets.cash_and_equivalents|floatformat:2 }}</span
+          >
+        </div>
+        <div class="flex justify-between">
+          <span class="text-blue-700">Accounts Receivable</span>
+          <span class="font-semibold text-blue-900"
+            >${{ report_data.assets.accounts_receivable|floatformat:2 }}</span
+          >
+        </div>
+        <hr class="border-blue-300" />
+        <div class="flex justify-between font-bold">
+          <span class="text-blue-800">Total Assets</span>
+          <span class="text-blue-900"
+            >${{ report_data.assets.total_assets|floatformat:2 }}</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-red-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-red-900 mb-3">Liabilities</h3>
+      <div class="space-y-2">
+        <div class="flex justify-between">
+          <span class="text-red-700">Accounts Payable</span>
+          <span class="font-semibold text-red-900"
+            >${{ report_data.liabilities.accounts_payable|floatformat:2 }}</span
+          >
+        </div>
+        <hr class="border-red-300" />
+        <div class="flex justify-between font-bold">
+          <span class="text-red-800">Total Liabilities</span>
+          <span class="text-red-900"
+            >${{ report_data.liabilities.total_liabilities|floatformat:2
+            }}</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-green-50 p-4 rounded-lg mt-6">
+    <h3 class="text-lg font-semibold text-green-900 mb-3">Equity</h3>
+    <p class="text-2xl font-bold text-green-900">
+      ${{ report_data.equity.total_equity|floatformat:2 }}
+    </p>
+  </div>
+
+  {% elif report_data.report_type == 'Accounts Receivable Aging' %}
+  <!-- AR Aging Report -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-blue-900 mb-3">Aging Summary</h3>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="text-center">
+          <p class="text-sm text-blue-700">Current</p>
+          <p class="text-lg font-bold text-blue-900">
+            ${{ report_data.aging_buckets.current|floatformat:2 }}
+          </p>
+        </div>
+        <div class="text-center">
+          <p class="text-sm text-blue-700">30 Days</p>
+          <p class="text-lg font-bold text-blue-900">
+            ${{ report_data.aging_buckets.days_30|floatformat:2 }}
+          </p>
+        </div>
+        <div class="text-center">
+          <p class="text-sm text-blue-700">60 Days</p>
+          <p class="text-lg font-bold text-blue-900">
+            ${{ report_data.aging_buckets.days_60|floatformat:2 }}
+          </p>
+        </div>
+        <div class="text-center">
+          <p class="text-sm text-blue-700">90 Days</p>
+          <p class="text-lg font-bold text-blue-900">
+            ${{ report_data.aging_buckets.days_90|floatformat:2 }}
+          </p>
+        </div>
+        <div class="text-center">
+          <p class="text-sm text-blue-700">Over 90</p>
+          <p class="text-lg font-bold text-red-600">
+            ${{ report_data.aging_buckets.over_90|floatformat:2 }}
+          </p>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-blue-300">
+        <div class="flex justify-between">
+          <span class="text-lg font-semibold text-blue-800"
+            >Total Outstanding</span
+          >
+          <span class="text-xl font-bold text-blue-900"
+            >${{ report_data.total_outstanding|floatformat:2 }}</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% elif report_data.report_type == 'Expense Analysis Report' %}
+  <!-- Expense Analysis Report -->
+  <div class="space-y-6">
+    <div class="bg-red-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-red-900 mb-3">Summary</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-red-700">Total Expenses</p>
+          <p class="text-xl font-bold text-red-900">
+            ${{ report_data.summary.total_expenses|floatformat:2 }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-red-700">Total Transactions</p>
+          <p class="text-xl font-bold text-red-900">
+            {{ report_data.summary.total_transactions }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {% if report_data.by_category %}
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <h3 class="text-lg font-semibold text-gray-900 mb-3">
+        Expenses by Category
+      </h3>
+      <div class="space-y-2">
+        {% for category in report_data.by_category %}
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">{{ category.category }}</span>
+          <div class="text-right">
+            <p class="font-semibold text-gray-900">
+              ${{ category.amount|floatformat:2 }}
+            </p>
+            <p class="text-sm text-gray-500">
+              {{ category.count }} transactions ({{
+              category.percentage|floatformat:1 }}%)
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% elif report_data.report_type == 'Revenue Analysis Report' %}
+  <!-- Revenue Analysis Report -->
+  <div class="space-y-6">
+    <div class="bg-green-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-green-900 mb-3">Summary</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-green-700">Total Revenue</p>
+          <p class="text-xl font-bold text-green-900">
+            ${{ report_data.summary.total_revenue|floatformat:2 }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-green-700">Total Payments</p>
+          <p class="text-xl font-bold text-green-900">
+            {{ report_data.summary.total_payments }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {% if report_data.by_client %}
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <h3 class="text-lg font-semibold text-gray-900 mb-3">
+        Revenue by Client
+      </h3>
+      <div class="space-y-2">
+        {% for client in report_data.by_client %}
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">{{ client.client }}</span>
+          <div class="text-right">
+            <p class="font-semibold text-gray-900">
+              ${{ client.amount|floatformat:2 }}
+            </p>
+            <p class="text-sm text-gray-500">
+              {{ client.count }} payments ({{ client.percentage|floatformat:1
+              }}%)
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% else %}
+  <!-- Generic Report Display -->
+  <div class="bg-gray-50 p-4 rounded-lg">
+    <p class="text-gray-600">
+      Report data available. Please check the console for detailed information.
+    </p>
+    <pre class="mt-4 text-xs bg-white p-2 rounded border">
+{{ report_data|pprint }}</pre
+    >
+  </div>
+  {% endif %}
+
+  <!-- Report Actions -->
+  <div
+    class="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center"
+  >
+    <div class="flex space-x-3">
+      <button
+        onclick="window.print()"
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+      >
+        Print Report
+      </button>
+      <a
+        href="{% url 'finance_management:reports' %}"
+        class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+      >
+        Back to Reports
+      </a>
+    </div>
+    <div class="text-sm text-gray-500">Report ID: {{ report.id }}</div>
+  </div>
+</div>
+{% endblock %}

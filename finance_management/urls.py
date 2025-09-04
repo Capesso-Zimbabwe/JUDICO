@@ -82,6 +82,7 @@ urlpatterns = [
     path('reports/', views.ReportListView.as_view(), name='reports'),
     path('reports/new/', views.ReportCreateView.as_view(), name='report_create'),
     path('reports/<int:pk>/', views.ReportDetailView.as_view(), name='report_detail'),
+    path('reports/<int:pk>/preview/', views.ReportPreviewView.as_view(), name='report_preview'),
     path('api/reports/<int:pk>/', views.ReportDetailAPIView.as_view(), name='report_detail_api'),
     path('api/reports/<int:pk>/download/', views.ReportDownloadView.as_view(), name='report_download'),
     path('api/reports/<int:pk>/delete/', views.ReportDeleteView.as_view(), name='report_delete'),

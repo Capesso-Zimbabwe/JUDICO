@@ -1201,19 +1201,19 @@ class ExpenseDetailAPIView(LoginRequiredMixin, View):
         except Expense.DoesNotExist:
             return JsonResponse({'error': 'Expense not found'}, status=404)
 
-class ReportListView(LoginRequiredMixin, TemplateView):
+class ReportListView(LoginRequiredMixin, ListView):
+    model = Report
     template_name = 'finance_management/reports.html'
+    context_object_name = 'reports'
+    paginate_by = 10
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Get reports from the database
-        reports = Report.objects.select_related('generated_by').all().order_by('-created_at')
+    def get_queryset(self):
+        queryset = Report.objects.select_related('generated_by').all().order_by('-created_at')
         
         # Handle search functionality
         search_param = self.request.GET.get('search')
         if search_param:
-            reports = reports.filter(
+            queryset = queryset.filter(
                 Q(name__icontains=search_param) |
                 Q(report_type__icontains=search_param) |
                 Q(description__icontains=search_param)
@@ -1222,31 +1222,79 @@ class ReportListView(LoginRequiredMixin, TemplateView):
         # Handle report type filter
         report_type_param = self.request.GET.get('report_type')
         if report_type_param:
-            reports = reports.filter(report_type=report_type_param)
+            queryset = queryset.filter(report_type=report_type_param)
         
         # Handle status filter
         status_param = self.request.GET.get('status')
         if status_param:
-            reports = reports.filter(status=status_param)
+            queryset = queryset.filter(status=status_param)
         
         # Handle format filter
         format_param = self.request.GET.get('format')
         if format_param:
-            reports = reports.filter(format=format_param)
+            queryset = queryset.filter(format=format_param)
+            
+        return queryset
+    
+    def post(self, request, *args, **kwargs):
+        """Handle POST requests for report creation"""
+        from .forms import ReportForm
+        from django.contrib import messages
+        from django.shortcuts import redirect
+        from django.urls import reverse
+        from django.http import HttpResponse
         
-        # Pagination
-        paginator = Paginator(reports, 10)  # Show 10 reports per page
-        page = self.request.GET.get('page')
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.generated_by = request.user
+            
+            # Generate report data immediately
+            try:
+                report_data = self.generate_report_data(
+                    report.report_type,
+                    report.start_date,
+                    report.end_date,
+                    {}
+                )
+                report.status = 'completed'
+                report.data = report_data
+            except Exception as e:
+                report.status = 'failed'
+                report.error_message = str(e)
+            
+            report.save()
+            
+            messages.success(request, 'Report generated successfully!')
+            
+            # Check if this is an HTMX request
+            if request.headers.get('HX-Request'):
+                response = HttpResponse(status=204)
+                response['HX-Redirect'] = reverse('finance_management:reports')
+                return response
+            else:
+                return redirect('finance_management:reports')
+        else:
+            messages.error(request, 'Please correct the errors in the form.')
+            return self.get(request, *args, **kwargs)
+    
+    def generate_report_data(self, report_type, start_date, end_date, filters):
+        """Generate report data based on report type"""
+        # Import here to avoid circular imports
+        from .views import ReportCreateView
+        report_creator = ReportCreateView()
+        return report_creator.generate_report_data(report_type, start_date, end_date, filters)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         
-        try:
-            page_obj = paginator.page(page)
-        except PageNotAnInteger:
-            page_obj = paginator.page(1)
-        except EmptyPage:
-            page_obj = paginator.page(paginator.num_pages)
-        
-        # Initialize search form
+        # Initialize search form with current filter values
         initial = {}
+        search_param = self.request.GET.get('search')
+        report_type_param = self.request.GET.get('report_type')
+        status_param = self.request.GET.get('status')
+        format_param = self.request.GET.get('format')
+        
         if search_param:
             initial['search'] = search_param
         if report_type_param:
@@ -1255,10 +1303,8 @@ class ReportListView(LoginRequiredMixin, TemplateView):
             initial['status'] = status_param
         if format_param:
             initial['format'] = format_param
-        search_form = ReportFilterForm(initial=initial)
         
-        context['reports'] = page_obj
-        context['page_obj'] = page_obj
+        search_form = ReportFilterForm(initial=initial)
         context['search_form'] = search_form
         
         return context
@@ -1311,6 +1357,534 @@ class ReportCreateView(LoginRequiredMixin, View):
             messages.error(request, 'Please correct the errors below.')
             return redirect('finance_management:reports')
 
+    def generate_report_data(self, report_type, start_date, end_date, filters=None):
+        """Generate report data based on report type"""
+        from django.db.models import Sum, Count, Avg
+        from decimal import Decimal
+        
+        if report_type == 'cash_flow':
+            return self.generate_cash_flow_report(start_date, end_date)
+        elif report_type == 'profit_loss':
+            return self.generate_profit_loss_report(start_date, end_date)
+        elif report_type == 'balance_sheet':
+            return self.generate_balance_sheet_report(start_date, end_date)
+        elif report_type == 'accounts_receivable':
+            return self.generate_ar_aging_report(start_date, end_date)
+        elif report_type == 'accounts_payable':
+            return self.generate_ap_aging_report(start_date, end_date)
+        elif report_type == 'expense_analysis':
+            return self.generate_expense_analysis_report(start_date, end_date)
+        elif report_type == 'revenue_analysis':
+            return self.generate_revenue_analysis_report(start_date, end_date)
+        elif report_type == 'working_capital':
+            return self.generate_working_capital_report(start_date, end_date)
+        elif report_type == 'collection_performance':
+            return self.generate_collection_performance_report(start_date, end_date)
+        elif report_type == 'vendor_analysis':
+            return self.generate_vendor_analysis_report(start_date, end_date)
+        elif report_type == 'client_revenue':
+            return self.generate_client_revenue_report(start_date, end_date)
+        elif report_type == 'monthly_summary':
+            return self.generate_monthly_summary_report(start_date, end_date)
+        else:
+            return {'error': 'Unknown report type'}
+
+    def generate_cash_flow_report(self, start_date, end_date):
+        """Generate Cash Flow Report"""
+        # Operating Activities
+        payments_received = Payment.objects.filter(
+            payment_date__range=[start_date, end_date]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        expenses_paid = Expense.objects.filter(
+            expense_date__range=[start_date, end_date],
+            status='PAID'
+        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        
+        ap_payments = AccountsPayable.objects.filter(
+            status='PAID'
+        ).aggregate(total=Sum('amount_paid'))['total'] or 0
+        
+        net_operating_cash = payments_received - expenses_paid - ap_payments
+        
+        return {
+            'report_type': 'Cash Flow Report',
+            'period': f'{start_date} to {end_date}',
+            'operating_activities': {
+                'payments_received': float(payments_received),
+                'expenses_paid': float(expenses_paid),
+                'ap_payments': float(ap_payments),
+                'net_operating_cash': float(net_operating_cash)
+            },
+            'cash_position': {
+                'opening_balance': 0,  # Would need to track this
+                'net_change': float(net_operating_cash),
+                'closing_balance': float(net_operating_cash)
+            }
+        }
+
+    def generate_profit_loss_report(self, start_date, end_date):
+        """Generate Profit & Loss Statement"""
+        # Revenue
+        total_revenue = Payment.objects.filter(
+            payment_date__range=[start_date, end_date]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Expenses
+        total_expenses = Expense.objects.filter(
+            expense_date__range=[start_date, end_date],
+            status__in=['APPROVED', 'PAID']
+        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        
+        # Net Income
+        net_income = total_revenue - total_expenses
+        
+        # Expense breakdown by category
+        expense_by_category = Expense.objects.filter(
+            expense_date__range=[start_date, end_date],
+            status__in=['APPROVED', 'PAID']
+        ).values('expense_category__name').annotate(
+            total=Sum('total_amount')
+        ).order_by('-total')
+        
+        return {
+            'report_type': 'Profit & Loss Statement',
+            'period': f'{start_date} to {end_date}',
+            'revenue': {
+                'total_revenue': float(total_revenue)
+            },
+            'expenses': {
+                'total_expenses': float(total_expenses),
+                'by_category': [
+                    {
+                        'category': item['expense_category__name'] or 'Uncategorized',
+                        'amount': float(item['total'])
+                    } for item in expense_by_category
+                ]
+            },
+            'net_income': float(net_income),
+            'gross_margin': float((net_income / total_revenue * 100) if total_revenue > 0 else 0)
+        }
+
+    def generate_balance_sheet_report(self, start_date, end_date):
+        """Generate Balance Sheet"""
+        # Assets
+        cash_position = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
+        accounts_receivable = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE']
+        ).aggregate(total=Sum('total'))['total'] or 0
+        
+        # Liabilities
+        accounts_payable = AccountsPayable.objects.filter(
+            status__in=['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'PARTIALLY_PAID']
+        ).aggregate(total=Sum('balance_due'))['total'] or 0
+        
+        # Equity (simplified)
+        total_assets = cash_position + accounts_receivable
+        total_liabilities = accounts_payable
+        total_equity = total_assets - total_liabilities
+        
+        return {
+            'report_type': 'Balance Sheet',
+            'as_of_date': end_date,
+            'assets': {
+                'cash_and_equivalents': float(cash_position),
+                'accounts_receivable': float(accounts_receivable),
+                'total_assets': float(total_assets)
+            },
+            'liabilities': {
+                'accounts_payable': float(accounts_payable),
+                'total_liabilities': float(total_liabilities)
+            },
+            'equity': {
+                'total_equity': float(total_equity)
+            }
+        }
+
+    def generate_ar_aging_report(self, start_date, end_date):
+        """Generate Accounts Receivable Aging Report"""
+        from datetime import date, timedelta
+        
+        today = date.today()
+        
+        # Group invoices by aging buckets
+        current = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE'],
+            due_date__gte=today
+        ).aggregate(total=Sum('total'))['total'] or 0
+        
+        days_30 = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE'],
+            due_date__lt=today,
+            due_date__gte=today - timedelta(days=30)
+        ).aggregate(total=Sum('total'))['total'] or 0
+        
+        days_60 = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE'],
+            due_date__lt=today - timedelta(days=30),
+            due_date__gte=today - timedelta(days=60)
+        ).aggregate(total=Sum('total'))['total'] or 0
+        
+        days_90 = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE'],
+            due_date__lt=today - timedelta(days=60),
+            due_date__gte=today - timedelta(days=90)
+        ).aggregate(total=Sum('total'))['total'] or 0
+        
+        over_90 = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE'],
+            due_date__lt=today - timedelta(days=90)
+        ).aggregate(total=Sum('total'))['total'] or 0
+        
+        total_ar = current + days_30 + days_60 + days_90 + over_90
+        
+        return {
+            'report_type': 'Accounts Receivable Aging',
+            'as_of_date': today,
+            'aging_buckets': {
+                'current': float(current),
+                'days_30': float(days_30),
+                'days_60': float(days_60),
+                'days_90': float(days_90),
+                'over_90': float(over_90),
+                'total': float(total_ar)
+            },
+            'total_outstanding': float(total_ar)
+        }
+
+    def generate_ap_aging_report(self, start_date, end_date):
+        """Generate Accounts Payable Aging Report"""
+        from datetime import date, timedelta
+        
+        today = date.today()
+        
+        # Group payables by aging buckets
+        current = AccountsPayable.objects.filter(
+            status__in=['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'PARTIALLY_PAID'],
+            due_date__gte=today
+        ).aggregate(total=Sum('balance_due'))['total'] or 0
+        
+        days_30 = AccountsPayable.objects.filter(
+            status__in=['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'PARTIALLY_PAID'],
+            due_date__lt=today,
+            due_date__gte=today - timedelta(days=30)
+        ).aggregate(total=Sum('balance_due'))['total'] or 0
+        
+        days_60 = AccountsPayable.objects.filter(
+            status__in=['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'PARTIALLY_PAID'],
+            due_date__lt=today - timedelta(days=30),
+            due_date__gte=today - timedelta(days=60)
+        ).aggregate(total=Sum('balance_due'))['total'] or 0
+        
+        over_60 = AccountsPayable.objects.filter(
+            status__in=['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'PARTIALLY_PAID'],
+            due_date__lt=today - timedelta(days=60)
+        ).aggregate(total=Sum('balance_due'))['total'] or 0
+        
+        total_ap = current + days_30 + days_60 + over_60
+        
+        return {
+            'report_type': 'Accounts Payable Aging',
+            'as_of_date': today,
+            'aging_buckets': {
+                'current': float(current),
+                'days_30': float(days_30),
+                'days_60': float(days_60),
+                'over_60': float(over_60),
+                'total': float(total_ap)
+            },
+            'total_outstanding': float(total_ap)
+        }
+
+    def generate_expense_analysis_report(self, start_date, end_date):
+        """Generate Expense Analysis Report"""
+        # Total expenses
+        total_expenses = Expense.objects.filter(
+            expense_date__range=[start_date, end_date],
+            status__in=['APPROVED', 'PAID']
+        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        
+        # Expenses by category
+        expenses_by_category = Expense.objects.filter(
+            expense_date__range=[start_date, end_date],
+            status__in=['APPROVED', 'PAID']
+        ).values('expense_category__name').annotate(
+            total=Sum('total_amount'),
+            count=Count('id')
+        ).order_by('-total')
+        
+        # Expenses by vendor
+        expenses_by_vendor = Expense.objects.filter(
+            expense_date__range=[start_date, end_date],
+            status__in=['APPROVED', 'PAID']
+        ).values('vendor').annotate(
+            total=Sum('total_amount'),
+            count=Count('id')
+        ).order_by('-total')[:10]
+        
+        return {
+            'report_type': 'Expense Analysis Report',
+            'period': f'{start_date} to {end_date}',
+            'summary': {
+                'total_expenses': float(total_expenses),
+                'total_transactions': Expense.objects.filter(
+                    expense_date__range=[start_date, end_date],
+                    status__in=['APPROVED', 'PAID']
+                ).count()
+            },
+            'by_category': [
+                {
+                    'category': item['expense_category__name'] or 'Uncategorized',
+                    'amount': float(item['total']),
+                    'count': item['count'],
+                    'percentage': float((item['total'] / total_expenses * 100) if total_expenses > 0 else 0)
+                } for item in expenses_by_category
+            ],
+            'by_vendor': [
+                {
+                    'vendor': item['vendor'],
+                    'amount': float(item['total']),
+                    'count': item['count']
+                } for item in expenses_by_vendor
+            ]
+        }
+
+    def generate_revenue_analysis_report(self, start_date, end_date):
+        """Generate Revenue Analysis Report"""
+        # Total revenue
+        total_revenue = Payment.objects.filter(
+            payment_date__range=[start_date, end_date]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Revenue by client
+        revenue_by_client = Payment.objects.filter(
+            payment_date__range=[start_date, end_date]
+        ).values('invoice__client__name').annotate(
+            total=Sum('amount'),
+            count=Count('id')
+        ).order_by('-total')
+        
+        # Revenue by payment method
+        revenue_by_method = Payment.objects.filter(
+            payment_date__range=[start_date, end_date]
+        ).values('payment_method').annotate(
+            total=Sum('amount'),
+            count=Count('id')
+        ).order_by('-total')
+        
+        return {
+            'report_type': 'Revenue Analysis Report',
+            'period': f'{start_date} to {end_date}',
+            'summary': {
+                'total_revenue': float(total_revenue),
+                'total_payments': Payment.objects.filter(
+                    payment_date__range=[start_date, end_date]
+                ).count()
+            },
+            'by_client': [
+                {
+                    'client': item['invoice__client__name'] or 'Unknown Client',
+                    'amount': float(item['total']),
+                    'count': item['count'],
+                    'percentage': float((item['total'] / total_revenue * 100) if total_revenue > 0 else 0)
+                } for item in revenue_by_client
+            ],
+            'by_payment_method': [
+                {
+                    'method': item['payment_method'],
+                    'amount': float(item['total']),
+                    'count': item['count']
+                } for item in revenue_by_method
+            ]
+        }
+
+    def generate_working_capital_report(self, start_date, end_date):
+        """Generate Working Capital Report"""
+        # Current Assets
+        cash_position = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
+        accounts_receivable = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE']
+        ).aggregate(total=Sum('total'))['total'] or 0
+        
+        # Current Liabilities
+        accounts_payable = AccountsPayable.objects.filter(
+            status__in=['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'PARTIALLY_PAID']
+        ).aggregate(total=Sum('balance_due'))['total'] or 0
+        
+        # Working Capital
+        current_assets = cash_position + accounts_receivable
+        current_liabilities = accounts_payable
+        working_capital = current_assets - current_liabilities
+        
+        # Working Capital Ratio
+        working_capital_ratio = (current_assets / current_liabilities) if current_liabilities > 0 else 0
+        
+        return {
+            'report_type': 'Working Capital Report',
+            'as_of_date': end_date,
+            'current_assets': {
+                'cash_and_equivalents': float(cash_position),
+                'accounts_receivable': float(accounts_receivable),
+                'total_current_assets': float(current_assets)
+            },
+            'current_liabilities': {
+                'accounts_payable': float(accounts_payable),
+                'total_current_liabilities': float(current_liabilities)
+            },
+            'working_capital': {
+                'working_capital': float(working_capital),
+                'working_capital_ratio': float(working_capital_ratio)
+            }
+        }
+
+    def generate_collection_performance_report(self, start_date, end_date):
+        """Generate Collection Performance Report"""
+        # Collection metrics
+        total_invoices = Invoice.objects.count()
+        paid_invoices = Invoice.objects.filter(status='PAID').count()
+        overdue_invoices = Invoice.objects.filter(status='OVERDUE').count()
+        
+        # Collection rate
+        collection_rate = (paid_invoices / total_invoices * 100) if total_invoices > 0 else 0
+        
+        # Average payment time
+        paid_payments = Payment.objects.filter(payment_date__isnull=False)
+        if paid_payments.exists():
+            total_days = 0
+            payment_count = 0
+            for payment in paid_payments:
+                if payment.invoice and payment.invoice.issue_date:
+                    days_diff = (payment.payment_date - payment.invoice.issue_date).days
+                    if days_diff >= 0:
+                        total_days += days_diff
+                        payment_count += 1
+            
+            avg_payment_time = total_days / payment_count if payment_count > 0 else 0
+        else:
+            avg_payment_time = 0
+        
+        # Outstanding amounts
+        outstanding_amount = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE']
+        ).aggregate(total=Sum('total'))['total'] or 0
+        
+        return {
+            'report_type': 'Collection Performance Report',
+            'period': f'{start_date} to {end_date}',
+            'collection_metrics': {
+                'total_invoices': total_invoices,
+                'paid_invoices': paid_invoices,
+                'overdue_invoices': overdue_invoices,
+                'collection_rate': float(collection_rate),
+                'avg_payment_time': float(avg_payment_time),
+                'outstanding_amount': float(outstanding_amount)
+            }
+        }
+
+    def generate_vendor_analysis_report(self, start_date, end_date):
+        """Generate Vendor Analysis Report"""
+        # Vendor spending
+        vendor_spending = AccountsPayable.objects.filter(
+            invoice_date__range=[start_date, end_date]
+        ).values('vendor').annotate(
+            total_amount=Sum('total_amount'),
+            total_paid=Sum('amount_paid'),
+            count=Count('id')
+        ).order_by('-total_amount')
+        
+        # Vendor payment performance
+        vendor_performance = []
+        for vendor in vendor_spending:
+            vendor_name = vendor['vendor']
+            total_amount = vendor['total_amount']
+            total_paid = vendor['total_paid']
+            payment_rate = (total_paid / total_amount * 100) if total_amount > 0 else 0
+            
+            vendor_performance.append({
+                'vendor': vendor_name,
+                'total_amount': float(total_amount),
+                'total_paid': float(total_paid),
+                'outstanding': float(total_amount - total_paid),
+                'payment_rate': float(payment_rate),
+                'transaction_count': vendor['count']
+            })
+        
+        return {
+            'report_type': 'Vendor Analysis Report',
+            'period': f'{start_date} to {end_date}',
+            'vendor_performance': vendor_performance
+        }
+
+    def generate_client_revenue_report(self, start_date, end_date):
+        """Generate Client Revenue Report"""
+        # Client revenue
+        client_revenue = Payment.objects.filter(
+            payment_date__range=[start_date, end_date]
+        ).values('invoice__client__name').annotate(
+            total_revenue=Sum('amount'),
+            payment_count=Count('id')
+        ).order_by('-total_revenue')
+        
+        # Client outstanding amounts
+        client_outstanding = Invoice.objects.filter(
+            status__in=['SENT', 'OVERDUE']
+        ).values('client__name').annotate(
+            outstanding_amount=Sum('total'),
+            invoice_count=Count('id')
+        ).order_by('-outstanding_amount')
+        
+        return {
+            'report_type': 'Client Revenue Report',
+            'period': f'{start_date} to {end_date}',
+            'client_revenue': [
+                {
+                    'client': item['invoice__client__name'] or 'Unknown Client',
+                    'revenue': float(item['total_revenue']),
+                    'payment_count': item['payment_count']
+                } for item in client_revenue
+            ],
+            'client_outstanding': [
+                {
+                    'client': item['client__name'] or 'Unknown Client',
+                    'outstanding': float(item['outstanding_amount']),
+                    'invoice_count': item['invoice_count']
+                } for item in client_outstanding
+            ]
+        }
+
+    def generate_monthly_summary_report(self, start_date, end_date):
+        """Generate Monthly Financial Summary"""
+        # Monthly revenue
+        monthly_revenue = Payment.objects.filter(
+            payment_date__range=[start_date, end_date]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Monthly expenses
+        monthly_expenses = Expense.objects.filter(
+            expense_date__range=[start_date, end_date],
+            status__in=['APPROVED', 'PAID']
+        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        
+        # Net income
+        net_income = monthly_revenue - monthly_expenses
+        
+        # Key metrics
+        collection_rate = 0
+        if Invoice.objects.count() > 0:
+            collection_rate = (Invoice.objects.filter(status='PAID').count() / Invoice.objects.count()) * 100
+        
+        return {
+            'report_type': 'Monthly Financial Summary',
+            'period': f'{start_date} to {end_date}',
+            'summary': {
+                'total_revenue': float(monthly_revenue),
+                'total_expenses': float(monthly_expenses),
+                'net_income': float(net_income),
+                'collection_rate': float(collection_rate),
+                'profit_margin': float((net_income / monthly_revenue * 100) if monthly_revenue > 0 else 0)
+            }
+        }
+
 class ReportDetailView(LoginRequiredMixin, DetailView):
     model = Report
     template_name = 'finance_management/report_detail.html'
@@ -1318,6 +1892,27 @@ class ReportDetailView(LoginRequiredMixin, DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        return context
+
+class ReportPreviewView(LoginRequiredMixin, DetailView):
+    model = Report
+    template_name = 'finance_management/report_preview.html'
+    context_object_name = 'report'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        report = self.get_object()
+        
+        # Generate report data using the ReportCreateView methods
+        report_creator = ReportCreateView()
+        report_data = report_creator.generate_report_data(
+            report.report_type, 
+            report.start_date, 
+            report.end_date, 
+            report.filters
+        )
+        
+        context['report_data'] = report_data
         return context
 
 class ReportDetailAPIView(LoginRequiredMixin, View):

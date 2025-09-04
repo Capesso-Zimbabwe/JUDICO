@@ -793,10 +793,18 @@ class PettyCash(models.Model):
 
 class Report(models.Model):
     REPORT_TYPE_CHOICES = [
-        ('petty_cash', 'Petty Cash Report'),
-        ('expense', 'Expense Report'),
-        ('income', 'Income Report'),
-        ('account_summary', 'Account Summary'),
+        ('cash_flow', 'Cash Flow Report'),
+        ('profit_loss', 'Profit & Loss Statement'),
+        ('balance_sheet', 'Balance Sheet'),
+        ('accounts_receivable', 'Accounts Receivable Aging'),
+        ('accounts_payable', 'Accounts Payable Aging'),
+        ('expense_analysis', 'Expense Analysis Report'),
+        ('revenue_analysis', 'Revenue Analysis Report'),
+        ('working_capital', 'Working Capital Report'),
+        ('collection_performance', 'Collection Performance Report'),
+        ('vendor_analysis', 'Vendor Analysis Report'),
+        ('client_revenue', 'Client Revenue Report'),
+        ('monthly_summary', 'Monthly Financial Summary'),
     ]
     
     STATUS_CHOICES = [
@@ -813,7 +821,7 @@ class Report(models.Model):
     ]
     
     name = models.CharField(max_length=255)
-    report_type = models.CharField(max_length=20, choices=REPORT_TYPE_CHOICES)
+    report_type = models.CharField(max_length=25, choices=REPORT_TYPE_CHOICES)
     start_date = models.DateField()
     end_date = models.DateField()
     format = models.CharField(max_length=10, choices=FORMAT_CHOICES, default='pdf')

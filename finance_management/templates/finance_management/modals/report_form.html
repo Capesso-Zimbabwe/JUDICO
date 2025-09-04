@@ -1,12 +1,14 @@
 <form
+  id="report-form"
   novalidate="novalidate"
   method="post"
+  action="{% url 'finance_management:report_create' %}"
   hx-post="{% url 'finance_management:report_create' %}"
   hx-target="#new-report-modal-container"
   class=""
 >
   {% csrf_token %}
-  <div class="p-2 md:p-3 space-y-4 max-h-[60vh] overflow-y-auto">
+  <div class="space-y-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       {% include 'components/non-field-errors.html' %}
 
@@ -24,10 +26,20 @@
           required
         >
           <option value="">Select Report Type</option>
-          <option value="petty_cash">Petty Cash Report</option>
-          <option value="expense">Expense Report</option>
-          <option value="income">Income Report</option>
-          <option value="account_summary">Account Summary</option>
+          <option value="cash_flow">Cash Flow Report</option>
+          <option value="profit_loss">Profit & Loss Statement</option>
+          <option value="balance_sheet">Balance Sheet</option>
+          <option value="accounts_receivable">Accounts Receivable Aging</option>
+          <option value="accounts_payable">Accounts Payable Aging</option>
+          <option value="expense_analysis">Expense Analysis Report</option>
+          <option value="revenue_analysis">Revenue Analysis Report</option>
+          <option value="working_capital">Working Capital Report</option>
+          <option value="collection_performance">
+            Collection Performance Report
+          </option>
+          <option value="vendor_analysis">Vendor Analysis Report</option>
+          <option value="client_revenue">Client Revenue Report</option>
+          <option value="monthly_summary">Monthly Financial Summary</option>
         </select>
       </div>
 
@@ -160,18 +172,6 @@
           </select>
         </div>
       </div>
-    </div>
-  </div>
-  <div
-    class="flex justify-end space-x-3 pt-3 py-2 px-3 border-t border-gray-200"
-  >
-    <div>
-      <button
-        type="submit"
-        class="px-6 py-2 border border-transparent text-sm font-medium rounded-none shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        Generate Report
-      </button>
     </div>
   </div>
 </form>
