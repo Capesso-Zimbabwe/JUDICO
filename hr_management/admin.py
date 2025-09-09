@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Department, Employee, LeaveType, LeaveRequest, PerformanceReview, TimeEntry
+from .models import Department, Employee, LeaveType, LeaveRequest, PerformanceReview, TimeEntry, UserTimeSession
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
@@ -108,3 +108,41 @@ class TimeEntryAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('employee', 'submitted_by', 'approved_by')
+
+
+class UserTimeSessionAdmin(admin.ModelAdmin):
+    """Admin interface for UserTimeSession model"""
+    
+    list_display = ['user', 'employee', 'login_time', 'logout_time', 'duration_formatted', 'activity_type', 'is_manual', 'is_active']
+    list_filter = ['is_manual', 'activity_type', 'login_time', 'logout_time', 'created_at']
+    search_fields = ['user__username', 'user__first_name', 'user__last_name', 'employee__full_name', 'description', 'client_case']
+    readonly_fields = ['created_at', 'updated_at', 'duration_formatted', 'is_active']
+    ordering = ['-login_time']
+    
+    fieldsets = (
+        ('Session Information', {
+            'fields': ('user', 'employee', 'login_time', 'logout_time', 'is_manual')
+        }),
+        ('Activity Details', {
+            'fields': ('activity_type', 'description', 'client_case')
+        }),
+        ('Technical Details', {
+            'fields': ('ip_address', 'user_agent'),
+            'classes': ('collapse',)
+        }),
+        ('System Information', {
+            'fields': ('created_at', 'updated_at', 'duration_formatted', 'is_active'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'employee')
+    
+    def has_add_permission(self, request):
+        # Only allow adding through the system, not manually
+        return False
+
+
+# Register the new admin
+admin.site.register(UserTimeSession, UserTimeSessionAdmin)

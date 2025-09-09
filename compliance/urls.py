@@ -7,6 +7,7 @@ app_name = 'compliance'
 urlpatterns = [
     path('', lambda request: redirect('compliance:dashboard'), name='compliance_root'),
     path('dashboard/', views.compliance_dashboard, name='dashboard'),
+    path('calendar/', views.regulatory_calendar, name='regulatory_calendar'),
     path('requirements/', views.requirements_list, name='requirements'),
     path('requirements/create/', views.create_requirement, name='create_requirement'),
     path('audits/', views.audits_list, name='audits'),

@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from client_management.models import Client, ClientDocument
+from quotes.models import Quote
+from quotes.admin import QuoteAdmin
 # Import models from other apps as needed
 
 # Add this to the top of your existing admin.py file
@@ -32,5 +34,8 @@ class ClientDocumentAdmin(admin.ModelAdmin):
     search_fields = ('title', 'client__name')
 
 custom_admin_site.register(ClientDocument, ClientDocumentAdmin)
+
+# Register Quotes with the custom admin site
+custom_admin_site.register(Quote, QuoteAdmin)
 
 # Register models from other apps as needed

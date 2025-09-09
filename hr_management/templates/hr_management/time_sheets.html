@@ -1,311 +1,334 @@
 {% extends 'hr_management/base.html' %}
 
-{% block hr_content %}
+{% block content %}
 
-    <!-- Time Sheets Management Table -->
-    <div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden flex-1 max-w-full max-h-full">
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
-            <form action="" method="get" class="flex-1 max-w-sm" id="search-form">
-                <div class="relative">
-                    <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search time sheets..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </form>
-            <button type="button" class="p-2 flex gap-1 items-center bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200">
-                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                     height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M5 12h14m-7 7V5"></path>
-                </svg>
-                <span class="font-bold text-xs">Add Time Entry</span>
-            </button>
-        </div>
-        <!-- Fixed height table container - shows 7 rows but contains 10 rows -->
-        <div class="flex flex-col h-80"> <!-- Fixed height: 7 rows visible, 3 rows scrollable -->
-            <!-- Fixed header -->
-            <div class="bg-gray-50 border-b border-gray-200">
-                <table class="w-full table-fixed" id="timeSheetsTable">
-                    <thead class="whitespace-nowrap text-xs">
-                    <tr>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Employee
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Date
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Hours Worked
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Project/Task
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                    </thead>
-                </table>
-            </div>
-            
-            <!-- Scrollable body -->
-            <div class="flex-1 overflow-y-auto scrollbar-thin">
-                <table class="w-full table-fixed" id="timeSheetsTableBody" style="table-layout: fixed;">
-                    <tbody class="bg-white divide-y divide-gray-200">
-                    {% for timesheet in timesheets %}
-                    <tr class="hover-row border-b border-gray-100">
-                         <td class="px-3 py-1 whitespace-nowrap">
-                             <button type="button"
-                                     class="text-blue-600 flex items-center hover:text-blue-800 transition-colors duration-200 cursor-pointer"
-                             >
-                                 <div class="flex-shrink-0 h-8 w-8">
-                                     <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                         <span class="text-blue-600 font-medium text-xs">{{ timesheet.employee_initials }}</span>
-                                     </div>
-                                 </div>
-                                 <div class="ml-2">
-                                     <div class="text-xs font-medium text-gray-900">
-                                         <span>{{ timesheet.employee_name }}</span>
-                                     </div>
-                                 </div>
-                             </button>
-                         </td>
-                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ timesheet.date }}</td>
-                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ timesheet.hours }}</td>
-                         <td class="px-3 py-1 whitespace-nowrap text-xs text-gray-900">{{ timesheet.project }}</td>
-                         <td class="px-3 py-1 whitespace-nowrap">
-                             {% if timesheet.status == 'approved' %}
-                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                     Approved
-                                 </span>
-                             {% elif timesheet.status == 'pending' %}
-                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                     Pending
-                                 </span>
-                             {% elif timesheet.status == 'rejected' %}
-                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                     Rejected
-                                 </span>
-                             {% endif %}
-                         </td>
-                         <td class="px-3 py-1 whitespace-nowrap text-xs font-medium">
-                             <div class="flex space-x-2">
-                                 <button type="button"
-                                         class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                         title="View Time Entry"
-                                 >
-                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
-                                          xmlns="http://www.w3.org/2000/svg">
-                                         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
-                                     </svg>
-                                 </button>
-                                 <button
-                                         type="button"
-                                         class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                         title="Edit Time Entry">
-                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
-                                          xmlns="http://www.w3.org/2000/svg">
-                                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
-                                     </svg>
-                                 </button>
-                             </div>
-                         </td>
-                     </tr>
-                     {% empty %}
-                     <tr>
-                         <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                             <div class="flex flex-col items-center">
-                                 <i class="fas fa-clock text-4xl text-gray-300 mb-4"></i>
-                                 <p class="text-xs font-medium">No time sheets found</p>
-                                 <p class="text-xs">Get started by adding your first time entry.</p>
-                             </div>
-                         </td>
-                     </tr>
-                     {% endfor %}
-                     </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Horizontal scroll bar space with same thickness as vertical scrollbar -->
-        <div class="bg-gray-50 h-2 border-t border-gray-200">
-            <div class="overflow-x-auto h-full" id="horizontalScrollContainer">
-                <div class="w-full" style="min-width: 800px;">
-                    <!-- This div ensures horizontal scroll when content overflows -->
-                </div>
-            </div>
-        </div>
-        
-        <!-- Fixed pagination below the table -->
-        <div class="bg-gray-50 px-4 py-1 flex items-center justify-between border-t border-gray-200 border-b border-gray-200 text-xs font-semibold">
-            {% if page_obj.has_other_pages %}
-                {% include 'components/paginator.html' with page_obj=page_obj %}
-            {% else %}
-                <div class="text-xs text-gray-600 font-semibold">
-                    Showing all {{ page_obj.paginator.count }} time sheets
-                </div>
-            {% endif %}
-        </div>
+{% if not is_employee %}
+<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+  <div class="flex">
+    <div class="flex-shrink-0">
+      <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+      </svg>
     </div>
+    <div class="ml-3">
+      <h3 class="text-sm font-medium text-yellow-800">Not an Employee</h3>
+      <div class="mt-2 text-sm text-yellow-700">
+        <p>You need to be registered as an employee to access time tracking features. Please contact your administrator.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-{% endblock %}
+{% else %}
 
-{% block extra_css %}
-<style>
-    /* Table styles */
-    .compact-table th, .compact-table td {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-    }
-    
-    /* Hover effect for table rows */
-    .hover-row:hover {
-        background-color: rgba(243, 244, 246, 0.7);
-    }
-    
-    /* Fixed height table container */
-    .h-80 {
-        height: 20rem; /* 320px - shows approximately 7 rows */
-    }
-    
-    /* Table column widths for better distribution */
-    #timeSheetsTable th:nth-child(1) { width: 25%; } /* Employee */
-    #timeSheetsTable th:nth-child(2) { width: 15%; } /* Date */
-    #timeSheetsTable th:nth-child(3) { width: 15%; } /* Hours Worked */
-    #timeSheetsTable th:nth-child(4) { width: 25%; } /* Project/Task */
-    #timeSheetsTable th:nth-child(5) { width: 12%; } /* Status */
-    #timeSheetsTable th:nth-child(6) { width: 8%; }  /* Actions */
-    
-    /* Apply same column widths to body table for alignment */
-    #timeSheetsTableBody td:nth-child(1) { width: 25%; } /* Employee */
-    #timeSheetsTableBody td:nth-child(2) { width: 15%; } /* Date */
-    #timeSheetsTableBody td:nth-child(3) { width: 15%; } /* Hours Worked */
-    #timeSheetsTableBody td:nth-child(4) { width: 25%; } /* Project/Task */
-    #timeSheetsTableBody td:nth-child(5) { width: 12%; } /* Status */
-    #timeSheetsTableBody td:nth-child(6) { width: 8%; }  /* Actions */
-    
-    /* Ensure table cells maintain consistent width */
-    #timeSheetsTableBody td {
-        width: auto;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    /* Prevent text wrapping and ensure proper alignment */
-    #timeSheetsTableBody td {
-        white-space: nowrap;
-        vertical-align: middle;
-    }
-    
-    /* Specific column content alignment */
-    #timeSheetsTableBody td:nth-child(1) { text-align: left; } /* Employee */
-    #timeSheetsTableBody td:nth-child(2) { text-align: left; } /* Date */
-    #timeSheetsTableBody td:nth-child(3) { text-align: left; } /* Hours Worked */
-    #timeSheetsTableBody td:nth-child(4) { text-align: left; } /* Project/Task */
-    #timeSheetsTableBody td:nth-child(5) { text-align: center; } /* Status */
-    #timeSheetsTableBody td:nth-child(6) { text-align: center; } /* Actions */
-    
-    /* Scrollable body styling */
-    .overflow-y-auto {
-        scrollbar-width: thin;
-        scrollbar-color: #888 #f1f1f1;
-    }
-    
-    /* Custom scrollbar for webkit browsers */
-    .scrollbar-thin::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    .scrollbar-thin::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-    
-    .scrollbar-thin::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 4px;
-        border: 1px solid #f1f1f1;
-    }
-    
-    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-    }
-    
-    /* Smooth scrolling */
-    .overflow-y-auto {
-        scroll-behavior: smooth;
-    }
-    
-    /* Table row height consistency */
-    .hover-row {
-        height: 2.5rem; /* 40px per row */
-    }
-    
-    /* Horizontal scroll bar styling */
-    .overflow-x-auto {
-        scrollbar-width: thin;
-        scrollbar-color: #888 #f1f1f1;
-    }
-    
-    .overflow-x-auto::-webkit-scrollbar {
-        height: 8px;
-    }
-    
-    .overflow-x-auto::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-    
-    .overflow-x-auto::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 4px;
-        border: 1px solid #f1f1f1;
-    }
-    
-    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-    }
-</style>
-{% endblock %}
+<!-- Page Header -->
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-base font-semibold text-gray-900">Time Tracking</h1>
+    <p class="text-xs text-gray-500">Track your daily work and review recent sessions</p>
+  </div>
+  <div class="flex items-center gap-2">
+    {% if is_hr %}
+    <form method="get" class="flex items-center gap-2">
+      <label class="text-xs text-gray-500">User</label>
+      <select name="user" class="px-2 py-2 border border-gray-200 rounded-md text-xs bg-white">
+        <option value="">Me</option>
+        {% for row in team_overview %}
+          <option value="{{ row.user.id }}" {% if selected_user_id == row.user.id|stringformat:"s" %}selected{% endif %}>
+            {{ row.employee.full_name }}
+          </option>
+        {% endfor %}
+      </select>
+      {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}"/>{% endif %}
+      <button type="submit" class="px-3 py-2 bg-white border border-gray-200 rounded-md text-xs text-gray-700 hover:bg-gray-50">Apply</button>
+    </form>
+    {% endif %}
+    <a href="{% url 'hr_management:time_sheets' %}" class="px-3 py-2 bg-white border border-gray-200 rounded-md text-xs text-gray-700 hover:bg-gray-50">Refresh</a>
+    <a href="{% url 'logout' %}" class="px-3 py-2 bg-custom-orange text-white rounded-md text-xs hover:bg-orange-600">End Session</a>
+  </div>
+</div>
 
-{% block extra_js %}
-    <script>
-        // Search functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.querySelector('input[name="search"]');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    // Add search functionality here
-                    console.log('Searching for:', this.value);
-                });
-            }
-            
-            // Check if horizontal scroll is needed and show/hide scrollbar
-            function checkHorizontalScroll() {
-                const tableBody = document.getElementById('timeSheetsTableBody');
-                const scrollContainer = document.getElementById('horizontalScrollContainer');
-                
-                if (tableBody && scrollContainer) {
-                    const tableWidth = tableBody.scrollWidth;
-                    const containerWidth = tableBody.clientWidth;
-                    
-                    if (tableWidth > containerWidth) {
-                        scrollContainer.classList.add('scrollbar-thin');
-                    } else {
-                        scrollContainer.classList.remove('scrollbar-thin');
-                    }
-                }
-            }
-            
-            // Check scroll on page load and window resize
-            checkHorizontalScroll();
-            window.addEventListener('resize', checkHorizontalScroll);
-        });
-    </script>
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm font-medium text-gray-500">Today's Hours</p>
+        <p class="text-2xl font-semibold text-gray-900">{{ today_hours }}h</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
+          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm font-medium text-gray-500">This Week</p>
+        <p class="text-2xl font-semibold text-gray-900">{{ week_hours }}h</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center">
+          <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="ml-4">
+        <p class="text-sm font-medium text-gray-500">This Month</p>
+        <p class="text-2xl font-semibold text-gray-900">{{ month_hours }}h</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Current Session Status -->
+{% if current_session %}
+<div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-sm font-medium text-green-800">Active Time Tracking Session</h3>
+        <p class="text-sm text-green-700">
+          Started at {{ current_session.login_time|date:"M d, Y H:i" }}{% if current_session.description %} - {{ current_session.description }}{% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="text-right">
+      <p class="text-lg font-semibold text-green-800" id="session-duration">{{ current_session.duration_formatted }}</p>
+      <p class="text-xs text-green-600">Duration</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Activity Breakdown -->
+{% if activity_breakdown %}
+<div class="bg-white rounded-lg shadow mb-6">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-medium text-gray-900">Activity Breakdown (This Month)</h3>
+  </div>
+  <div class="p-6">
+    <div class="space-y-4">
+      {% for activity in activity_breakdown %}
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+          <span class="text-sm font-medium text-gray-900">{{ activity.activity_type|title }}</span>
+        </div>
+        <div class="text-right">
+          <span class="text-sm font-semibold text-gray-900">{{ activity.total_hours }}h</span>
+          <span class="text-xs text-gray-500 ml-2">({{ activity.count }} entries)</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if is_hr %}
+<!-- Team Overview for HR -->
+<div class="bg-white rounded-lg shadow mb-6">
+  <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+    <h3 class="text-lg font-medium text-gray-900">Team Overview</h3>
+    <form method="get" class="flex items-center gap-2">
+      <input type="text" name="team_search" value="{{ request.GET.team_search }}" placeholder="Search team..." class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      {% if selected_user_id %}<input type="hidden" name="user" value="{{ selected_user_id }}"/>{% endif %}
+      <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600">Search</button>
+    </form>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Today</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">This Week</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">This Month</th>
+          <th class="px-6 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for row in team_overview %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row.employee.full_name }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span class="inline-flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full {% if row.active_session %}bg-green-500{% else %}bg-gray-300{% endif %}"></span>
+              <span class="text-gray-600">{% if row.active_session %}Active{% else %}Idle{% endif %}</span>
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row.today_hours }}h</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row.week_hours }}h</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row.month_hours }}h</td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+            <a href="?user={{ row.user.id }}" class="text-blue-600 hover:text-blue-800">View</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="px-6 py-6 text-center text-sm text-gray-500">No employees found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Time Entries Table -->
+<div class="bg-white rounded-lg shadow">
+  <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+    <h3 class="text-lg font-medium text-gray-900">Time Entries</h3>
+    <form method="get" class="flex items-center space-x-2">
+      <input type="text" name="search" value="{{ search_query }}" placeholder="Search entries..." class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600">Search</button>
+    </form>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50 sticky top-0 z-10">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for entry in time_entries %}
+        <tr class="hover:bg-gray-50 {% cycle '' 'bg-gray-50/40' %}">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ entry.date|date:"M d, Y" }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ entry.start_time|time:"H:i" }} - {{ entry.end_time|time:"H:i" }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ entry.get_activity_type_display }}</td>
+          <td class="px-6 py-4 text-sm text-gray-900">
+            <div class="max-w-xs truncate">{{ entry.description }}</div>
+            {% if entry.client_case %}
+            <div class="text-xs text-gray-500">{{ entry.client_case }}</div>
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ entry.hours_worked }}h</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {% if entry.status == 'approved' %}bg-green-100 text-green-800{% elif entry.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif entry.status == 'rejected' %}bg-red-100 text-red-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+              {{ entry.get_status_display }}
+            </span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="px-6 py-10 text-center">
+            <div class="flex flex-col items-center gap-2">
+              <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="bi bi-clock-history text-base"></i>
+              </div>
+              <p class="text-sm font-medium text-gray-700">No time entries yet</p>
+              <p class="text-xs text-gray-500">Your entries will appear here after you end a session.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+  <div class="px-6 py-4 border-t border-gray-200">
+    <div class="flex items-center justify-between">
+      <div class="text-sm text-gray-700">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries</div>
+      <div class="flex space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Previous</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Next</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Recent Sessions -->
+{% if user_sessions %}
+<div class="bg-white rounded-lg shadow mt-6">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-medium text-gray-900">Recent Sessions</h3>
+  </div>
+  <div class="p-6">
+    <div class="space-y-4">
+      {% for session in user_sessions %}
+      <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div class="flex items-center">
+          <div class="w-2 h-2 {% if session.is_active %}bg-green-500{% else %}bg-gray-400{% endif %} rounded-full mr-3"></div>
+          <div>
+            <p class="text-sm font-medium text-gray-900">
+              {{ session.login_time|date:"M d, Y H:i" }}{% if session.logout_time %} - {{ session.logout_time|time:"H:i" }}{% endif %}
+            </p>
+            <p class="text-xs text-gray-500">
+              {% if session.is_manual %}Manual tracking{% else %}Automatic login{% endif %}{% if session.description %} - {{ session.description }}{% endif %}
+            </p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-sm font-semibold text-gray-900">{{ session.duration_formatted }}</p>
+          <p class="text-xs text-gray-500">Duration</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endif %} {# closes: if not is_employee / else #}
+
+<!-- Real-time session duration -->
+<script>
+  {% if current_session %}
+  (function() {
+    function updateSessionDuration() {
+      const startTime = new Date('{{ current_session.login_time|date:"c" }}');
+      const now = new Date();
+      const diff = now - startTime;
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const el = document.getElementById('session-duration');
+      if (el) el.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+    setInterval(updateSessionDuration, 1000);
+    updateSessionDuration();
+  })();
+  {% endif %}
+</script>
+
 {% endblock %}

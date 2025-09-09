@@ -9,6 +9,7 @@ import secrets
 import string
 
 from .models import Employee, Department, LeaveRequest, PerformanceReview, LeaveType
+from .models import TimeEntry, UserTimeSession
 from .forms import EmployeeForm, LeaveRequestForm, PerformanceReviewForm, UserCreationForm
 from lawyer_portal.models import LawyerProfile
 from client_management.models import Client
@@ -523,145 +524,196 @@ def toggle_client(request, user_id):
 
 @login_required
 def time_sheets(request):
-    """View for managing employee time sheets"""
+    """View for managing employee time sheets and time tracking"""
     from django.core.paginator import Paginator
-    from django.db.models import Q
+    from django.db.models import Q, Sum, Count
+    from django.utils import timezone
+    from datetime import datetime, timedelta
     
-    # For now, create some sample timesheet data
-    # In a real application, you would have a TimeSheet model
-    sample_timesheets = [
-        {
-            'id': 1,
-            'employee_name': 'John Doe',
-            'employee_initials': 'JD',
-            'date': '2024-01-15',
-            'hours': '8.0 hours',
-            'project': 'Client Portal Development',
-            'status': 'approved'
-        },
-        {
-            'id': 2,
-            'employee_name': 'Jane Smith',
-            'employee_initials': 'JS',
-            'date': '2024-01-14',
-            'hours': '7.5 hours',
-            'project': 'Legal Research',
-            'status': 'pending'
-        },
-        {
-            'id': 3,
-            'employee_name': 'Mike Johnson',
-            'employee_initials': 'MJ',
-            'date': '2024-01-13',
-            'hours': '8.0 hours',
-            'project': 'Case Management System',
-            'status': 'approved'
-        },
-        {
-            'id': 4,
-            'employee_name': 'Sarah Wilson',
-            'employee_initials': 'SW',
-            'date': '2024-01-12',
-            'hours': '6.0 hours',
-            'project': 'Document Review',
-            'status': 'rejected'
-        },
-        {
-            'id': 5,
-            'employee_name': 'David Brown',
-            'employee_initials': 'DB',
-            'date': '2024-01-11',
-            'hours': '8.5 hours',
-            'project': 'Client Consultation',
-            'status': 'approved'
-        },
-        {
-            'id': 6,
-            'employee_name': 'Lisa Davis',
-            'employee_initials': 'LD',
-            'date': '2024-01-10',
-            'hours': '7.0 hours',
-            'project': 'Contract Analysis',
-            'status': 'pending'
-        },
-        {
-            'id': 7,
-            'employee_name': 'Tom Anderson',
-            'employee_initials': 'TA',
-            'date': '2024-01-09',
-            'hours': '8.0 hours',
-            'project': 'Court Preparation',
-            'status': 'approved'
-        },
-        {
-            'id': 8,
-            'employee_name': 'Emily Taylor',
-            'employee_initials': 'ET',
-            'date': '2024-01-08',
-            'hours': '7.5 hours',
-            'project': 'Legal Writing',
-            'status': 'approved'
-        },
-        {
-            'id': 9,
-            'employee_name': 'Chris Martinez',
-            'employee_initials': 'CM',
-            'date': '2024-01-07',
-            'hours': '8.0 hours',
-            'project': 'Client Meeting',
-            'status': 'pending'
-        },
-        {
-            'id': 10,
-            'employee_name': 'Amanda Garcia',
-            'employee_initials': 'AG',
-            'date': '2024-01-06',
-            'hours': '6.5 hours',
-            'project': 'Research & Analysis',
-            'status': 'approved'
-        },
-        {
-            'id': 11,
-            'employee_name': 'Robert Lee',
-            'employee_initials': 'RL',
-            'date': '2024-01-05',
-            'hours': '8.0 hours',
-            'project': 'Case Review',
-            'status': 'approved'
-        },
-        {
-            'id': 12,
-            'employee_name': 'Jennifer White',
-            'employee_initials': 'JW',
-            'date': '2024-01-04',
-            'hours': '7.0 hours',
-            'project': 'Administrative Tasks',
-            'status': 'pending'
-        }
-    ]
+    # Permissions and filters
+    is_hr = request.user.is_staff or request.user.is_superuser
+    selected_user_id = request.GET.get('user') if is_hr else None
+
+    # Get time entries for the selected/current user if they're an employee
+    time_entries = TimeEntry.objects.none()
+    user_sessions = UserTimeSession.objects.none()
+    current_session = None
+    
+    # Determine target user for detail view
+    target_user = request.user
+    if is_hr and selected_user_id:
+        from django.contrib.auth import get_user_model
+        UserModel = get_user_model()
+        try:
+            target_user = UserModel.objects.get(id=selected_user_id)
+        except UserModel.DoesNotExist:
+            target_user = request.user
+
+    # Ensure the target user has an Employee record; auto-create minimal if missing for self only
+    employee = None
+    try:
+        employee = Employee.objects.get(user=target_user)
+    except Employee.DoesNotExist:
+        if target_user == request.user:
+            auto_email = target_user.email or f"{target_user.username}+{target_user.id}@autogen.local"
+            try:
+                employee = Employee.objects.create(
+                    user=target_user,
+                    first_name=target_user.first_name or target_user.username or 'User',
+                    last_name=target_user.last_name or 'User',
+                    email=auto_email,
+                    phone='-',
+                    position='Staff',
+                    hire_date=timezone.now().date(),
+                )
+            except Exception:
+                employee = None
+    
+    if employee:
+        # Get time entries
+        time_entries = TimeEntry.objects.filter(employee=employee).order_by('-date', '-start_time')
+        
+        # Get user sessions
+        user_sessions = UserTimeSession.objects.filter(user=target_user).order_by('-login_time')
+        
+        # Get current active session
+        current_session = UserTimeSession.objects.filter(
+            user=target_user,
+            logout_time__isnull=True
+        ).first()
+     
+    # Calculate statistics
+    today = timezone.now().date()
+    week_start = today - timedelta(days=today.weekday())
+    month_start = today.replace(day=1)
+    
+    # Today's hours
+    today_hours = time_entries.filter(date=today).aggregate(
+        total=Sum('hours_worked')
+    )['total'] or 0
+    
+    # This week's hours
+    week_hours = time_entries.filter(
+        date__gte=week_start,
+        date__lte=today
+    ).aggregate(
+        total=Sum('hours_worked')
+    )['total'] or 0
+    
+    # This month's hours
+    month_hours = time_entries.filter(
+        date__gte=month_start,
+        date__lte=today
+    ).aggregate(
+        total=Sum('hours_worked')
+    )['total'] or 0
+    
+    # Activity breakdown
+    activity_breakdown = time_entries.filter(
+        date__gte=month_start
+    ).values('activity_type').annotate(
+        total_hours=Sum('hours_worked'),
+        count=Count('id')
+    ).order_by('-total_hours')
     
     # Search functionality
     search_query = request.GET.get('search')
-    filtered_timesheets = sample_timesheets
     if search_query:
-        filtered_timesheets = [
-            ts for ts in sample_timesheets 
-            if search_query.lower() in ts['employee_name'].lower() or 
-               search_query.lower() in ts['project'].lower() or
-               search_query.lower() in ts['status'].lower()
-        ]
+        time_entries = time_entries.filter(
+            Q(description__icontains=search_query) |
+            Q(client_case__icontains=search_query) |
+            Q(activity_type__icontains=search_query)
+        )
     
-    # Pagination
-    paginator = Paginator(filtered_timesheets, 10)  # Show 10 timesheets per page
+    # Pagination for time entries
+    paginator = Paginator(time_entries, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
+    # If there is an active session, include its running duration in the stats
+    if current_session:
+        from decimal import Decimal
+        running_hours = Decimal(str(current_session.duration_hours))
+        today_hours = (today_hours if today_hours else Decimal('0')) + running_hours
+        week_hours = (week_hours if week_hours else Decimal('0')) + running_hours
+        month_hours = (month_hours if month_hours else Decimal('0')) + running_hours
+
+    # HR overview: team summaries
+    team_overview = []
+    if is_hr:
+        from decimal import Decimal
+        employees_qs = Employee.objects.select_related('user')
+
+        # Pre-aggregate time entries for month, week, today
+        month_aggs = TimeEntry.objects.filter(
+            date__gte=month_start,
+            date__lte=today
+        ).values('employee').annotate(total=Sum('hours_worked'))
+        week_aggs = TimeEntry.objects.filter(
+            date__gte=week_start,
+            date__lte=today
+        ).values('employee').annotate(total=Sum('hours_worked'))
+        today_aggs = TimeEntry.objects.filter(
+            date=today
+        ).values('employee').annotate(total=Sum('hours_worked'))
+
+        month_map = {a['employee']: a['total'] for a in month_aggs}
+        week_map = {a['employee']: a['total'] for a in week_aggs}
+        today_map = {a['employee']: a['total'] for a in today_aggs}
+
+        # Active sessions map
+        active_sessions = UserTimeSession.objects.filter(logout_time__isnull=True)
+        active_by_user = {s.user_id: s for s in active_sessions}
+
+        search_q = request.GET.get('team_search')
+        if search_q:
+            employees_qs = employees_qs.filter(
+                first_name__icontains=search_q
+            ) | employees_qs.filter(last_name__icontains=search_q)
+
+        for emp in employees_qs:
+            t = Decimal(str(today_map.get(emp.id, 0) or 0))
+            w = Decimal(str(week_map.get(emp.id, 0) or 0))
+            m = Decimal(str(month_map.get(emp.id, 0) or 0))
+
+            # Add running session if active
+            sess = active_by_user.get(getattr(emp.user, 'id', None))
+            running = Decimal('0')
+            if sess:
+                running = Decimal(str(sess.duration_hours))
+                t += running
+                w += running
+                m += running
+
+            team_overview.append({
+                'employee': emp,
+                'user': emp.user,
+                'today_hours': round(t, 2),
+                'week_hours': round(w, 2),
+                'month_hours': round(m, 2),
+                'active_session': sess,
+            })
+
+        # Sort by today's hours desc
+        team_overview.sort(key=lambda x: x['today_hours'], reverse=True)
+
     context = {
-        'page_title': 'Time Sheets',
-        'timesheets': page_obj,
+        'page_title': 'Time Tracking & Timesheets',
         'page_obj': page_obj,
+        'time_entries': page_obj,
+        'user_sessions': user_sessions[:10],  # Show last 10 sessions
+        'current_session': current_session,
+        'today_hours': round(today_hours, 2),
+        'week_hours': round(week_hours, 2),
+        'month_hours': round(month_hours, 2),
+        'activity_breakdown': activity_breakdown,
+        'is_employee': hasattr(request.user, 'employee_profile'),
         'search_query': search_query,
+        'is_hr': is_hr,
+        'team_overview': team_overview,
+        'selected_user_id': str(getattr(target_user, 'id', '')),
     }
+    
     return render(request, 'hr_management/time_sheets.html', context)
 
 @login_required

@@ -3,57 +3,116 @@
 {% block title %}Compliance - Reports{% endblock %}
 
 {% block compliance_content %}
-<!-- Reports Header -->
-<div class="p-8 bg-white shadow rounded-lg">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Compliance Reports</h1>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-            Generate Report
-        </button>
+<div class="bg-white rounded-lg shadow-md flex flex-col overflow-hidden">
+  <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+    <form action="" class="flex-1 max-w-sm" method="get">
+      <div class="relative rounded-md shadow-sm">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+          </svg>
+        </div>
+        <input type="text" name="search" value="{{ request.GET.search|default:'' }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 text-xs placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Search reports...">
+      </div>
+    </form>
+    <div class="flex gap-2">
+      <a href="?export=csv" class="p-2 flex gap-1 items-center bg-blue-900 text-white hover:bg-blue-800 transition-colors duration-200">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16V4m0 12l-3-3m3 3l3-3M5 20h14"/>
+        </svg>
+        <span class="font-bold text-xs">Export CSV</span>
+      </a>
     </div>
+  </div>
 
-    <!-- Reports Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% if reports %}
-            {% for report in reports %}
-            <div class="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900">{{ report.title }}</h3>
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full
-                            {% if report.status == 'Generated' %}bg-green-100 text-green-800
-                            {% elif report.status == 'Processing' %}bg-yellow-100 text-yellow-800
-                            {% else %}bg-gray-100 text-gray-800{% endif %}">
-                            {{ report.status }}
-                        </span>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-4">{{ report.description }}</p>
-                    <div class="text-sm text-gray-500 space-y-2">
-                        <p><span class="font-medium">Type:</span> {{ report.type }}</p>
-                        <p><span class="font-medium">Generated:</span> {{ report.generated_date }}</p>
-                        <p><span class="font-medium">Period:</span> {{ report.period }}</p>
-                    </div>
-                    <div class="mt-4 flex space-x-2">
-                        <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded">
-                            View
-                        </button>
-                        <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded">
-                            Download
-                        </button>
-                        <button class="text-red-600 hover:text-red-900 py-2 px-4">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-span-full text-center py-8 text-gray-500">
-                <p>No reports available. Click 'Generate Report' to create one.</p>
-            </div>
-        {% endif %}
+  <form method="get" class="bg-gray-50 px-4 py-3 border-t border-b border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Report Type</label>
+      <select name="report_type" class="w-full px-3 py-2 border border-gray-300 text-xs">
+        <option value="">Requirements Summary</option>
+        <option value="audits_schedule" {% if report_type == 'audits_schedule' %}selected{% endif %}>Audits Schedule</option>
+      </select>
     </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+      <select name="status" class="w-full px-3 py-2 border border-gray-300 text-xs">
+        <option value="">All</option>
+        {% for value,label in status_choices %}
+        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+      <select name="category" class="w-full px-3 py-2 border border-gray-300 text-xs">
+        <option value="">All</option>
+        {% for value,label in category_choices %}
+        <option value="{{ value }}" {% if category_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-700 mb-1">Window</label>
+      <select name="period" class="w-full px-3 py-2 border border-gray-300 text-xs">
+        <option value="30" {% if period == '30' %}selected{% endif %}>30 days</option>
+        <option value="60" {% if period == '60' %}selected{% endif %}>60 days</option>
+        <option value="90" {% if period == '90' %}selected{% endif %}>90 days</option>
+      </select>
+    </div>
+    <div class="md:col-span-4 flex gap-2">
+      <button type="submit" class="px-3 py-2 text-xs font-medium text-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Filter</button>
+      <a href="{% url 'compliance:reports' %}" class="px-3 py-2 text-xs font-medium text-center text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors duration-200">Clear</a>
+    </div>
+  </form>
+
+  <div class="p-0 overflow-hidden">
+    <table class="w-full divide-y divide-gray-200 table-fixed" id="reportsTable">
+      <thead class="bg-gray-50 whitespace-nowrap text-xs sticky top-0 z-10">
+        <tr class="border-b border-gray-200">
+          <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Report Name</th>
+          <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Type</th>
+          <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Period</th>
+          <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Format</th>
+          <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Status</th>
+          <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Generated By</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for row in rows %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-3 py-2 text-xs text-gray-900">{{ row.name }}</td>
+          <td class="px-3 py-2 text-xs text-gray-700">{{ row.type }}</td>
+          <td class="px-3 py-2 text-xs text-gray-700">{{ row.period }}</td>
+          <td class="px-3 py-2 text-xs text-gray-700">{{ row.format }}</td>
+          <td class="px-3 py-2 text-xs">
+            <span class="inline-flex px-2 py-1 rounded-full text-[10px] font-semibold
+              {% if row.status == 'Compliant' %}bg-green-100 text-green-800
+              {% elif row.status == 'Pending' %}bg-yellow-100 text-yellow-800
+              {% elif row.status == 'Non-Compliant' %}bg-red-100 text-red-800
+              {% else %}bg-gray-100 text-gray-800{% endif %}">{{ row.status }}</span>
+          </td>
+          <td class="px-3 py-2 text-xs text-gray-700">{{ row.generated_by }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="px-3 py-8 text-center text-xs text-gray-500">No data for selected filters.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+    <div class="text-xs text-gray-600">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</div>
+    <div class="flex gap-2">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&report_type={{ report_type }}&status={{ status_filter }}&category={{ category_filter }}&period={{ period }}" class="px-3 py-2 text-xs font-medium text-gray-600 bg-white border border-gray-300 hover:bg-gray-50">Previous</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&report_type={{ report_type }}&status={{ status_filter }}&category={{ category_filter }}&period={{ period }}" class="px-3 py-2 text-xs font-medium text-gray-600 bg-white border border-gray-300 hover:bg-gray-50">Next</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

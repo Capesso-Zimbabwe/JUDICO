@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'client_management',
     'task_management',
     'finance_management',
-    'hr_management',
+    'hr_management.apps.HrManagementConfig',
     'transaction_support',
     'document_repository',
     'communication',
@@ -180,3 +180,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 PAGINATE_BY = config('PAGINATE_BY', default=10, cast=int)  # Default pagination setting
+
+# Import/Export settings
+IMPORT_EXPORT_USE_TRANSACTIONS = True
+IMPORT_EXPORT_SKIP_ADMIN_LOG = False

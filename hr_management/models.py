@@ -210,3 +210,77 @@ class TimeEntry(models.Model):
     @property
     def is_billed(self):
         return self.status == 'billed'
+
+
+class UserTimeSession(models.Model):
+    """Model for tracking user login/logout sessions for automatic time tracking"""
+    
+    ACTIVITY_TYPES = [
+        ('legal_research', 'Legal Research'),
+        ('client_consultation', 'Client Consultation'),
+        ('court_appearance', 'Court Appearance'),
+        ('document_preparation', 'Document Preparation'),
+        ('case_management', 'Case Management'),
+        ('meeting', 'Meeting'),
+        ('administrative', 'Administrative'),
+        ('training', 'Training'),
+        ('other', 'Other'),
+    ]
+    
+    # User and employee info
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='time_sessions')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='time_sessions', null=True, blank=True)
+    
+    # Session timing
+    login_time = models.DateTimeField()
+    logout_time = models.DateTimeField(null=True, blank=True)
+    
+    # Activity details (for manual tracking)
+    activity_type = models.CharField(max_length=30, choices=ACTIVITY_TYPES, default='administrative')
+    description = models.TextField(blank=True)
+    client_case = models.CharField(max_length=200, blank=True, help_text="Client name or case reference")
+    
+    # Session metadata
+    is_manual = models.BooleanField(default=False, help_text="True if manually started, False if automatic from login")
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent = models.TextField(blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-login_time']
+        verbose_name = 'User Time Session'
+        verbose_name_plural = 'User Time Sessions'
+    
+    def __str__(self):
+        status = "Active" if self.logout_time is None else "Completed"
+        return f"{self.user.username} - {self.login_time.strftime('%Y-%m-%d %H:%M')} ({status})"
+    
+    @property
+    def duration(self):
+        """Calculate session duration"""
+        if self.logout_time:
+            return self.logout_time - self.login_time
+        else:
+            from django.utils import timezone
+            return timezone.now() - self.login_time
+    
+    @property
+    def duration_hours(self):
+        """Get duration in hours"""
+        return round(self.duration.total_seconds() / 3600, 2)
+    
+    @property
+    def is_active(self):
+        """Check if session is currently active"""
+        return self.logout_time is None
+    
+    @property
+    def duration_formatted(self):
+        """Return formatted duration string"""
+        duration = self.duration
+        hours = int(duration.total_seconds() // 3600)
+        minutes = int((duration.total_seconds() % 3600) // 60)
+        return f"{hours}h {minutes}m"
