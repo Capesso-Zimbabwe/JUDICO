@@ -42,42 +42,27 @@
     #receivablesTable {
         table-layout: fixed;
     }
-    
+    /* 10-column layout: 18,18,10,10,10,10,10,7,7,10 */
     #receivablesTable th:nth-child(1),
-    #receivablesTable td:nth-child(1) {
-        width: 20%;
-        max-width: 20%;
-    }
-    
+    #receivablesTable td:nth-child(1) { width: 18%; max-width: 18%; }
     #receivablesTable th:nth-child(2),
-    #receivablesTable td:nth-child(2) {
-        width: 20%;
-        max-width: 20%;
-    }
-    
+    #receivablesTable td:nth-child(2) { width: 18%; max-width: 18%; }
     #receivablesTable th:nth-child(3),
-    #receivablesTable td:nth-child(3) {
-        width: 15%;
-        max-width: 15%;
-    }
-    
+    #receivablesTable td:nth-child(3) { width: 10%; max-width: 10%; }
     #receivablesTable th:nth-child(4),
-    #receivablesTable td:nth-child(4) {
-        width: 15%;
-        max-width: 15%;
-    }
-    
+    #receivablesTable td:nth-child(4) { width: 10%; max-width: 10%; }
     #receivablesTable th:nth-child(5),
-    #receivablesTable td:nth-child(5) {
-        width: 15%;
-        max-width: 15%;
-    }
-    
+    #receivablesTable td:nth-child(5) { width: 10%; max-width: 10%; }
     #receivablesTable th:nth-child(6),
-    #receivablesTable td:nth-child(6) {
-        width: 15%;
-        max-width: 15%;
-    }
+    #receivablesTable td:nth-child(6) { width: 10%; max-width: 10%; }
+    #receivablesTable th:nth-child(7),
+    #receivablesTable td:nth-child(7) { width: 10%; max-width: 10%; }
+    #receivablesTable th:nth-child(8),
+    #receivablesTable td:nth-child(8) { width: 7%; max-width: 7%; }
+    #receivablesTable th:nth-child(9),
+    #receivablesTable td:nth-child(9) { width: 7%; max-width: 7%; }
+    #receivablesTable th:nth-child(10),
+    #receivablesTable td:nth-child(10) { width: 10%; max-width: 10%; }
     
     /* Prevent text overflow */
     .invoice-title-cell {
@@ -194,24 +179,16 @@
             <table class="w-full divide-y divide-gray-200 table-fixed" id="receivablesTable">
                 <thead class="bg-gray-50 whitespace-nowrap text-xs sticky top-0 z-10">
                     <tr class="border-b border-gray-200">
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                            Invoice
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                            Client
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                            Issue Date
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                            Due Date
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                            Amount
-                        </th>
-                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">
-                            Actions
-                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Invoice</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Client</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Issue Date</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Due Date</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Original Amount</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Amount Paid</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Outstanding</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Days Past Due</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Aging</th>
+                        <th class="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -247,15 +224,15 @@
                                     <div class="text-xs text-red-600">Overdue</div>
                                 {% endif %}
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
-                                {% if invoice.total %}
-                                    <span class="text-green-600">${{ invoice.total|floatformat:2 }}</span>
-                                {% else %}
-                                    <span class="text-gray-500">-</span>
-                                {% endif %}
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">${{ invoice.total|floatformat:2 }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">${{ invoice.amount_paid|floatformat:2 }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-semibold {% if invoice.outstanding_amount > 0 %}text-red-600{% else %}text-gray-700{% endif %}">${{ invoice.outstanding_amount|floatformat:2 }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700 text-right">{{ invoice.days_past_due }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-center">
+                                <span class="inline-flex px-2 py-1 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700">{{ invoice.aging_bucket }}</span>
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium">
-                                <div class="flex space-x-2">
+                            <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-right">
+                                <div class="inline-flex space-x-2">
                                     <a href="{% url 'finance_management:accounts_receivable_detail' invoice.pk %}" 
                                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-all duration-150 shadow-sm hover:shadow-md"
                                        title="View Invoice">

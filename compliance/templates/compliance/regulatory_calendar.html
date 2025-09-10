@@ -37,14 +37,14 @@
 
       <button class="px-3 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">Apply</button>
     </form>
-  </div>
+</div>
 
   <div class="bg-white rounded-lg shadow p-4">
     <div id="calendar" class="w-full"></div>
     <p class="text-[10px] text-gray-400 mt-2">Click an event for details.</p>
-  </div>
+</div>
 
-  <script>
+<script>
     document.addEventListener('DOMContentLoaded', function () {
       const calendarEl = document.getElementById('calendar');
       const events = {{ events_json|safe }};
@@ -84,5 +84,5 @@
 
       calendar.render();
     });
-  </script>
+</script>
 {% endblock compliance_content %}

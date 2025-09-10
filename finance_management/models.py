@@ -728,6 +728,35 @@ class Invoice(models.Model):
     def __str__(self):
         return f'Invoice {self.invoice_number} - {self.client.name}'
 
+    @property
+    def amount_paid(self):
+        from django.db.models import Sum
+        return self.payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+    @property
+    def outstanding_amount(self):
+        outstanding = (self.total or Decimal('0.00')) - self.amount_paid
+        return outstanding if outstanding > 0 else Decimal('0.00')
+
+    @property
+    def days_past_due(self):
+        if self.due_date and self.outstanding_amount > 0 and self.due_date < timezone.now().date():
+            return (timezone.now().date() - self.due_date).days
+        return 0
+
+    @property
+    def aging_bucket(self):
+        days = self.days_past_due
+        if days <= 0:
+            return 'Current'
+        if days <= 30:
+            return '1–30'
+        if days <= 60:
+            return '31–60'
+        if days <= 90:
+            return '61–90'
+        return '90+'
+
 class InvoiceItem(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
     description = models.CharField(max_length=255)

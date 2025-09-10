@@ -581,7 +581,7 @@ def time_sheets(request):
             user=target_user,
             logout_time__isnull=True
         ).first()
-     
+    
     # Calculate statistics
     today = timezone.now().date()
     week_start = today - timedelta(days=today.weekday())
@@ -629,7 +629,7 @@ def time_sheets(request):
     paginator = Paginator(time_entries, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
+    
     # If there is an active session, include its running duration in the stats
     if current_session:
         from decimal import Decimal
